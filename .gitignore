@@ -1,0 +1,40 @@
+# Ignore build files
+/build/
+
+# Ignore third-party dependencies
+/external/
+
+# CMake cache files
+CMakeCache.txt
+CMakeFiles/
+
+# Ignore binaries and other generated files
+*.exe
+*.out
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+
+# Ignore object and intermediate files
+*.obj
+*.o
+*.ilk
+*.pch
+*.pdb
+*.idb
+*.ipdb
+*.iobj
+*.tlog
+*.lastbuildstate
+*.log
+
+# Ignore editor/project-specific files
+.vscode/
+.vs/
+*.code-workspace
+.idea/
+
+# Ignore shader binaries if precompiled
+src/shaders/*.spv
