@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "df/engine.h"
+#include "df/core/engine.h"
 
 void update(double deltaTime)
 {
@@ -10,7 +10,7 @@ void update(double deltaTime)
 
 int main()
 {
-    DF::Engine eng{};
+    DF::Core::Engine eng{};
 
     eng.run(update);
 
