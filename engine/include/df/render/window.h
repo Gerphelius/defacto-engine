@@ -3,44 +3,29 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
+#include <functional>
 
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
-
-#include "input/input_manager.h"
+namespace DF::Core{
+    class Engine;
+}
 
 namespace DF::Render
 {
-    // Custom deleter for GLFWwindow
-    struct GLFWwindowDeleter {
-        void operator()(GLFWwindow* ptr) const {
-            if (ptr) glfwDestroyWindow(ptr);
-        }
-    };
-
     class Window
     {
     public:
-        explicit Window(int width, int height, std::string title);
+        virtual void update() = 0;
 
-        ~Window();
+        virtual bool closed() const = 0;
 
-        bool init();
+        virtual void* getRawWindow() const = 0;
 
-        operator bool() { return m_valid; }
-
-        bool shouldClose() { return glfwWindowShouldClose(m_window.get()); }
-
-        void update();
-
-        GLFWwindow* getWindow() const { return m_window.get(); }
+        virtual ~Window() = default;
 
     private:
-        int m_width{ 800 };
-        int m_height{ 600 };
-        std::string m_title{ "Window" };
-        bool m_valid{ false };
-        std::unique_ptr<GLFWwindow, GLFWwindowDeleter> m_window{};
+        static std::unique_ptr<Window> create(int width, int height, std::string_view title);
+
+        friend class Core::Engine;
     };
 }

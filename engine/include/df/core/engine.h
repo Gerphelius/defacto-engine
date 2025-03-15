@@ -4,15 +4,17 @@
 #include <memory>
 
 #include "render/renderer.h"
-#include "input/input_manager.h"
+#include "render/window.h"
+#include "input/input_system.h"
 
 namespace DF::Core
 {
-    class Engine final
+    class Engine
     {
     private:
-        Render::Renderer m_renderer{};
-        std::shared_ptr<Input::IInputManager> m_inputManager{};
+        std::unique_ptr<Render::Window> m_window{};
+        std::unique_ptr<Render::Renderer> m_renderer{};
+        std::shared_ptr<Input::InputSystem> m_inputSystem{};
         bool m_running{ false };
 
     public:
@@ -21,3 +23,11 @@ namespace DF::Core
         void run(std::function<void(double)> update);
     };
 }
+
+/*
+    -- Give ability to create instances of input, window etc. but
+       for input you need to inject window, for window renderer etc.;
+
+    -- For renderer make class OpenGLRenderer and locator pattern
+       for switching to different at runtime;
+*/

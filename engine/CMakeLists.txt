@@ -40,3 +40,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::signals2)
 
 # Set consistent runtime library
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+if (MSVC)
+    add_compile_options(/W4 /WX)
+else()
+    add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()
