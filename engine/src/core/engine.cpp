@@ -14,6 +14,16 @@ namespace DF::Core
                 m_running = false;
             }
         );
+
+        m_inputSystem->onKeyPress(
+            Input::Key::N,
+            [this]() {
+                const auto currentMode{ m_renderer->getDrawMode() };
+                const auto newMode{ currentMode == Render::DrawMode::fill ? Render::DrawMode::line : Render::DrawMode::fill };
+
+                m_renderer->setDrawMode(newMode);
+            }
+        );
     }
 
     void Engine::run(std::function<void(double)> update)

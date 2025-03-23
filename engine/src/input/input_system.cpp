@@ -11,6 +11,7 @@ namespace DF::Input
             { GLFW_KEY_ESCAPE, Key::ESC },
             { GLFW_KEY_ENTER,  Key::ENTER },
             { GLFW_KEY_SPACE,  Key::SPACE },
+            { GLFW_KEY_N,      Key::N },
         };
         std::map<Key, std::vector<std::function<void()>>> m_keyCallbacksMap{};
 
