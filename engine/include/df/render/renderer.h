@@ -15,8 +15,6 @@ namespace DF::Render
     class Renderer
     {
     private:
-        GLuint m_shaderProgram{};
-        GLuint m_vao{};
         DrawMode m_drawMode{ DrawMode::fill };
 
     public:

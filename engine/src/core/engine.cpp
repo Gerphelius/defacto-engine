@@ -34,8 +34,8 @@ namespace DF::Core
 
         while (m_running && !m_window->closed())
         {
-            m_window->update();
             m_renderer->render();
+            m_window->update();
 
             update(123.45);
         }
