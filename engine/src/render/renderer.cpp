@@ -1,9 +1,11 @@
 #include <iostream>
 #include <cmath>
 
+#include "sail-c++/sail-c++.h"
+
 #include "render/renderer.h"
 #include "render/window.h"
-#include <render/shader_program.h>
+#include "render/shader_program.h"
 
 namespace DF::Render {
     Renderer::Renderer()
@@ -14,14 +16,15 @@ namespace DF::Render {
         }
 
         const float vertices[] = {
-            // positions         // colors
-             0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
-            -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
-             0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+            // positions         // colors           // texture coords
+           -0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   0.0f, 1.0f,
+            0.5f,  0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f,
+            0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   1.0f, 0.0f,
+           -0.5f, -0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 0.0f
         };
         const int indices[] = {
-            0, 1, 3,    // first triangle
-            1, 2, 3     // second triangle
+            0, 1, 2,    // first triangle
+            0, 2, 3     // second triangle
         };
 
         GLuint vbo{};
@@ -42,10 +45,12 @@ namespace DF::Render {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(0));
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0));
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glEnableVertexAttribArray(2);
 
         // Unbind current vao, vbo and ebo respectively
         glBindVertexArray(0);
@@ -58,15 +63,52 @@ namespace DF::Render {
         };
 
         shadereProgram.use();
+
+        /////////////////////////////  TEXTURES  /////////////////////////////
+
+        sail::image container{ "../../assets/images/container.jpg" };
+        sail::image face{ "../../assets/images/awesomeface.png" };
+        face.mirror(SAIL_ORIENTATION_MIRRORED_VERTICALLY);
+
+        if (container.is_valid() && face.is_valid())
+        {
+            GLuint textures[2]{};
+            glGenTextures(2, textures);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, textures[0]);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, container.width(), container.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, container.pixels());
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, textures[1]);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, face.width(), face.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, face.pixels());
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            shadereProgram.setUniform("uTexture2", 1);
+        }
+
+        //////////////////////////////////////////////////////////////////////
+
         glBindVertexArray(vao);
     }
 
     void Renderer::render()
     {
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
     void Renderer::setDrawMode(DrawMode mode)

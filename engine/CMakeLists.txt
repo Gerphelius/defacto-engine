@@ -26,6 +26,9 @@ add_library(${PROJECT_NAME} STATIC ${ENGINE_SOURCES} ${ENGINE_INCLUDE})
 # Set directories
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/df)
 
+# Copy images
+file(COPY "${CMAKE_SOURCE_DIR}/engine/assets/images/" DESTINATION "${CMAKE_BINARY_DIR}/assets/images/")
+
 # Handle shader files
 set(SHADER_DESTINATION_DIR "${CMAKE_BINARY_DIR}/shaders")
 
@@ -64,6 +67,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
 
 find_package(glad CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glad)
+
+find_package(SailC++ CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE SAIL::sail-c++)
 
 # find_package(Boost REQUIRED COMPONENTS signals2)
 # target_link_libraries(${PROJECT_NAME} PRIVATE Boost::signals2)
