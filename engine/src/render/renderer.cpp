@@ -1,11 +1,12 @@
 #include <iostream>
 #include <cmath>
 
-#include "sail-c++/sail-c++.h"
+#include <sail-c++/sail-c++.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "render/renderer.h"
 #include "render/window.h"
-#include "render/shader_program.h"
 
 namespace DF::Render {
     Renderer::Renderer()
@@ -57,12 +58,12 @@ namespace DF::Render {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        ShaderProgram shadereProgram{
+        m_shaderProgram = std::make_unique<ShaderProgram>(
             "../../assets/shaders/base.vert.glsl",
             "../../assets/shaders/base.frag.glsl"
-        };
+        );
 
-        shadereProgram.use();
+        m_shaderProgram->use();
 
         /////////////////////////////  TEXTURES  /////////////////////////////
 
@@ -95,7 +96,7 @@ namespace DF::Render {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, face.width(), face.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, face.pixels());
             glGenerateMipmap(GL_TEXTURE_2D);
 
-            shadereProgram.setUniform("uTexture2", 1);
+            m_shaderProgram->setUniform("uTexture2", 1);
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -107,6 +108,25 @@ namespace DF::Render {
     {
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        float time{ static_cast<float>(glfwGetTime()) };
+
+        glm::mat4 trans{ glm::mat4(1.0) };
+        trans = glm::rotate(trans, time, glm::vec3(0.0, 0.0, 1.0));
+        trans = glm::translate(trans, glm::vec3(0.5, 0.0, 0.0));
+        trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.0));
+
+        m_shaderProgram->setUniform("uTransform", trans);
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        float scale{ sin(time * 10) * 0.25f + 0.5f };
+
+        trans = glm::mat4(1.0);
+        trans = glm::translate(trans, glm::vec3(-0.5, -0.5, 0.0));
+        trans = glm::scale(trans, glm::vec3(scale, scale, 0.0));
+
+        m_shaderProgram->setUniform("uTransform", trans);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }

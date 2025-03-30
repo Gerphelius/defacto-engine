@@ -1,8 +1,12 @@
 #pragma once
 
+#include <memory>
+
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+
+#include "render/shader_program.h"
 
 namespace DF::Render
 {
@@ -16,6 +20,7 @@ namespace DF::Render
     {
     private:
         DrawMode m_drawMode{ DrawMode::fill };
+        std::unique_ptr<ShaderProgram> m_shaderProgram{};
 
     public:
         explicit Renderer();

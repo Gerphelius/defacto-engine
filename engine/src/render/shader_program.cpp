@@ -1,3 +1,5 @@
+#include <glm/gtc/type_ptr.hpp>
+
 #include "render/shader_program.h"
 #include "utils/file_io.h"
 
@@ -51,6 +53,11 @@ namespace DF::Render
     void ShaderProgram::setUniform(const std::string& name, glm::vec3 value) const
     {
         glUniform3f(glGetUniformLocation(m_id, name.c_str()), value.x, value.y, value.z);
+    }
+
+    void ShaderProgram::setUniform(const std::string& name, glm::mat4 value) const
+    {
+        glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
     }
 
     GLuint ShaderProgram::compileShader(const std::string& path, GLenum type) const
