@@ -8,7 +8,6 @@ out vec4 FragColor;
 
 uniform sampler2D uTexture1;
 uniform sampler2D uTexture2;
-uniform float uTime;
 
 void main()
 {

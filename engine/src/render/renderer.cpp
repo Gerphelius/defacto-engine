@@ -17,15 +17,48 @@ namespace DF::Render {
         }
 
         const float vertices[] = {
-            // positions         // colors           // texture coords
-           -0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   0.0f, 1.0f,
-            0.5f,  0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f,
-            0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   1.0f, 0.0f,
-           -0.5f, -0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 0.0f
+        // positions            |  colors            |  texture coords
+
+/* 0 */    0.5f,  0.5f,  0.5f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,  // Front
+/* 1 */    0.5f, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,
+/* 2 */   -0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f,
+/* 3 */   -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,
+
+/* 4 */   -0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 0.0f,    1.0f, 1.0f,  // Back
+/* 5 */   -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 1.0f,    1.0f, 0.0f,
+/* 6 */    0.5f,  0.5f, -0.5f,    1.0f, 0.0f, 0.0f,    0.0f, 1.0f,
+/* 7 */    0.5f, -0.5f, -0.5f,    0.0f, 1.0f, 0.0f,    0.0f, 0.0f,
+
+/* 8 */    0.5f,  0.5f, -0.5f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,  // Right
+/* 9 */    0.5f, -0.5f, -0.5f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,
+/* 10 */   0.5f,  0.5f,  0.5f,    1.0f, 0.0f, 0.0f,    0.0f, 1.0f,
+/* 11 */   0.5f, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f,    0.0f, 0.0f,
+
+/* 12 */  -0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 0.0f,    1.0f, 1.0f,  // Left
+/* 13 */  -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 1.0f,    1.0f, 0.0f,
+/* 14 */  -0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f,
+/* 15 */  -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,
+
+/* 16 */   0.5f,  0.5f,  0.5f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,  // Top
+/* 17 */  -0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 0.0f,    1.0f, 0.0f,
+/* 18 */   0.5f,  0.5f, -0.5f,    1.0f, 0.0f, 0.0f,    0.0f, 1.0f,
+/* 19 */  -0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 0.0f,    0.0f, 0.0f,
+
+/* 20 */   0.5f, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f,    1.0f, 1.0f,  // Bottom
+/* 21 */  -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 1.0f,    1.0f, 0.0f,
+/* 22 */   0.5f, -0.5f, -0.5f,    1.0f, 0.0f, 0.0f,    0.0f, 1.0f,
+/* 23 */  -0.5f, -0.5f, -0.5f,    1.0f, 1.0f, 0.0f,    0.0f, 0.0f,
         };
         const int indices[] = {
-            0, 1, 2,    // first triangle
-            0, 2, 3     // second triangle
+        //  triangle 1  |  triangle 2
+             0, 1, 2,       1, 3, 2,       // Front
+             7, 6, 4,       7, 5, 4,       // Back
+
+             8, 9, 10,      10, 9, 11,     // Right
+             12, 13, 14,    14, 13, 15,    // Left
+
+             16, 18, 19,    16, 17, 19,    // Top
+             20, 22, 23,    20, 23, 21     // Bottom
         };
 
         GLuint vbo{};
@@ -102,33 +135,29 @@ namespace DF::Render {
         //////////////////////////////////////////////////////////////////////
 
         glBindVertexArray(vao);
+        glEnable(GL_DEPTH_TEST);
     }
 
     void Renderer::render()
     {
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         float time{ static_cast<float>(glfwGetTime()) };
 
-        glm::mat4 trans{ glm::mat4(1.0) };
-        trans = glm::rotate(trans, time, glm::vec3(0.0, 0.0, 1.0));
-        trans = glm::translate(trans, glm::vec3(0.5, 0.0, 0.0));
-        trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.0));
+        glm::mat4 model{ glm::mat4(1.0) };
+        model = glm::rotate(model, time, glm::vec3(1.0, 0.0, 0.0));
 
-        m_shaderProgram->setUniform("uTransform", trans);
+        glm::mat4 view{ glm::mat4(1.0) };
+        view = glm::translate(view, glm::vec3(0.0, 0.0, -3.0));
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glm::mat4 projection{ glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 100.0f) };
 
-        float scale{ sin(time * 10) * 0.25f + 0.5f };
+        m_shaderProgram->setUniform("uModel", model);
+        m_shaderProgram->setUniform("uView", view);
+        m_shaderProgram->setUniform("uProjection", projection);
 
-        trans = glm::mat4(1.0);
-        trans = glm::translate(trans, glm::vec3(-0.5, -0.5, 0.0));
-        trans = glm::scale(trans, glm::vec3(scale, scale, 0.0));
-
-        m_shaderProgram->setUniform("uTransform", trans);
-
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     }
 
     void Renderer::setDrawMode(DrawMode mode)
