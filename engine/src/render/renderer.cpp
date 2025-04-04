@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cmath>
 
 #include <sail-c++/sail-c++.h>
 #include <glm/glm.hpp>
@@ -9,7 +8,8 @@
 #include "render/window.h"
 
 namespace DF::Render {
-    Renderer::Renderer()
+    Renderer::Renderer(std::shared_ptr<Entity::Camera> camera)
+        : m_camera{ camera }
     {
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
@@ -146,16 +146,11 @@ namespace DF::Render {
         float time{ static_cast<float>(glfwGetTime()) };
 
         glm::mat4 model{ glm::mat4(1.0) };
-        model = glm::rotate(model, time, glm::vec3(1.0, 0.0, 0.0));
-
-        glm::mat4 view{ glm::mat4(1.0) };
-        view = glm::translate(view, glm::vec3(0.0, 0.0, -3.0));
-
-        glm::mat4 projection{ glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 100.0f) };
+        model = glm::rotate(model, time, glm::vec3(1.0, 1.0, 0.0));
 
         m_shaderProgram->setUniform("uModel", model);
-        m_shaderProgram->setUniform("uView", view);
-        m_shaderProgram->setUniform("uProjection", projection);
+        m_shaderProgram->setUniform("uView", m_camera->getTranslation());
+        m_shaderProgram->setUniform("uProjection", m_camera->getProjection());
 
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     }

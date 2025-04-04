@@ -19,6 +19,10 @@ namespace DF::Input
         SPACE,
         ENTER,
         N,
+        W,
+        S,
+        A,
+        D,
         UNDEFINED,
 
         MAX_KEYS,

@@ -7,6 +7,7 @@
 #include <glad/glad.h>
 
 #include "render/shader_program.h"
+#include "entities/camera.h"
 
 namespace DF::Render
 {
@@ -21,14 +22,19 @@ namespace DF::Render
     private:
         DrawMode m_drawMode{ DrawMode::fill };
         std::unique_ptr<ShaderProgram> m_shaderProgram{};
+        std::shared_ptr<Entity::Camera> m_camera{};
 
     public:
-        explicit Renderer();
+        Renderer() = delete;
+
+        explicit Renderer(std::shared_ptr<Entity::Camera> camera);
 
         void render();
 
         void setDrawMode(DrawMode mode);
 
         DrawMode getDrawMode() const { return m_drawMode; }
+
+        void setCamera(std::shared_ptr<Entity::Camera> camera) { m_camera = camera; }
     };
 }

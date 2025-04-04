@@ -12,6 +12,10 @@ namespace DF::Input
             { GLFW_KEY_ENTER,  Key::ENTER },
             { GLFW_KEY_SPACE,  Key::SPACE },
             { GLFW_KEY_N,      Key::N },
+            { GLFW_KEY_W,      Key::W },
+            { GLFW_KEY_A,      Key::A },
+            { GLFW_KEY_S,      Key::S },
+            { GLFW_KEY_D,      Key::D },
         };
         std::map<Key, std::vector<std::function<void()>>> m_keyCallbacksMap{};
 
@@ -82,7 +86,7 @@ namespace DF::Input
                 callback();
             }
 
-            std::cout << "Key pressed: " << key << '\n';
+            std::cout << "Key pressed: " << static_cast<char>(key) << '\n';
         }
     }
 

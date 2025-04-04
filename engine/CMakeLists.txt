@@ -6,6 +6,7 @@ file(
     "include/df/input/*.h"
     "include/df/core/*.h"
     "include/df/render/*.h"
+    "include/df/entities/*.h"
     "include/df/utils/*.h"
 )
 
@@ -15,6 +16,7 @@ file(
     "src/input/*.cpp"
     "src/core/*.cpp"
     "src/render/*.cpp"
+    "src/entities/*.cpp"
     "src/utils/*.cpp"
 )
 
