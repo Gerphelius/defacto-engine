@@ -2,8 +2,6 @@
 
 #include <functional>
 #include <memory>
-#include <map>
-#include <vector>
 
 #include "render/window.h"
 
@@ -18,6 +16,7 @@ namespace DF::Input
         ESC,
         SPACE,
         ENTER,
+        SHIFT_L,
         N,
         W,
         S,
@@ -35,6 +34,13 @@ namespace DF::Input
         MIDDLE,
     };
 
+    enum class KeyEvent
+    {
+        PRESS,
+        RELEASE,
+        HOLD,
+    };
+
     class InputSystem
     {
     public:
@@ -42,9 +48,11 @@ namespace DF::Input
 
         virtual bool mouseButtonPressed(MouseButton button) const = 0;
 
-        virtual void onKeyPress(Key key, std::function<void()> callback) = 0;
+        virtual void onKeyPress(Key key, KeyEvent event, std::function<void()> callback) = 0;
 
         virtual void onMouseButtonPress(MouseButton button, std::function<void()> callback) = 0;
+
+        virtual void update() = 0;
 
         virtual ~InputSystem() = default;
 

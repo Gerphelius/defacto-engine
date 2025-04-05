@@ -1,7 +1,7 @@
 #pragma once
 
-#include <functional>
 #include <memory>
+#include <chrono>
 
 #include "render/renderer.h"
 #include "render/window.h"
@@ -16,11 +16,15 @@ namespace DF::Core
         std::unique_ptr<Render::Renderer> m_renderer{};
         std::shared_ptr<Input::InputSystem> m_inputSystem{};
         bool m_running{ false };
+        float m_deltaTime{};
+        std::chrono::high_resolution_clock::time_point m_prevTime{};
 
     public:
         Engine();
 
-        void run(std::function<void(double)> update);
+        void run();
+
+        auto getDeltaTime() const { return m_deltaTime; }
     };
 }
 

@@ -158,6 +158,6 @@ namespace DF::Render {
     void Renderer::setDrawMode(DrawMode mode)
     {
         m_drawMode = mode;
-        glPolygonMode(GL_FRONT_AND_BACK, mode == DrawMode::fill ? GL_FILL : GL_LINE);
+        glPolygonMode(GL_FRONT_AND_BACK, mode == DrawMode::FILL ? GL_FILL : GL_LINE);
     }
 }

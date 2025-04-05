@@ -13,14 +13,14 @@ namespace DF::Render
 {
     enum class DrawMode
     {
-        fill,
-        line,
+        FILL,
+        LINE,
     };
 
     class Renderer
     {
     private:
-        DrawMode m_drawMode{ DrawMode::fill };
+        DrawMode m_drawMode{ DrawMode::FILL };
         std::unique_ptr<ShaderProgram> m_shaderProgram{};
         std::shared_ptr<Entity::Camera> m_camera{};
 
