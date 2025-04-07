@@ -1,7 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "utils/math.hpp"
 
 namespace DF::Entity
 {
@@ -15,9 +14,9 @@ namespace DF::Entity
     {
     private:
         Projection m_projectionType{ Projection::perspective };
-        glm::mat4 m_projection{};
-        glm::mat4 m_translation{ 1.0 };
-        glm::vec3 m_location{ 0.0 };
+        Math::mat4 m_projection{};
+        Math::mat4 m_translation{ 1.0 };
+        Math::vec3 m_location{ 0.0 };
 
         float m_fov{ 45.5f };
         float m_aspectRatio{ 16 / 9 };
@@ -27,24 +26,24 @@ namespace DF::Entity
     public:
         Camera() noexcept
         {
-            m_projection = glm::perspective(glm::radians(m_fov), m_aspectRatio, m_near, m_far);
+            m_projection = Math::perspective(Math::degToRad(m_fov), m_aspectRatio, m_near, m_far);
         }
 
         Camera(const Camera& camera) = delete;
         Camera operator=(const Camera& camera) = delete;
 
-        glm::mat4 getTranslation() const { return m_translation; }
+        Math::mat4 getTranslation() const { return m_translation; }
 
-        glm::mat4 getProjection() const { return m_projection; }
+        Math::mat4 getProjection() const { return m_projection; }
 
         Projection getProjectionType() const { return m_projectionType; }
 
-        glm::vec3 getLocation() const { return m_location; }
+        Math::vec3 getLocation() const { return m_location; }
 
         void setAspectRatio(float ratio);
 
-        glm::vec3 move(glm::vec3 amount);
+        Math::vec3 move(Math::vec3 amount);
 
-        void setLocation(glm::vec3 location);
+        void setLocation(Math::vec3 location);
     };
 }

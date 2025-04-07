@@ -3,11 +3,11 @@ project("defacto-engine")
 file(
     GLOB ENGINE_INCLUDE
 
-    "include/df/input/*.h"
-    "include/df/core/*.h"
-    "include/df/render/*.h"
-    "include/df/entities/*.h"
-    "include/df/utils/*.h"
+    "include/df/input/*.hpp"
+    "include/df/core/*.hpp"
+    "include/df/render/*.hpp"
+    "include/df/entities/*.hpp"
+    "include/df/utils/*.hpp"
 )
 
 file(

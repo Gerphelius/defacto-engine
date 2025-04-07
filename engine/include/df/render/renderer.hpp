@@ -6,8 +6,8 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
-#include "render/shader_program.h"
-#include "entities/camera.h"
+#include "render/shader_program.hpp"
+#include "entities/camera.hpp"
 
 namespace DF::Render
 {

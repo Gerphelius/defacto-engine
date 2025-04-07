@@ -1,7 +1,7 @@
 #include <GLFW/glfw3.h>
 
-#include "render/window.h"
-#include "input/input_system.h"
+#include "render/window.hpp"
+#include "input/input_system.hpp"
 
 namespace DF::Render
 {

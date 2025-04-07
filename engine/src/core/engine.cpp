@@ -1,16 +1,16 @@
-﻿#include "core/engine.h"
-#include "entities/camera.h"
+﻿#include "core/engine.hpp"
+#include "utils/math.hpp"
 
 namespace DF::Core
 {
     Engine::Engine()
     {
-        auto debugCamera{ std::make_shared<Entity::Camera>() };
-        debugCamera->setAspectRatio(800.0f / 600.0f);
+        m_debugCamera = std::make_shared<Entity::Camera>();
+        m_debugCamera->setAspectRatio(800.0f / 600.0f);
         auto cameraSpeed{ std::make_shared<float>(1.5f) };
 
         m_window = Render::Window::create(800, 600, "DeFacto");
-        m_renderer = std::make_unique<Render::Renderer>(debugCamera);
+        m_renderer = std::make_unique<Render::Renderer>(m_debugCamera);
         m_inputSystem = Input::InputSystem::create(m_window.get());
 
         m_inputSystem->onKeyPress(
@@ -43,28 +43,28 @@ namespace DF::Core
             Input::Key::W,
             Input::KeyEvent::HOLD,
             [=, this]() {
-                debugCamera->move(glm::vec3(0.0, 0.0, 1.0) * *cameraSpeed * m_deltaTime);
+                m_debugCamera->move(Math::vec3(0.0, 0.0, 1.0) * *cameraSpeed * m_deltaTime);
             }
         );
         m_inputSystem->onKeyPress(
             Input::Key::S,
             Input::KeyEvent::HOLD,
             [=, this]() {
-                debugCamera->move(glm::vec3(0.0, 0.0, -1.0) * *cameraSpeed * m_deltaTime);
+                m_debugCamera->move(Math::vec3(0.0, 0.0, -1.0) * *cameraSpeed * m_deltaTime);
             }
         );
         m_inputSystem->onKeyPress(
             Input::Key::D,
             Input::KeyEvent::HOLD,
             [=, this]() {
-                debugCamera->move(glm::vec3(-1.0, 0.0, 0.0) * *cameraSpeed * m_deltaTime);
+                m_debugCamera->move(Math::vec3(-1.0, 0.0, 0.0) * *cameraSpeed * m_deltaTime);
             }
         );
         m_inputSystem->onKeyPress(
             Input::Key::A,
             Input::KeyEvent::HOLD,
             [=, this]() {
-                debugCamera->move(glm::vec3(1.0, 0.0, 0.0) * *cameraSpeed * m_deltaTime);
+                m_debugCamera->move(Math::vec3(1.0, 0.0, 0.0) * *cameraSpeed * m_deltaTime);
             }
         );
         m_inputSystem->onKeyPress(
@@ -79,6 +79,12 @@ namespace DF::Core
             Input::KeyEvent::RELEASE,
             [=]() {
                 *cameraSpeed = 1.5f;
+            }
+        );
+
+        m_inputSystem->onMouseMove(
+            [=](Math::vec2 pos) {
+                std::cout << pos.x << ", " << pos.y << '\n';
             }
         );
     }
@@ -96,6 +102,8 @@ namespace DF::Core
 
             m_deltaTime = elapsed_seconds.count();
             m_prevTime = currentTime;
+
+            
 
             //std::cout << "Delta time:" << m_deltaTime << '\n';
 

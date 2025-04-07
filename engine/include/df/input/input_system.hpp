@@ -3,7 +3,8 @@
 #include <functional>
 #include <memory>
 
-#include "render/window.h"
+#include "render/window.hpp"
+#include "utils/math.hpp"
 
 namespace DF::Core {
     class Engine;
@@ -44,13 +45,18 @@ namespace DF::Input
     class InputSystem
     {
     public:
+        using KeyPressCallback = std::function<void()>;
+        using MouseMoveCallback = std::function<void(Math::vec2)>;
+
         virtual bool keyPressed(Key key) const = 0;
 
-        virtual bool mouseButtonPressed(MouseButton button) const = 0;
+        virtual bool mouseKeyPressed(MouseButton button) const = 0;
 
-        virtual void onKeyPress(Key key, KeyEvent event, std::function<void()> callback) = 0;
+        virtual void onKeyPress(Key key, KeyEvent event, KeyPressCallback callback) = 0;
 
-        virtual void onMouseButtonPress(MouseButton button, std::function<void()> callback) = 0;
+        virtual void onMouseKeyPress(MouseButton button, KeyPressCallback callback) = 0;
+
+        virtual void onMouseMove(MouseMoveCallback callback) = 0;
 
         virtual void update() = 0;
 

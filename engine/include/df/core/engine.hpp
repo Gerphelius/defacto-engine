@@ -3,9 +3,10 @@
 #include <memory>
 #include <chrono>
 
-#include "render/renderer.h"
-#include "render/window.h"
-#include "input/input_system.h"
+#include "render/renderer.hpp"
+#include "render/window.hpp"
+#include "input/input_system.hpp"
+#include "entities/camera.hpp"
 
 namespace DF::Core
 {
@@ -18,6 +19,7 @@ namespace DF::Core
         bool m_running{ false };
         float m_deltaTime{};
         std::chrono::high_resolution_clock::time_point m_prevTime{};
+        std::shared_ptr<Entity::Camera> m_debugCamera{};
 
     public:
         Engine();

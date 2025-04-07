@@ -3,7 +3,7 @@
 #include <string>
 
 #include <glad/glad.h>
-#include <glm/glm.hpp>
+#include "utils/math.hpp"
 
 namespace DF::Render
 {
@@ -25,8 +25,8 @@ namespace DF::Render
         void setUniform(const std::string& name, bool value) const;
         void setUniform(const std::string& name, int value) const;
         void setUniform(const std::string& name, float value) const;
-        void setUniform(const std::string& name, glm::vec3 value) const;
-        void setUniform(const std::string& name, glm::mat4 value) const;
+        void setUniform(const std::string& name, Math::vec3 value) const;
+        void setUniform(const std::string& name, Math::mat4 value) const;
     
     private:
         GLuint compileShader(const std::string& path, GLenum type) const;

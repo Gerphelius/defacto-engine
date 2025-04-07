@@ -4,13 +4,15 @@
 
 #include <GLFW/glfw3.h>
 
-#include "input/input_system.h"
+#include "input/input_system.hpp"
 
 namespace DF::Input
 {
     class GLFWInput : public InputSystem
     {
     private:
+        using EventCallbacksMap = std::unordered_map<KeyEvent, std::vector<KeyPressCallback>>;
+
         std::unordered_map<int, Key> m_glfwKeyMap{
             { GLFW_KEY_ESCAPE,      Key::ESC },
             { GLFW_KEY_ENTER,       Key::ENTER },
@@ -23,8 +25,9 @@ namespace DF::Input
             { GLFW_KEY_S,           Key::S },
             { GLFW_KEY_D,           Key::D },
         };
-        std::unordered_map<Key, std::unordered_map<KeyEvent, std::vector<std::function<void()>>>> m_keyCallbacksMap{};
-        std::unordered_set<Key> pressedKeys{};
+        std::unordered_map<Key, EventCallbacksMap> m_keyCallbacksMap{};
+        std::unordered_set<Key> m_pressedKeys{};
+        std::vector<MouseMoveCallback> m_mouseMoveCallbacks{};
 
     public:
         GLFWInput() = delete;
@@ -41,11 +44,13 @@ namespace DF::Input
 
         bool keyPressed(Key key) const override;
 
-        bool mouseButtonPressed(MouseButton button) const override;
+        bool mouseKeyPressed(MouseButton button) const override;
 
-        void onKeyPress(Key key, KeyEvent event, std::function<void()>) override;
+        void onKeyPress(Key key, KeyEvent event, KeyPressCallback) override;
 
-        void onMouseButtonPress(MouseButton button, std::function<void()>) override;
+        void onMouseKeyPress(MouseButton button, KeyPressCallback) override;
+
+        void onMouseMove(MouseMoveCallback callback) override;
 
         void update() override;
 
@@ -64,24 +69,29 @@ namespace DF::Input
         return false;
     }
 
-    bool GLFWInput::mouseButtonPressed(MouseButton button) const
+    bool GLFWInput::mouseKeyPressed(MouseButton button) const
     {
         return false;
     }
 
-    void GLFWInput::onKeyPress(Key key, KeyEvent event, std::function<void()> callback)
+    void GLFWInput::onKeyPress(Key key, KeyEvent event, KeyPressCallback callback)
     {
         m_keyCallbacksMap[key][event].push_back(std::move(callback));
     }
 
-    void GLFWInput::onMouseButtonPress(MouseButton button, std::function<void()> callback)
+    void GLFWInput::onMouseKeyPress(MouseButton button, KeyPressCallback callback)
     {
 
     }
 
+    void GLFWInput::onMouseMove(MouseMoveCallback callback)
+    {
+        m_mouseMoveCallbacks.push_back(callback);
+    }
+
     void GLFWInput::update()
     {
-        for (Key key : pressedKeys)
+        for (Key key : m_pressedKeys)
         {
             auto callbacks{ m_keyCallbacksMap[key][KeyEvent::HOLD] };
 
@@ -114,11 +124,11 @@ namespace DF::Input
         {
         case GLFW_PRESS:
             keyEvent = KeyEvent::PRESS;
-            self->pressedKeys.insert(dfKey);
+            self->m_pressedKeys.insert(dfKey);
             break;
         case GLFW_RELEASE:
             keyEvent = KeyEvent::RELEASE;
-            self->pressedKeys.erase(dfKey);
+            self->m_pressedKeys.erase(dfKey);
             break;
         }
 
@@ -128,17 +138,18 @@ namespace DF::Input
         {
             callback();
         }
-
-        std::cout
-            << "Key "
-            << (keyEvent == KeyEvent::PRESS ? "pressed:\t" : "released:\t")
-            << static_cast<char>(key)
-            << '\n';
     }
 
     void GLFWInput::glfwMouseCallback(GLFWwindow* window, double xpos, double ypos)
     {
-        std::cout << "Mouse pos: (x " << xpos << ", y " << ypos << ")\n";
+        auto* self = static_cast<GLFWInput*>(glfwGetWindowUserPointer(window));
+
+        if (!self) return;
+
+        for (const auto& callback : self->m_mouseMoveCallbacks)
+        {
+            callback(Math::vec2(xpos, ypos));
+        }
     }
 
     void GLFWInput::glfwWheelCallback(GLFWwindow* window, double xoffset, double yoffset)

@@ -1,11 +1,10 @@
 #include <iostream>
 
 #include <sail-c++/sail-c++.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
-#include "render/renderer.h"
-#include "render/window.h"
+#include "render/renderer.hpp"
+#include "render/window.hpp"
+#include "utils/math.hpp"
 
 namespace DF::Render {
     Renderer::Renderer(std::shared_ptr<Entity::Camera> camera)
@@ -145,8 +144,8 @@ namespace DF::Render {
 
         float time{ static_cast<float>(glfwGetTime()) };
 
-        glm::mat4 model{ glm::mat4(1.0) };
-        model = glm::rotate(model, time, glm::vec3(1.0, 1.0, 0.0));
+        Math::mat4 model{ Math::mat4(1.0) };
+        model = Math::rotateMat4(model, time, Math::vec3(1.0, 1.0, 0.0));
 
         m_shaderProgram->setUniform("uModel", model);
         m_shaderProgram->setUniform("uView", m_camera->getTranslation());
