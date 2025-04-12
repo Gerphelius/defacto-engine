@@ -31,4 +31,14 @@ namespace DF::Math
     {
         return glm::perspective(fov, aspectRatio, near, far);
     }
+
+    inline mat4 lookAt(vec3 pos, vec3 target, vec3 up)
+    {
+        return glm::lookAt(pos, target, up);
+    }
+
+    inline vec3 normalize(vec3 vec)
+    {
+        return glm::normalize(vec);
+    }
 }

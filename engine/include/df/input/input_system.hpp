@@ -14,6 +14,7 @@ namespace DF::Input
 {
     enum class Key
     {
+        UNDEFINED,
         ESC,
         SPACE,
         ENTER,
@@ -23,13 +24,13 @@ namespace DF::Input
         S,
         A,
         D,
-        UNDEFINED,
 
         MAX_KEYS,
     };
 
-    enum class MouseButton
+    enum class MouseKey
     {
+        UNDEFINED,
         LEFT,
         RIGHT,
         MIDDLE,
@@ -50,11 +51,11 @@ namespace DF::Input
 
         virtual bool keyPressed(Key key) const = 0;
 
-        virtual bool mouseKeyPressed(MouseButton button) const = 0;
+        virtual bool mouseKeyPressed(MouseKey key) const = 0;
 
         virtual void onKeyPress(Key key, KeyEvent event, KeyPressCallback callback) = 0;
 
-        virtual void onMouseKeyPress(MouseButton button, KeyPressCallback callback) = 0;
+        virtual void onMouseKeyPress(MouseKey key, KeyPressCallback callback) = 0;
 
         virtual void onMouseMove(MouseMoveCallback callback) = 0;
 

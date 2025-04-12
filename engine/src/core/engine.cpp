@@ -8,6 +8,7 @@ namespace DF::Core
         m_debugCamera = std::make_shared<Entity::Camera>();
         m_debugCamera->setAspectRatio(800.0f / 600.0f);
         auto cameraSpeed{ std::make_shared<float>(1.5f) };
+        const float rotationSpeed{ 0.3f };
 
         m_window = Render::Window::create(800, 600, "DeFacto");
         m_renderer = std::make_unique<Render::Renderer>(m_debugCamera);
@@ -43,30 +44,31 @@ namespace DF::Core
             Input::Key::W,
             Input::KeyEvent::HOLD,
             [=, this]() {
-                m_debugCamera->move(Math::vec3(0.0, 0.0, 1.0) * *cameraSpeed * m_deltaTime);
+                m_debugCamera->move(m_debugCamera->getForwardVector() * *cameraSpeed * m_deltaTime);
             }
         );
         m_inputSystem->onKeyPress(
             Input::Key::S,
             Input::KeyEvent::HOLD,
             [=, this]() {
-                m_debugCamera->move(Math::vec3(0.0, 0.0, -1.0) * *cameraSpeed * m_deltaTime);
+                m_debugCamera->move(-m_debugCamera->getForwardVector() * *cameraSpeed * m_deltaTime);
             }
         );
         m_inputSystem->onKeyPress(
             Input::Key::D,
             Input::KeyEvent::HOLD,
             [=, this]() {
-                m_debugCamera->move(Math::vec3(-1.0, 0.0, 0.0) * *cameraSpeed * m_deltaTime);
+                m_debugCamera->move(m_debugCamera->getRightVector() * *cameraSpeed * m_deltaTime);
             }
         );
         m_inputSystem->onKeyPress(
             Input::Key::A,
             Input::KeyEvent::HOLD,
             [=, this]() {
-                m_debugCamera->move(Math::vec3(1.0, 0.0, 0.0) * *cameraSpeed * m_deltaTime);
+                m_debugCamera->move(-m_debugCamera->getRightVector() * *cameraSpeed * m_deltaTime);
             }
         );
+
         m_inputSystem->onKeyPress(
             Input::Key::SHIFT_L,
             Input::KeyEvent::PRESS,
@@ -84,7 +86,16 @@ namespace DF::Core
 
         m_inputSystem->onMouseMove(
             [=](Math::vec2 pos) {
-                std::cout << pos.x << ", " << pos.y << '\n';
+                static Math::vec2 s_lastPos{};
+
+                if (m_inputSystem->mouseKeyPressed(Input::MouseKey::RIGHT))
+                {
+                    Math::vec2 currentPos{ pos - s_lastPos };
+
+                    m_debugCamera->rotate(Math::vec3(currentPos.x * -rotationSpeed, currentPos.y * rotationSpeed, 0.0));
+                }
+
+                s_lastPos = pos;
             }
         );
     }
@@ -103,7 +114,7 @@ namespace DF::Core
             m_deltaTime = elapsed_seconds.count();
             m_prevTime = currentTime;
 
-            
+
 
             //std::cout << "Delta time:" << m_deltaTime << '\n';
 

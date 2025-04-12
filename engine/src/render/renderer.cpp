@@ -145,7 +145,14 @@ namespace DF::Render {
         float time{ static_cast<float>(glfwGetTime()) };
 
         Math::mat4 model{ Math::mat4(1.0) };
-        model = Math::rotateMat4(model, time, Math::vec3(1.0, 1.0, 0.0));
+        //model = Math::rotateMat4(model, time, Math::vec3(1.0, 1.0, 0.0));
+
+        glm::vec3 location{ 0.0, 0.0, -0.0 };
+        glm::vec3 target{ sin(time), 0.0, 0.0};
+
+        glm::mat4 view{ glm::translate(glm::mat4(1.0), location) };
+
+        glm::lookAt(location, target, glm::vec3(0.0, 0.1, 0.0));
 
         m_shaderProgram->setUniform("uModel", model);
         m_shaderProgram->setUniform("uView", m_camera->getTranslation());

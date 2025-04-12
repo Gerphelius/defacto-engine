@@ -27,6 +27,7 @@ namespace DF::Input
         };
         std::unordered_map<Key, EventCallbacksMap> m_keyCallbacksMap{};
         std::unordered_set<Key> m_pressedKeys{};
+        std::unordered_set<MouseKey> m_pressedMouseKeys{};
         std::vector<MouseMoveCallback> m_mouseMoveCallbacks{};
 
     public:
@@ -38,17 +39,18 @@ namespace DF::Input
 
             glfwSetWindowUserPointer(glfwWindow, this);
             glfwSetKeyCallback(glfwWindow, glfwKeyCallback);
-            glfwSetCursorPosCallback(glfwWindow, glfwMouseCallback);
+            glfwSetMouseButtonCallback(glfwWindow, glfwMouseCallback);
+            glfwSetCursorPosCallback(glfwWindow, glfwCursorCallback);
             glfwSetScrollCallback(glfwWindow, glfwWheelCallback);
         }
 
         bool keyPressed(Key key) const override;
 
-        bool mouseKeyPressed(MouseButton button) const override;
+        bool mouseKeyPressed(MouseKey key) const override;
 
         void onKeyPress(Key key, KeyEvent event, KeyPressCallback) override;
 
-        void onMouseKeyPress(MouseButton button, KeyPressCallback) override;
+        void onMouseKeyPress(MouseKey key, KeyPressCallback) override;
 
         void onMouseMove(MouseMoveCallback callback) override;
 
@@ -59,7 +61,9 @@ namespace DF::Input
 
         static void glfwKeyCallback(GLFWwindow* window, int key, int, int, int);
 
-        static void glfwMouseCallback(GLFWwindow* window, double xpos, double ypos);
+        static void glfwMouseCallback(GLFWwindow* window, int button, int action, int);
+
+        static void glfwCursorCallback(GLFWwindow* window, double xpos, double ypos);
 
         static void glfwWheelCallback(GLFWwindow* window, double xoffset, double yoffset);
     };
@@ -69,9 +73,9 @@ namespace DF::Input
         return false;
     }
 
-    bool GLFWInput::mouseKeyPressed(MouseButton button) const
+    bool GLFWInput::mouseKeyPressed(MouseKey key) const
     {
-        return false;
+        return m_pressedMouseKeys.contains(key);
     }
 
     void GLFWInput::onKeyPress(Key key, KeyEvent event, KeyPressCallback callback)
@@ -79,9 +83,9 @@ namespace DF::Input
         m_keyCallbacksMap[key][event].push_back(std::move(callback));
     }
 
-    void GLFWInput::onMouseKeyPress(MouseButton button, KeyPressCallback callback)
+    void GLFWInput::onMouseKeyPress(MouseKey button, KeyPressCallback callback)
     {
-
+        
     }
 
     void GLFWInput::onMouseMove(MouseMoveCallback callback)
@@ -140,7 +144,39 @@ namespace DF::Input
         }
     }
 
-    void GLFWInput::glfwMouseCallback(GLFWwindow* window, double xpos, double ypos)
+    void GLFWInput::glfwMouseCallback(GLFWwindow* window, int button, int action, int)
+    {
+        auto* self = static_cast<GLFWInput*>(glfwGetWindowUserPointer(window));
+
+        if (!self) return;
+
+        MouseKey dfMouseKey{};
+
+        switch (button)
+        {
+        case GLFW_MOUSE_BUTTON_LEFT:
+            dfMouseKey = MouseKey::LEFT;
+            break;
+        case GLFW_MOUSE_BUTTON_RIGHT:
+            dfMouseKey = MouseKey::RIGHT;
+            break;
+        case GLFW_MOUSE_BUTTON_MIDDLE:
+            dfMouseKey = MouseKey::MIDDLE;
+            break;
+        }
+
+        switch (action)
+        {
+        case GLFW_PRESS:
+            self->m_pressedMouseKeys.insert(dfMouseKey);
+            break;
+        case GLFW_RELEASE:
+            self->m_pressedMouseKeys.erase(dfMouseKey);
+            break;
+        }
+    }
+
+    void GLFWInput::glfwCursorCallback(GLFWwindow* window, double xpos, double ypos)
     {
         auto* self = static_cast<GLFWInput*>(glfwGetWindowUserPointer(window));
 
