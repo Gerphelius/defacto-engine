@@ -43,28 +43,28 @@ namespace DF::Core
         m_inputSystem->onKeyPress(
             Input::Key::W,
             Input::KeyEvent::HOLD,
-            [=, this]() {
+            [this, cameraSpeed]() {
                 m_debugCamera->move(m_debugCamera->getForwardVector() * *cameraSpeed * m_deltaTime);
             }
         );
         m_inputSystem->onKeyPress(
             Input::Key::S,
             Input::KeyEvent::HOLD,
-            [=, this]() {
+            [this, cameraSpeed]() {
                 m_debugCamera->move(-m_debugCamera->getForwardVector() * *cameraSpeed * m_deltaTime);
             }
         );
         m_inputSystem->onKeyPress(
             Input::Key::D,
             Input::KeyEvent::HOLD,
-            [=, this]() {
+            [this, cameraSpeed]() {
                 m_debugCamera->move(m_debugCamera->getRightVector() * *cameraSpeed * m_deltaTime);
             }
         );
         m_inputSystem->onKeyPress(
             Input::Key::A,
             Input::KeyEvent::HOLD,
-            [=, this]() {
+            [this, cameraSpeed]() {
                 m_debugCamera->move(-m_debugCamera->getRightVector() * *cameraSpeed * m_deltaTime);
             }
         );
@@ -72,20 +72,20 @@ namespace DF::Core
         m_inputSystem->onKeyPress(
             Input::Key::SHIFT_L,
             Input::KeyEvent::PRESS,
-            [=]() {
+            [cameraSpeed]() {
                 *cameraSpeed = 10.0f;
             }
         );
         m_inputSystem->onKeyPress(
             Input::Key::SHIFT_L,
             Input::KeyEvent::RELEASE,
-            [=]() {
+            [cameraSpeed]() {
                 *cameraSpeed = 1.5f;
             }
         );
 
         m_inputSystem->onMouseMove(
-            [=](Math::vec2 pos) {
+            [this, rotationSpeed](Math::vec2 pos) {
                 static Math::vec2 s_lastPos{};
 
                 if (m_inputSystem->mouseKeyPressed(Input::MouseKey::RIGHT))

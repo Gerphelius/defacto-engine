@@ -16,37 +16,37 @@ namespace DF::Render {
         }
 
         const float vertices[] = {
-        // positions            |  colors            |  texture coords
+        // positions            |  normals           |  texture coords
 
-/* 0 */    0.5f,  0.5f,  0.5f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,  // Front
-/* 1 */    0.5f, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,
-/* 2 */   -0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f,
+/* 0 */    0.5f,  0.5f,  0.5f,    0.0f, 0.0f, 1.0f,    1.0f, 1.0f,  // Front
+/* 1 */    0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 1.0f,    1.0f, 0.0f,
+/* 2 */   -0.5f,  0.5f,  0.5f,    0.0f, 0.0f, 1.0f,    0.0f, 1.0f,
 /* 3 */   -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,
 
-/* 4 */   -0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 0.0f,    1.0f, 1.0f,  // Back
-/* 5 */   -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 1.0f,    1.0f, 0.0f,
-/* 6 */    0.5f,  0.5f, -0.5f,    1.0f, 0.0f, 0.0f,    0.0f, 1.0f,
-/* 7 */    0.5f, -0.5f, -0.5f,    0.0f, 1.0f, 0.0f,    0.0f, 0.0f,
+/* 4 */   -0.5f,  0.5f, -0.5f,    0.0f, 0.0f,-1.0f,   1.0f, 1.0f,  // Back
+/* 5 */   -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,-1.0f,   1.0f, 0.0f,
+/* 6 */    0.5f,  0.5f, -0.5f,    0.0f, 0.0f,-1.0f,   0.0f, 1.0f,
+/* 7 */    0.5f, -0.5f, -0.5f,    0.0f, 0.0f,-1.0f,   0.0f, 0.0f,
 
 /* 8 */    0.5f,  0.5f, -0.5f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,  // Right
-/* 9 */    0.5f, -0.5f, -0.5f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,
+/* 9 */    0.5f, -0.5f, -0.5f,    1.0f, 0.0f, 0.0f,    1.0f, 0.0f,
 /* 10 */   0.5f,  0.5f,  0.5f,    1.0f, 0.0f, 0.0f,    0.0f, 1.0f,
-/* 11 */   0.5f, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f,    0.0f, 0.0f,
+/* 11 */   0.5f, -0.5f,  0.5f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f,
 
-/* 12 */  -0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 0.0f,    1.0f, 1.0f,  // Left
-/* 13 */  -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 1.0f,    1.0f, 0.0f,
-/* 14 */  -0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f,
-/* 15 */  -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,
+/* 12 */  -0.5f,  0.5f,  0.5f,   -1.0f, 0.0f, 0.0f,    1.0f, 1.0f,  // Left
+/* 13 */  -0.5f, -0.5f,  0.5f,   -1.0f, 0.0f, 0.0f,    1.0f, 0.0f,
+/* 14 */  -0.5f,  0.5f, -0.5f,   -1.0f, 0.0f, 0.0f,    0.0f, 1.0f,
+/* 15 */  -0.5f, -0.5f, -0.5f,   -1.0f, 0.0f, 0.0f,    0.0f, 0.0f,
 
-/* 16 */   0.5f,  0.5f,  0.5f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,  // Top
-/* 17 */  -0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 0.0f,    1.0f, 0.0f,
-/* 18 */   0.5f,  0.5f, -0.5f,    1.0f, 0.0f, 0.0f,    0.0f, 1.0f,
-/* 19 */  -0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 0.0f,    0.0f, 0.0f,
+/* 16 */   0.5f,  0.5f,  0.5f,    0.0f, 1.0f, 0.0f,    1.0f, 1.0f,  // Top
+/* 17 */  -0.5f,  0.5f,  0.5f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,
+/* 18 */   0.5f,  0.5f, -0.5f,    0.0f, 1.0f, 0.0f,    0.0f, 1.0f,
+/* 19 */  -0.5f,  0.5f, -0.5f,    0.0f, 1.0f, 0.0f,    0.0f, 0.0f,
 
-/* 20 */   0.5f, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f,    1.0f, 1.0f,  // Bottom
-/* 21 */  -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 1.0f,    1.0f, 0.0f,
-/* 22 */   0.5f, -0.5f, -0.5f,    1.0f, 0.0f, 0.0f,    0.0f, 1.0f,
-/* 23 */  -0.5f, -0.5f, -0.5f,    1.0f, 1.0f, 0.0f,    0.0f, 0.0f,
+/* 20 */   0.5f, -0.5f,  0.5f,    0.0f,-1.0f, 0.0f,    1.0f, 1.0f,  // Bottom
+/* 21 */  -0.5f, -0.5f,  0.5f,    0.0f,-1.0f, 0.0f,    1.0f, 0.0f,
+/* 22 */   0.5f, -0.5f, -0.5f,    0.0f,-1.0f, 0.0f,    0.0f, 1.0f,
+/* 23 */  -0.5f, -0.5f, -0.5f,    0.0f,-1.0f, 0.0f,    0.0f, 0.0f,
         };
         const int indices[] = {
         //  triangle 1  |  triangle 2
@@ -119,16 +119,16 @@ namespace DF::Render {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, container.width(), container.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, container.pixels());
             glGenerateMipmap(GL_TEXTURE_2D);
 
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, textures[1]);
+            //glActiveTexture(GL_TEXTURE1);
+            //glBindTexture(GL_TEXTURE_2D, textures[1]);
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, face.width(), face.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, face.pixels());
-            glGenerateMipmap(GL_TEXTURE_2D);
+            //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, face.width(), face.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, face.pixels());
+            //glGenerateMipmap(GL_TEXTURE_2D);
 
-            m_shaderProgram->setUniform("uTexture2", 1);
+            //m_shaderProgram->setUniform("uTexture2", 1);
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -144,20 +144,48 @@ namespace DF::Render {
 
         float time{ static_cast<float>(glfwGetTime()) };
 
-        Math::mat4 model{ Math::mat4(1.0) };
-        //model = Math::rotateMat4(model, time, Math::vec3(1.0, 1.0, 0.0));
+        Math::vec3 lightColor{ Math::vec3(0.0f, 1.0f, 0.0f) };
 
-        glm::vec3 location{ 0.0, 0.0, -0.0 };
-        glm::vec3 target{ sin(time), 0.0, 0.0};
-
-        glm::mat4 view{ glm::translate(glm::mat4(1.0), location) };
-
-        glm::lookAt(location, target, glm::vec3(0.0, 0.1, 0.0));
-
-        m_shaderProgram->setUniform("uModel", model);
         m_shaderProgram->setUniform("uView", m_camera->getTranslation());
         m_shaderProgram->setUniform("uProjection", m_camera->getProjection());
 
+        /////////////////////////////  CUBE  /////////////////////////////
+
+        Math::mat4 model{ Math::mat4(1.0) };
+        model = Math::rotateMat4(model, time, Math::vec3(0.0, 1.0, 0.0));
+
+        m_shaderProgram->setUniform("uModel", model);
+
+        m_shaderProgram->setUniform("uLightPos", Math::vec3(1.0f));
+        m_shaderProgram->setUniform("uLight.ambient", lightColor * 0.05f);
+        m_shaderProgram->setUniform("uLight.diffuse", lightColor * 0.5f);
+        m_shaderProgram->setUniform("uLight.specular", lightColor);
+
+        m_shaderProgram->setUniform("uMaterial.ambient", Math::vec3(1.0f, 0.5f, 0.31f));
+        m_shaderProgram->setUniform("uMaterial.diffuse", Math::vec3(1.0f, 0.5f, 0.31f));
+        m_shaderProgram->setUniform("uMaterial.specular", Math::vec3(0.5f));
+        m_shaderProgram->setUniform("uMaterial.shininess", 32.0f);
+
+        glBindTexture(GL_TEXTURE_2D, 1);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+        /////////////////////////////  LIGHT  /////////////////////////////
+
+        model = Math::mat4(1.0);
+        //model = Math::rotateMat4(model, time, Math::vec3(0.0, 1.0, 0.0));
+        model = Math::translateMat4(model, Math::vec3(1.0, 1.0, 1.0));
+        model = Math::scaleMat4(model, Math::vec3(0.2, 0.2, 0.2));
+
+        m_shaderProgram->setUniform("uLight.ambient", lightColor);
+        m_shaderProgram->setUniform("uLight.diffuse", lightColor);
+
+        m_shaderProgram->setUniform("uModel", model);
+        m_shaderProgram->setUniform("uMaterial.ambient", Math::vec3(1.0f));
+        m_shaderProgram->setUniform("uMaterial.diffuse", lightColor);
+        m_shaderProgram->setUniform("uMaterial.specular", Math::vec3(1.0f));
+        m_shaderProgram->setUniform("uMaterial.shininess", 32.0f);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     }
 

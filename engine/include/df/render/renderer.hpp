@@ -25,8 +25,6 @@ namespace DF::Render
         std::shared_ptr<Entity::Camera> m_camera{};
 
     public:
-        Renderer() = delete;
-
         explicit Renderer(std::shared_ptr<Entity::Camera> camera);
 
         void render();

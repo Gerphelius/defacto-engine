@@ -27,6 +27,11 @@ namespace DF::Math
         return glm::rotate(mat, angle, axis);
     }
 
+    inline mat4 scaleMat4(const mat4& mat, const vec3& scale)
+    {
+        return glm::scale(mat, scale);
+    }
+
     inline mat4 perspective(float fov, float aspectRatio, float near, float far)
     {
         return glm::perspective(fov, aspectRatio, near, far);
