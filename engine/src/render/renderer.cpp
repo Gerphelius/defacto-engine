@@ -99,14 +99,14 @@ namespace DF::Render {
 
         /////////////////////////////  TEXTURES  /////////////////////////////
 
-        sail::image container{ "../../assets/images/container.jpg" };
-        sail::image face{ "../../assets/images/awesomeface.png" };
-        face.mirror(SAIL_ORIENTATION_MIRRORED_VERTICALLY);
+        sail::image container{ "../../assets/images/container2.png" };
+        sail::image container_spec{ "../../assets/images/container2_specular.png" };
+        sail::image container_emissive{ "../../assets/images/matrix.jpg" };
 
-        if (container.is_valid() && face.is_valid())
+        if (container.is_valid() && container_spec.is_valid())
         {
-            GLuint textures[2]{};
-            glGenTextures(2, textures);
+            GLuint textures[4]{};
+            glGenTextures(4, textures);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, textures[0]);
@@ -116,19 +116,25 @@ namespace DF::Render {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, container.width(), container.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, container.pixels());
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, container.width(), container.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, container.pixels());
             glGenerateMipmap(GL_TEXTURE_2D);
 
-            //glActiveTexture(GL_TEXTURE1);
-            //glBindTexture(GL_TEXTURE_2D, textures[1]);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, textures[1]);
 
-            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, container_spec.width(), container_spec.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, container_spec.pixels());
+            glGenerateMipmap(GL_TEXTURE_2D);
 
-            //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, face.width(), face.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, face.pixels());
-            //glGenerateMipmap(GL_TEXTURE_2D);
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, textures[2]);
 
-            //m_shaderProgram->setUniform("uTexture2", 1);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, container_emissive.width(), container_emissive.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, container_emissive.pixels());
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            constexpr unsigned char whitePixel[]{ 0xFF, 0xFF, 0xFF };
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, textures[3]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, whitePixel);
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -144,12 +150,14 @@ namespace DF::Render {
 
         float time{ static_cast<float>(glfwGetTime()) };
 
-        Math::vec3 lightColor{ Math::vec3(0.0f, 1.0f, 0.0f) };
+        Math::vec3 lightColor{ Math::vec3(1.0f, 1.0f, 1.0f) };
 
         m_shaderProgram->setUniform("uView", m_camera->getTranslation());
         m_shaderProgram->setUniform("uProjection", m_camera->getProjection());
 
         /////////////////////////////  CUBE  /////////////////////////////
+
+        m_shaderProgram->setUniform("uTexture", 0);
 
         Math::mat4 model{ Math::mat4(1.0) };
         model = Math::rotateMat4(model, time, Math::vec3(0.0, 1.0, 0.0));
@@ -161,12 +169,11 @@ namespace DF::Render {
         m_shaderProgram->setUniform("uLight.diffuse", lightColor * 0.5f);
         m_shaderProgram->setUniform("uLight.specular", lightColor);
 
-        m_shaderProgram->setUniform("uMaterial.ambient", Math::vec3(1.0f, 0.5f, 0.31f));
-        m_shaderProgram->setUniform("uMaterial.diffuse", Math::vec3(1.0f, 0.5f, 0.31f));
-        m_shaderProgram->setUniform("uMaterial.specular", Math::vec3(0.5f));
+        m_shaderProgram->setUniform("uMaterial.diffuse", 0);
+        m_shaderProgram->setUniform("uMaterial.specular", 1);
+        m_shaderProgram->setUniform("uMaterial.emmisive", 2);
         m_shaderProgram->setUniform("uMaterial.shininess", 32.0f);
 
-        glBindTexture(GL_TEXTURE_2D, 1);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         /////////////////////////////  LIGHT  /////////////////////////////
@@ -180,12 +187,10 @@ namespace DF::Render {
         m_shaderProgram->setUniform("uLight.diffuse", lightColor);
 
         m_shaderProgram->setUniform("uModel", model);
-        m_shaderProgram->setUniform("uMaterial.ambient", Math::vec3(1.0f));
-        m_shaderProgram->setUniform("uMaterial.diffuse", lightColor);
+        m_shaderProgram->setUniform("uMaterial.diffuse", 3);
         m_shaderProgram->setUniform("uMaterial.specular", Math::vec3(1.0f));
         m_shaderProgram->setUniform("uMaterial.shininess", 32.0f);
 
-        glBindTexture(GL_TEXTURE_2D, 0);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     }
 
