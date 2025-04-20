@@ -15,12 +15,20 @@ struct Light
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    float constant;
+    float linear;
+    float quadratic;
+
+    float innerCone;
+    float outerCone;
 };
 
 in vec2 TexCoord;
 in vec3 Normal;
 in vec3 FragPos;
 in vec3 LightPos;
+in vec3 LightDir;
 
 out vec4 FragColor;
 
@@ -34,9 +42,18 @@ void main()
 
     vec3 ambient = uLight.ambient * tex;
 
+//    vec3 lightDir = normalize(-LightDir);               // Directional light
+//    vec3 lightDir = normalize(LightPos - FragPos);   // Point light
+//    float angle = max(dot(norm, lightDir), 0.0f);
+//    vec3 diffuse = uLight.diffuse * angle * tex;
+
+
+    /****** SPOTLIGHT ******/
+    vec3 spotDir = normalize(-LightDir);
     vec3 lightDir = normalize(LightPos - FragPos);
-    float angle = max(dot(norm, lightDir), 0);
-    vec3 diffuse = uLight.diffuse * angle * tex;
+    float angle = max(dot(spotDir, lightDir), 0.0f);
+    float intensity = smoothstep(0.0f, 1.0f, (angle - uLight.outerCone) / (uLight.innerCone - uLight.outerCone));
+    vec3 diffuse = uLight.diffuse * intensity * tex;
 
     vec4 specTex = texture(uMaterial.specular, TexCoord);
     vec3 reflectDir = reflect(-lightDir, norm);
@@ -45,5 +62,10 @@ void main()
 
     vec4 emmisive = (1 - ceil(specTex)) * texture(uMaterial.emmisive, TexCoord);
 
-    FragColor = vec4((diffuse + ambient + specular), 1.0) + emmisive;
+    float dist = distance(FragPos, LightPos);
+    float attenuation = 1.0f / (uLight.constant + uLight.linear * dist + uLight.quadratic * (dist * dist));
+
+    FragColor = vec4((diffuse + ambient + specular) * attenuation, 1.0)/* + emmisive*/;
+
+//    FragColor = vec4(ceil(uLight.phi - angle), 0.0f, 0.0f, 1.0f);
 }

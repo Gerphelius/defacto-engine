@@ -5,8 +5,12 @@
 #include "render/renderer.hpp"
 #include "render/window.hpp"
 #include "utils/math.hpp"
+#include "input/input_system.hpp"
 
 namespace DF::Render {
+    Math::vec3 g_lightPos{ 1.0f };
+
+
     Renderer::Renderer(std::shared_ptr<Entity::Camera> camera)
         : m_camera{ camera }
     {
@@ -141,6 +145,51 @@ namespace DF::Render {
 
         glBindVertexArray(vao);
         glEnable(GL_DEPTH_TEST);
+
+        auto input{ Input::getInputSystem() };
+
+        input->onKeyPress(
+            Input::Key::UP,
+            Input::KeyEvent::HOLD,
+            [this]() mutable {
+                g_lightPos.z += 0.1f;
+            }
+        );
+        input->onKeyPress(
+            Input::Key::DOWN,
+            Input::KeyEvent::HOLD,
+            [this]() mutable {
+                g_lightPos.z -= 0.1f;
+            }
+        );
+        input->onKeyPress(
+            Input::Key::RIGHT,
+            Input::KeyEvent::HOLD,
+            [this]() mutable {
+                g_lightPos.x += 0.1f;
+            }
+        );
+        input->onKeyPress(
+            Input::Key::LEFT,
+            Input::KeyEvent::HOLD,
+            [this]() mutable {
+                g_lightPos.x -= 0.1f;
+            }
+        );
+        input->onKeyPress(
+            Input::Key::Q,
+            Input::KeyEvent::HOLD,
+            [this]() mutable {
+                g_lightPos.y += 0.1f;
+            }
+        );
+        input->onKeyPress(
+            Input::Key::E,
+            Input::KeyEvent::HOLD,
+            [this]() mutable {
+                g_lightPos.y -= 0.1f;
+            }
+        );
     }
 
     void Renderer::render()
@@ -150,7 +199,8 @@ namespace DF::Render {
 
         float time{ static_cast<float>(glfwGetTime()) };
 
-        Math::vec3 lightColor{ Math::vec3(1.0f, 1.0f, 1.0f) };
+        Math::vec3 lightColor{ 1.0f };
+        Math::vec3 directionalLight{ 1.0f, -1.0f, 0.0f };
 
         m_shaderProgram->setUniform("uView", m_camera->getTranslation());
         m_shaderProgram->setUniform("uProjection", m_camera->getProjection());
@@ -164,10 +214,23 @@ namespace DF::Render {
 
         m_shaderProgram->setUniform("uModel", model);
 
-        m_shaderProgram->setUniform("uLightPos", Math::vec3(1.0f));
+        // First way of doing flashlight type of spotlight
+        //m_shaderProgram->setUniform("uLightDir", m_camera->getForwardVector());
+        //m_shaderProgram->setUniform("uLightPos", m_camera->getLocation());
+
+        // Second way of doing flashlight type of spotlight considering using view space in shader calculations
+        m_shaderProgram->setUniform("uLightDir", Math::vec3(0.0f, 0.0f, -1.0f));
+        m_shaderProgram->setUniform("uLightPos", Math::vec3(0.0f));
+
         m_shaderProgram->setUniform("uLight.ambient", lightColor * 0.05f);
-        m_shaderProgram->setUniform("uLight.diffuse", lightColor * 0.5f);
+        m_shaderProgram->setUniform("uLight.diffuse", lightColor * 1.5f);
         m_shaderProgram->setUniform("uLight.specular", lightColor);
+
+        m_shaderProgram->setUniform("uLight.constant", 1.0f);
+        m_shaderProgram->setUniform("uLight.linear", 0.14f);
+        m_shaderProgram->setUniform("uLight.quadratic", 0.07f);
+        m_shaderProgram->setUniform("uLight.innerCone", glm::cos(Math::degToRad(12.0f)));
+        m_shaderProgram->setUniform("uLight.outerCone", glm::cos(Math::degToRad(15.0f)));
 
         m_shaderProgram->setUniform("uMaterial.diffuse", 0);
         m_shaderProgram->setUniform("uMaterial.specular", 1);
@@ -180,7 +243,7 @@ namespace DF::Render {
 
         model = Math::mat4(1.0);
         //model = Math::rotateMat4(model, time, Math::vec3(0.0, 1.0, 0.0));
-        model = Math::translateMat4(model, Math::vec3(1.0, 1.0, 1.0));
+        model = Math::translateMat4(model, g_lightPos);
         model = Math::scaleMat4(model, Math::vec3(0.2, 0.2, 0.2));
 
         m_shaderProgram->setUniform("uLight.ambient", lightColor);
@@ -188,7 +251,7 @@ namespace DF::Render {
 
         m_shaderProgram->setUniform("uModel", model);
         m_shaderProgram->setUniform("uMaterial.diffuse", 3);
-        m_shaderProgram->setUniform("uMaterial.specular", Math::vec3(1.0f));
+        m_shaderProgram->setUniform("uMaterial.specular", 3);
         m_shaderProgram->setUniform("uMaterial.shininess", 32.0f);
 
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);

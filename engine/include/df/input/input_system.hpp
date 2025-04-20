@@ -24,6 +24,12 @@ namespace DF::Input
         S,
         A,
         D,
+        Q,
+        E,
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT,
 
         MAX_KEYS,
     };
@@ -64,10 +70,10 @@ namespace DF::Input
         virtual ~InputSystem() = default;
 
     protected:
-        static std::unique_ptr<InputSystem> create(const Render::Window* window);
+        static std::shared_ptr<InputSystem> create(const Render::Window* window);
 
         friend class Core::Engine;
     };
 
-    //std::shared_ptr<InputSystem> getInputSystem();
+    std::shared_ptr<InputSystem> getInputSystem();
 }

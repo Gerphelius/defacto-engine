@@ -17,13 +17,18 @@ namespace DF::Input
             { GLFW_KEY_ESCAPE,      Key::ESC },
             { GLFW_KEY_ENTER,       Key::ENTER },
             { GLFW_KEY_SPACE,       Key::SPACE },
-            { GLFW_KEY_SPACE,       Key::SPACE },
             { GLFW_KEY_LEFT_SHIFT,  Key::SHIFT_L },
             { GLFW_KEY_N,           Key::N },
             { GLFW_KEY_W,           Key::W },
             { GLFW_KEY_A,           Key::A },
             { GLFW_KEY_S,           Key::S },
             { GLFW_KEY_D,           Key::D },
+            { GLFW_KEY_Q,           Key::Q },
+            { GLFW_KEY_E,           Key::E },
+            { GLFW_KEY_UP,          Key::UP },
+            { GLFW_KEY_DOWN,        Key::DOWN },
+            { GLFW_KEY_LEFT,        Key::LEFT },
+            { GLFW_KEY_RIGHT,       Key::RIGHT },
         };
         std::unordered_map<Key, EventCallbacksMap> m_keyCallbacksMap{};
         std::unordered_set<Key> m_pressedKeys{};
@@ -193,15 +198,19 @@ namespace DF::Input
         std::cout << "Mouse wheel: (x " << xoffset << ", y " << yoffset << ")\n";
     }
 
-    //std::shared_ptr<GLFWInput> inputSystem{ std::make_shared<GLFWInput>() };
+    static std::shared_ptr<InputSystem> g_inputSystem{};
 
-    //std::shared_ptr<InputSystem> getInputSystem()
-    //{
-    //    return inputSystem;
-    //}
-
-    std::unique_ptr<InputSystem> InputSystem::create(const Render::Window* window)
+    std::shared_ptr<InputSystem> getInputSystem()
     {
-        return std::make_unique<GLFWInput>(window);
+        return g_inputSystem;
+    }
+
+    std::shared_ptr<InputSystem> InputSystem::create(const Render::Window* window)
+    {
+        if (!g_inputSystem) {
+            g_inputSystem = std::make_shared<GLFWInput>(window);
+        }
+
+        return g_inputSystem;
     }
 }

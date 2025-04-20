@@ -11,8 +11,8 @@ namespace DF::Core
         const float rotationSpeed{ 0.3f };
 
         m_window = Render::Window::create(800, 600, "DeFacto");
-        m_renderer = std::make_unique<Render::Renderer>(m_debugCamera);
         m_inputSystem = Input::InputSystem::create(m_window.get());
+        m_renderer = std::make_unique<Render::Renderer>(m_debugCamera);
 
         m_inputSystem->onKeyPress(
             Input::Key::ESC,
