@@ -8,6 +8,7 @@ file(
     "include/df/render/*.hpp"
     "include/df/entities/*.hpp"
     "include/df/utils/*.hpp"
+    "include/df/assets/*.hpp"
 )
 
 file(
@@ -20,7 +21,7 @@ file(
     "src/utils/*.cpp"
 )
 
-file(GLOB SHADER_FILES "assets/shaders/*.glsl")
+file(GLOB SHADER_FILES "resources/shaders/*.glsl")
 
 # Create engine library
 add_library(${PROJECT_NAME} STATIC ${ENGINE_SOURCES} ${ENGINE_INCLUDE})
@@ -29,13 +30,13 @@ add_library(${PROJECT_NAME} STATIC ${ENGINE_SOURCES} ${ENGINE_INCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/df)
 
 # Copy images
-file(COPY "${CMAKE_SOURCE_DIR}/engine/assets/images/" DESTINATION "${CMAKE_BINARY_DIR}/assets/images/")
+file(COPY "${CMAKE_SOURCE_DIR}/engine/resources/images/" DESTINATION "${CMAKE_BINARY_DIR}/resources/images/")
 
 # Handle shader files
 set(SHADER_DESTINATION_DIR "${CMAKE_BINARY_DIR}/shaders")
 
 foreach(SHADER_FILE ${SHADER_FILES})
-    # Get the relative path of the shader file with respect to the assets directory
+    # Get the relative path of the shader file with respect to the resources directory
     file(RELATIVE_PATH REL_PATH "${CMAKE_SOURCE_DIR}/engine" ${SHADER_FILE})
     # Determine the destination path
     set(DEST_FILE "${CMAKE_BINARY_DIR}/${REL_PATH}")
@@ -72,6 +73,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glad)
 
 find_package(SailC++ CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE SAIL::sail-c++)
+
+find_package(assimp CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
 
 # find_package(Boost REQUIRED COMPONENTS signals2)
 # target_link_libraries(${PROJECT_NAME} PRIVATE Boost::signals2)

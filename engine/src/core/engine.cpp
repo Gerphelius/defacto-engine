@@ -12,7 +12,11 @@ namespace DF::Core
 
         m_window = Render::Window::create(800, 600, "DeFacto");
         m_inputSystem = Input::InputSystem::create(m_window.get());
-        m_renderer = std::make_unique<Render::Renderer>(m_debugCamera);
+
+        m_world = std::make_shared<World>();
+
+        // TODO: Create camera component and pass only world instance to renderer where it can get camera component and render scene
+        m_renderer = std::make_unique<Render::Renderer>(m_debugCamera, m_world);
 
         m_inputSystem->onKeyPress(
             Input::Key::ESC,
@@ -112,11 +116,11 @@ namespace DF::Core
             const std::chrono::duration<float> elapsed_seconds{ currentTime - m_prevTime };
 
             m_deltaTime = elapsed_seconds.count();
-            m_prevTime = currentTime;
-
+            m_prevTime = currentTime;  // TODO: Make m_prevTime static
 
 
             //std::cout << "Delta time:" << m_deltaTime << '\n';
+            std::cout << "FPS:" << 1 / m_deltaTime << '\n';
 
             m_renderer->render();
             m_window->update();

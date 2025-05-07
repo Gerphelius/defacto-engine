@@ -2,12 +2,10 @@
 
 #include <memory>
 
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
-
 #include "render/shader_program.hpp"
 #include "entities/camera.hpp"
+
+#include "core/world.hpp"
 
 namespace DF::Render
 {
@@ -23,9 +21,10 @@ namespace DF::Render
         DrawMode m_drawMode{ DrawMode::FILL };
         std::unique_ptr<ShaderProgram> m_shaderProgram{};
         std::shared_ptr<Entity::Camera> m_camera{};
+        std::shared_ptr<Core::World> m_world{};
 
     public:
-        explicit Renderer(std::shared_ptr<Entity::Camera> camera);
+        explicit Renderer(std::shared_ptr<Entity::Camera> camera, std::shared_ptr<Core::World> world);
 
         void render();
 

@@ -26,7 +26,7 @@ namespace DF::Entity
         float m_fov{ 45.5f };
         float m_aspectRatio{ 16 / 9 };
         float m_near{ 0.1f };
-        float m_far{ 100.0f };
+        float m_far{ 10000.0f };
 
     public:
         Camera() noexcept

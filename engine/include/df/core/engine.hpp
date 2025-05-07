@@ -7,6 +7,7 @@
 #include "render/window.hpp"
 #include "input/input_system.hpp"
 #include "entities/camera.hpp"
+#include "world.hpp"
 
 namespace DF::Core
 {
@@ -19,7 +20,8 @@ namespace DF::Core
         bool m_running{ false };
         float m_deltaTime{};
         std::chrono::high_resolution_clock::time_point m_prevTime{};
-        std::shared_ptr<Entity::Camera> m_debugCamera{};
+        std::shared_ptr<Entity::Camera> m_debugCamera{};  // TODO: Create camera component and get rid of this.
+        std::shared_ptr<World> m_world{};
 
     public:
         Engine();
@@ -27,6 +29,8 @@ namespace DF::Core
         void run();
 
         auto getDeltaTime() const { return m_deltaTime; }
+
+        auto getWorld() const { return m_world; }
     };
 }
 

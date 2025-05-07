@@ -31,6 +31,8 @@ namespace DF::Render
         bool closed() const override;
 
         void* getRawWindow() const override { return m_window.get(); }
+
+        static void onWindowResize(GLFWwindow* window, int width, int height);
     };
 
     WindowGLFW::WindowGLFW(int width, int height, std::string_view title)
@@ -60,7 +62,7 @@ namespace DF::Render
         }
 
         glfwMakeContextCurrent(m_window.get());
-        /*glfwSetFramebufferSizeCallback(m_window, _onWindowResize);*/
+        glfwSetFramebufferSizeCallback(m_window.get(), onWindowResize);
 
         std::cout << "Window initialization complete." << '\n';
     }
@@ -79,5 +81,10 @@ namespace DF::Render
     std::unique_ptr<Window> Window::create(int width, int height, std::string_view title)
     {
         return std::make_unique<WindowGLFW>(width, height, title);
+    }
+
+    void WindowGLFW::onWindowResize(GLFWwindow* window, int width, int height)
+    {
+        glViewport(0, 0, width, height);
     }
 }
