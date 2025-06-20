@@ -1,5 +1,7 @@
 ﻿#include "core/engine.hpp"
 #include "utils/math.hpp"
+#include <deque>
+#include <numeric>
 
 namespace DF::Core
 {

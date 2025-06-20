@@ -71,52 +71,22 @@ int main()
 
     const auto world{ eng.getWorld() };
 
-    auto object{ world->createObject() };
+    for (int i{}; i < 100; ++i)
+    {
+        for (int j{}; j < 100; ++j)
+        {
+            auto object{ world->createObject() };
 
-    DF::Core::Transform transformComp{};
-    DF::Core::Model modelComp{ std::make_shared<DF::Assets::Mesh>(vertices, indices) };
+            DF::Core::Transform transformComp{};
+            DF::Core::Model modelComp{ std::make_shared<DF::Assets::Mesh>(vertices, indices) };
 
-    world->addTransform(object, transformComp);
-    world->addModel(object, modelComp);
+            transformComp.m_position.x = i * 2.0f;
+            transformComp.m_position.z = j * 2.0f;
 
-    auto inputSystem{ DF::Input::getInputSystem() };
-
-    inputSystem->onKeyPress(
-        DF::Input::Key::UP,
-        DF::Input::KeyEvent::HOLD,
-        [object, &world, &eng]() mutable {
-            auto& transform{ world->getTransform(object) };
-
-            transform.m_position.z += (5.0f * eng.getDeltaTime());
+            world->addComponent(object, transformComp);
+            world->addComponent(object, modelComp);
         }
-    );
-    inputSystem->onKeyPress(
-        DF::Input::Key::DOWN,
-        DF::Input::KeyEvent::HOLD,
-        [object, &world, &eng]() mutable {
-            auto& transform{ world->getTransform(object) };
-
-            transform.m_position.z -= (5.0f * eng.getDeltaTime());
-        }
-    );
-    inputSystem->onKeyPress(
-        DF::Input::Key::RIGHT,
-        DF::Input::KeyEvent::HOLD,
-        [object, &world, &eng]() mutable {
-            auto& transform{ world->getTransform(object) };
-
-            transform.m_position.x += (5.0f * eng.getDeltaTime());
-        }
-    );
-    inputSystem->onKeyPress(
-        DF::Input::Key::LEFT,
-        DF::Input::KeyEvent::HOLD,
-        [object, &world, &eng]() mutable {
-            auto& transform{ world->getTransform(object) };
-
-            transform.m_position.x -= (5.0f * eng.getDeltaTime());
-        }
-    );
+    }
 
     ////////////////////////////////////////////////////////////
 

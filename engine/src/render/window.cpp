@@ -63,6 +63,7 @@ namespace DF::Render
 
         glfwMakeContextCurrent(m_window.get());
         glfwSetFramebufferSizeCallback(m_window.get(), onWindowResize);
+        glfwSwapInterval(0);
 
         std::cout << "Window initialization complete." << '\n';
     }

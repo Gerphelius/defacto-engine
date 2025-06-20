@@ -90,19 +90,30 @@ namespace DF::Render {
 
         /////////////////////////////  CUBE  /////////////////////////////
 
-        auto models{ m_world->getModels() };
+        auto objects{ m_world->getObjects() };
 
-        for (const auto& model : models)
+        for (const auto& object : objects)
         {
-            const auto transform{ m_world->getTransform(model.first) };
-
             Math::mat4 modelMat{ Math::mat4(1.0) };
-            modelMat = Math::translateMat4(modelMat, transform.m_position);
+
+            modelMat = Math::translateMat4(modelMat, m_world->getComponent<Core::Transform>(object)->m_position);
 
             m_shaderProgram->setUniform("uModel", modelMat);
 
-            model.second.m_mesh->draw();
+            m_world->getComponent<Core::Model>(object)->m_mesh->draw();
         }
+
+        //m_world->forEach<Core::Model, Core::Transform>(
+        //    [this](Core::Model& model, Core::Transform& transform) {
+        //        Math::mat4 modelMat{ Math::mat4(1.0) };
+
+        //        modelMat = Math::translateMat4(modelMat, transform.m_position);
+
+        //        m_shaderProgram->setUniform("uModel", modelMat);
+
+        //        model.m_mesh->draw();
+        //    }
+        //);
 
         m_shaderProgram->setUniform("uTexture", 0);
         m_shaderProgram->setUniform("uMaterial.diffuse", 3);
