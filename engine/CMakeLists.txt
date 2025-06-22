@@ -9,6 +9,7 @@ file(
     "include/df/entities/*.hpp"
     "include/df/utils/*.hpp"
     "include/df/assets/*.hpp"
+    "include/df/ui/*.hpp"
 )
 
 file(
@@ -77,8 +78,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE SAIL::sail-c++)
 find_package(assimp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
 
-# find_package(Boost REQUIRED COMPONENTS signals2)
-# target_link_libraries(${PROJECT_NAME} PRIVATE Boost::signals2)
+find_package(spdlog CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
+
+find_package(EnTT CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE EnTT::EnTT)
+
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)
 
 # Set consistent runtime library for hot reload
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

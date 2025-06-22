@@ -15,7 +15,10 @@
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
             },
-            "toolchainFile": "$env{REAL_VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            "toolchainFile": "$env{REAL_VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "environment": {
+                "VCPKG_FEATURE_FLAGS": "manifests"
+            }
         },
         {
             "name": "x64-debug",

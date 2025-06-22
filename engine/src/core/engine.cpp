@@ -1,7 +1,12 @@
-﻿#include "core/engine.hpp"
-#include "utils/math.hpp"
-#include <deque>
+﻿#include <deque>
 #include <numeric>
+
+#include <spdlog/spdlog.h>
+#include <imgui_impl_glfw.h>
+
+#include "core/engine.hpp"
+#include "utils/math.hpp"
+#include "ui/debug.hpp"
 
 namespace DF::Core
 {
@@ -14,6 +19,7 @@ namespace DF::Core
 
         m_window = Render::Window::create(800, 600, "DeFacto");
         m_inputSystem = Input::InputSystem::create(m_window.get());
+        UI::Debug::init(m_window.get());
 
         m_world = std::make_shared<World>();
 
@@ -122,10 +128,11 @@ namespace DF::Core
 
 
             //std::cout << "Delta time:" << m_deltaTime << '\n';
-            std::cout << "FPS:" << 1 / m_deltaTime << '\n';
+            //std::cout << "FPS:" << 1 / m_deltaTime << '\n';
 
             m_renderer->render();
-            m_window->update();
+            UI::Debug::render();
+            m_window->update(m_deltaTime);
             m_inputSystem->update();
         }
     }

@@ -8,6 +8,8 @@
 #include <typeinfo>
 #include <iostream>
 
+#include <entt/entt.hpp>
+
 #include "utils/math.hpp"
 #include "utils/sparse_set.hpp"
 #include "assets/mesh.hpp"
@@ -20,7 +22,7 @@
 
 namespace DF::Core
 {
-    using Object = std::uint32_t;
+    using Object = entt::entity;
 
     struct Transform
     {
@@ -81,40 +83,65 @@ namespace DF::Core
 
         std::unordered_map<std::type_index, std::unique_ptr<IComponentPool>> m_componentPools{};
 
+
+        /***********************************  EnTT  *****************************************/
+
+        entt::registry m_registry{};
+
+
+    public:
+        Object createObject()
+        {
+            return m_registry.create();
+        }
+
+        template <typename T>
+        void addComponent(const Object& object, const T& component)
+        {
+            m_registry.emplace<T>(object, component);
+        }
+
+        const entt::registry& getObjects() const
+        {
+            return m_registry;
+        }
+
+        /************************************************************************************/
+
     public:
         void spawnObject(const Object& object) const
         {
             // Render objects
         }
 
-        const std::vector<Object> getObjects() const
-        {
-            return m_objects;
-        }
+        //const std::vector<Object> getObjects() const
+        //{
+        //    return m_objects;
+        //}
 
-        Object createObject()
-        {
-            static Object lastObjectId{};
+        //Object createObject()
+        //{
+        //    static Object lastObjectId{};
 
-            ++lastObjectId;
+        //    ++lastObjectId;
 
-            m_objects.push_back(lastObjectId);
+        //    m_objects.push_back(lastObjectId);
 
-            return lastObjectId;
-        }
+        //    return lastObjectId;
+        //}
 
-        template <typename T>
-        void addComponent(const Object& object, const T& component)
-        {
-            auto& poolPtr = m_componentPools[std::type_index(typeid(T))];
+        //template <typename T>
+        //void addComponent(const Object& object, const T& component)
+        //{
+        //    auto& poolPtr = m_componentPools[std::type_index(typeid(T))];
 
-            if (!poolPtr)
-            {
-                poolPtr = std::make_unique<ComponentPool<T>>();
-            }
+        //    if (!poolPtr)
+        //    {
+        //        poolPtr = std::make_unique<ComponentPool<T>>();
+        //    }
 
-            static_cast<ComponentPool<T>*>(poolPtr.get())->addComponent(object, component);
-        }
+        //    static_cast<ComponentPool<T>*>(poolPtr.get())->addComponent(object, component);
+        //}
 
         template <typename... Components>
         void addComponents(const Object& object, Components... args)

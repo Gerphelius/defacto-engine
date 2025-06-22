@@ -1,4 +1,5 @@
 #include <GLFW/glfw3.h>
+#include <fmt/format.h>
 
 #include "render/window.hpp"
 #include "input/input_system.hpp"
@@ -26,7 +27,7 @@ namespace DF::Render
 
         ~WindowGLFW() override { glfwTerminate(); }
 
-        void update() override;
+        void update(float deltaTime) override;
 
         bool closed() const override;
 
@@ -68,10 +69,11 @@ namespace DF::Render
         std::cout << "Window initialization complete." << '\n';
     }
 
-    void WindowGLFW::update()
+    void WindowGLFW::update(float deltaTime)
     {
-        glfwSwapBuffers(m_window.get());
         glfwPollEvents();
+        glfwSwapBuffers(m_window.get());
+        glfwSetWindowTitle(m_window.get(), fmt::format("{} | FPS: {}.", m_title, 1 / deltaTime).c_str());
     }
 
     bool WindowGLFW::closed() const

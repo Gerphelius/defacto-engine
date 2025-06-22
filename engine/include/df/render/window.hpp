@@ -15,7 +15,7 @@ namespace DF::Render
     class Window
     {
     public:
-        virtual void update() = 0;
+        virtual void update(float deltaTime) = 0;
 
         virtual bool closed() const = 0;
 

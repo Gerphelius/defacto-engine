@@ -6,6 +6,7 @@
 #include "df/core/world.hpp"
 #include "df/input/input_system.hpp"
 #include "df/utils/math.hpp"
+#include "df/ui/debug.hpp"
 
 
 /* TODO:
@@ -66,6 +67,18 @@ static const std::array indices {
 int main()
 {
     DF::Core::Engine eng{};
+
+    bool testBool{};
+    float testFloat{};
+
+    DF::UI::Debug::addWidget(
+        "Test",
+        [&]() mutable {
+            ImGui::Text("This is window A");
+            ImGui::Checkbox("Demo Window", &testBool);
+            ImGui::SliderFloat("float", &testFloat, 0.0f, 1.0f);
+        }
+    );
 
     ///////////////////////// ECS TEST /////////////////////////
 

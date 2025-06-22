@@ -1,0 +1,21 @@
+{
+    "name": "defacto-engine",
+    "version-string": "0.1.0",
+    "dependencies": [
+        "glad",
+        "glfw3",
+        "glm",
+        "opengl",
+        "sail",
+        "assimp",
+        "spdlog",
+        "entt",
+        {
+            "name": "imgui",
+            "features": [
+                "opengl3-binding",
+                "glfw-binding"
+            ]
+        }
+    ]
+}
