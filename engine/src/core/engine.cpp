@@ -1,5 +1,6 @@
 ﻿#include <deque>
 #include <numeric>
+#include <cassert>
 
 #include <spdlog/spdlog.h>
 #include <imgui_impl_glfw.h>
@@ -7,41 +8,53 @@
 #include "core/engine.hpp"
 #include "utils/math.hpp"
 #include "ui/debug.hpp"
+#include "components/camera.hpp"
+#include "components/transform.hpp"
 
-namespace DF::Core
+namespace DF
 {
-    Engine::Engine()
+    bool Engine::s_initialized{};
+    bool Engine::s_running{};
+    float Engine::s_deltaTime{};
+
+    std::unique_ptr<DF::Render::Window> Engine::s_window{};
+    std::shared_ptr<Input::InputSystem> Engine::s_inputSystem{};
+    std::unique_ptr<Render::Renderer> Engine::s_renderer{};
+    std::unique_ptr<Core::World> Engine::s_world{};
+
+    void Engine::init()
     {
-        m_debugCamera = std::make_shared<Entity::Camera>();
-        m_debugCamera->setAspectRatio(800.0f / 600.0f);
-        auto cameraSpeed{ std::make_shared<float>(1.5f) };
-        const float rotationSpeed{ 0.3f };
+        if (s_initialized) return;
 
-        m_window = Render::Window::create(800, 600, "DeFacto");
-        m_inputSystem = Input::InputSystem::create(m_window.get());
-        UI::Debug::init(m_window.get());
+        s_window = Render::Window::create(800, 600, "DeFacto");
+        s_inputSystem = Input::InputSystem::create(s_window.get());
+        UI::Debug::init(s_window.get());
 
-        m_world = std::make_shared<World>();
+        s_world = std::make_unique<Core::World>();
 
-        // TODO: Create camera component and pass only world instance to renderer where it can get camera component and render scene
-        m_renderer = std::make_unique<Render::Renderer>(m_debugCamera, m_world);
+        auto defaultCamera{ s_world->createObject() };
 
-        m_inputSystem->onKeyPress(
+        s_world->addComponent<Components::Camera>(defaultCamera, Components::Camera{ .m_active{ true } });
+        s_world->addComponent<Components::Transform>(defaultCamera, Components::Transform{});
+
+        s_renderer = std::make_unique<Render::Renderer>(s_world.get());
+
+        s_inputSystem->onKeyPress(
             Input::Key::ESC,
             Input::KeyEvent::PRESS,
-            [this]() mutable {
-                m_running = false;
+            []() mutable {
+                s_running = false;
             }
         );
 
-        m_inputSystem->onKeyPress(
+        s_inputSystem->onKeyPress(
             Input::Key::N,
             Input::KeyEvent::PRESS,
-            [this]() {
-                const auto currentMode{ m_renderer->getDrawMode() };
+            []() {
+                const auto currentMode{ s_renderer->getDrawMode() };
                 const auto newMode{ currentMode == Render::DrawMode::FILL ? Render::DrawMode::LINE : Render::DrawMode::FILL };
 
-                m_renderer->setDrawMode(newMode);
+                s_renderer->setDrawMode(newMode);
             }
         );
 
@@ -52,88 +65,136 @@ namespace DF::Core
             ██      ██   ██ ██  ██  ██ ██      ██   ██ ██   ██
              ██████ ██   ██ ██      ██ ███████ ██   ██ ██   ██
         */
-        m_inputSystem->onKeyPress(
+
+        constexpr float rotationSpeed{ 0.3f };
+        constexpr float maxCameraSpeed{ 40.0f };
+        constexpr float normalCameraSpeed{ 10.0f };
+        static float cameraSpeed{ normalCameraSpeed };
+
+        s_inputSystem->onKeyPress(
             Input::Key::W,
             Input::KeyEvent::HOLD,
-            [this, cameraSpeed]() {
-                m_debugCamera->move(m_debugCamera->getForwardVector() * *cameraSpeed * m_deltaTime);
+            [defaultCamera]() {
+                auto transform{ s_world->getComponent<Components::Transform>(defaultCamera) };
+
+                if (!transform) return;
+
+                transform->addPosition(transform->getForwardVector() * cameraSpeed * s_deltaTime);
             }
         );
-        m_inputSystem->onKeyPress(
+        s_inputSystem->onKeyPress(
             Input::Key::S,
             Input::KeyEvent::HOLD,
-            [this, cameraSpeed]() {
-                m_debugCamera->move(-m_debugCamera->getForwardVector() * *cameraSpeed * m_deltaTime);
+            [defaultCamera]() {
+                auto transform{ s_world->getComponent<Components::Transform>(defaultCamera) };
+
+                if (!transform) return;
+
+                transform->addPosition(-transform->getForwardVector() * cameraSpeed * s_deltaTime);
             }
         );
-        m_inputSystem->onKeyPress(
+        s_inputSystem->onKeyPress(
             Input::Key::D,
             Input::KeyEvent::HOLD,
-            [this, cameraSpeed]() {
-                m_debugCamera->move(m_debugCamera->getRightVector() * *cameraSpeed * m_deltaTime);
+            [defaultCamera]() {
+                auto transform{ s_world->getComponent<Components::Transform>(defaultCamera) };
+
+                if (!transform) return;
+
+                transform->addPosition(transform->getRightVector() * cameraSpeed * s_deltaTime);
             }
         );
-        m_inputSystem->onKeyPress(
+        s_inputSystem->onKeyPress(
             Input::Key::A,
             Input::KeyEvent::HOLD,
-            [this, cameraSpeed]() {
-                m_debugCamera->move(-m_debugCamera->getRightVector() * *cameraSpeed * m_deltaTime);
+            [defaultCamera]() {
+                auto transform{ s_world->getComponent<Components::Transform>(defaultCamera) };
+
+                if (!transform) return;
+
+                transform->addPosition(-transform->getRightVector() * cameraSpeed * s_deltaTime);
             }
         );
 
-        m_inputSystem->onKeyPress(
+        s_inputSystem->onKeyPress(
             Input::Key::SHIFT_L,
             Input::KeyEvent::PRESS,
-            [cameraSpeed]() {
-                *cameraSpeed = 10.0f;
+            [maxCameraSpeed]() mutable {
+                cameraSpeed = maxCameraSpeed;
             }
         );
-        m_inputSystem->onKeyPress(
+        s_inputSystem->onKeyPress(
             Input::Key::SHIFT_L,
             Input::KeyEvent::RELEASE,
-            [cameraSpeed]() {
-                *cameraSpeed = 1.5f;
+            [normalCameraSpeed]() mutable {
+                cameraSpeed = normalCameraSpeed;
             }
         );
 
-        m_inputSystem->onMouseMove(
-            [this, rotationSpeed](Math::vec2 pos) {
+        s_inputSystem->onMouseMove(
+            [rotationSpeed, defaultCamera](Math::vec2 pos) {
                 static Math::vec2 s_lastPos{};
 
-                if (m_inputSystem->mouseKeyPressed(Input::MouseKey::RIGHT))
+                if (s_inputSystem->mouseKeyPressed(Input::MouseKey::RIGHT))
                 {
                     Math::vec2 currentPos{ pos - s_lastPos };
 
-                    m_debugCamera->rotate(Math::vec3(currentPos.x * -rotationSpeed, currentPos.y * rotationSpeed, 0.0));
+                    auto transform{ s_world->getComponent<Components::Transform>(defaultCamera) };
+
+                    if (!transform) return;
+
+                    auto newRotation{ transform->getRotation() - Math::vec3(currentPos.x * -rotationSpeed, currentPos.y * rotationSpeed, 0.0)};
+                    newRotation.y = std::clamp(newRotation.y, -89.0f, 89.0f);
+
+                    transform->setRotation(newRotation);
                 }
 
                 s_lastPos = pos;
             }
         );
+
+        s_initialized = true;
     }
+
+    float avgFps{};
+    int frames{};
 
     void Engine::run()
     {
-        if (m_running) return;
+        assert(s_initialized && "Engine need to be initialized first. Call Engine::init() before Engine::run().");
 
-        m_running = true;
+        if (s_running) return;
 
-        while (m_running && !m_window->closed())
+        s_running = true;
+
+        while (s_running && !s_window->closed())
         {
+            static std::chrono::high_resolution_clock::time_point prevTime{};
             const auto currentTime{ std::chrono::high_resolution_clock::now() };
-            const std::chrono::duration<float> elapsed_seconds{ currentTime - m_prevTime };
+            const std::chrono::duration<float> elapsed_seconds{ currentTime - prevTime };
 
-            m_deltaTime = elapsed_seconds.count();
-            m_prevTime = currentTime;  // TODO: Make m_prevTime static
+            s_deltaTime = elapsed_seconds.count();
+            prevTime = currentTime;
 
-
-            //std::cout << "Delta time:" << m_deltaTime << '\n';
-            //std::cout << "FPS:" << 1 / m_deltaTime << '\n';
-
-            m_renderer->render();
+            s_renderer->render();
             UI::Debug::render();
-            m_window->update(m_deltaTime);
-            m_inputSystem->update();
+            s_window->update(s_deltaTime);
+            s_inputSystem->update();
+
+            avgFps += 1 / s_deltaTime;
+            ++frames;
         }
+
+        std::cout << "Avg FPS: " << avgFps / frames << '\n';
+    }
+
+    float Engine::getDeltaTime()
+    {
+        return s_deltaTime;
+    }
+
+    Core::World* Engine::getWorld()
+    {
+        return s_world.get();
     }
 }

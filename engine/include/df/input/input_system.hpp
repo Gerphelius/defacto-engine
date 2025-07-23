@@ -6,7 +6,7 @@
 #include "render/window.hpp"
 #include "utils/math.hpp"
 
-namespace DF::Core {
+namespace DF {
     class Engine;
 }
 
@@ -72,7 +72,7 @@ namespace DF::Input
     protected:
         static std::shared_ptr<InputSystem> create(const Render::Window* window);
 
-        friend class Core::Engine;
+        friend class Engine;
     };
 
     std::shared_ptr<InputSystem> getInputSystem();

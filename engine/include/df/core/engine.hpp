@@ -6,31 +6,32 @@
 #include "render/renderer.hpp"
 #include "render/window.hpp"
 #include "input/input_system.hpp"
-#include "entities/camera.hpp"
 #include "world.hpp"
 
-namespace DF::Core
+namespace DF
 {
-    class Engine
+    class Engine final
     {
-    private:
-        std::unique_ptr<Render::Window> m_window{};
-        std::unique_ptr<Render::Renderer> m_renderer{};
-        std::shared_ptr<Input::InputSystem> m_inputSystem{};
-        bool m_running{ false };
-        float m_deltaTime{};
-        std::chrono::high_resolution_clock::time_point m_prevTime{};
-        std::shared_ptr<Entity::Camera> m_debugCamera{};  // TODO: Create camera component and get rid of this.
-        std::shared_ptr<World> m_world{};
-
     public:
-        Engine();
+        Engine() = delete;
 
-        void run();
+        static void init();
 
-        auto getDeltaTime() const { return m_deltaTime; }
+        static void run();
 
-        auto getWorld() const { return m_world; }
+        static float getDeltaTime();
+
+        static Core::World* getWorld();
+
+    private:
+        static bool s_initialized;
+        static bool s_running;
+        static float s_deltaTime;
+
+        static std::unique_ptr<DF::Render::Window> s_window;
+        static std::shared_ptr<Input::InputSystem> s_inputSystem;
+        static std::unique_ptr<Render::Renderer> s_renderer;
+        static std::unique_ptr<Core::World> s_world;
     };
 }
 

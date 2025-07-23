@@ -1,93 +1,37 @@
 #pragma once
 
-#include <vector>
-#include <array>
-#include <unordered_map>
-#include <memory>
-#include <typeindex>
-#include <typeinfo>
+#include <functional>
 #include <iostream>
+#include <cassert>
+#include <optional>
 
 #include <entt/entt.hpp>
 
-#include "utils/math.hpp"
-#include "utils/sparse_set.hpp"
-#include "assets/mesh.hpp"
-
-// For entities recycling make an array of entities [A, A, A, A, D, D], where A - Alive, D - Dead.
-// Also, need to store the index of last alive entity (LAE).
-// When entity is deleted, swap last alive with that which will be deleted, mark is as D, shift LAE index.
-// When entity is created, if LAE points to last array element, resize array and push new entity.
-// If LAE not points to last array element, increment LAE and mark Dead entity as Alive.
+#include "components/transform.hpp"
+#include "components/transform_matrix.hpp"
 
 namespace DF::Core
 {
+    template <typename Component>
+    inline Component& getProxy(Component& component)
+    {
+        return component;
+    }
+
+    template <typename Component>
+    inline decltype(auto) findProxy(Component& component)
+    {
+        using DF::Core::getProxy;
+
+        return getProxy(component);
+    }
+
     using Object = entt::entity;
-
-    struct Transform
-    {
-        Math::vec3 m_position{ 0.0 };
-        Math::vec3 m_rotation{ 1.0 };
-        Math::vec3 m_scale{ 1.0 };
-    };
-
-    struct Model
-    {
-        std::shared_ptr<Assets::Mesh> m_mesh{};
-    };
-
-    class IComponentPool
-    {
-    public:
-        virtual ~IComponentPool() = default;
-
-        virtual std::size_t size() const = 0;
-
-        virtual const std::vector<std::size_t> getObjects() const = 0;
-    };
-
-    template <typename T>
-    class ComponentPool : public IComponentPool
-    {
-    private:
-        Container::SparseSet<T> m_pool{};
-
-    public:
-        void addComponent(const Object& object, const T& component)
-        {
-            m_pool.add(object, component);
-        }
-
-        T& getComponent(const Object& object)
-        {
-            return m_pool.get(object);
-        }
-
-        const std::vector<std::size_t> getObjects() const override
-        {
-            return m_pool.getIndices();
-        }
-
-        std::size_t size() const override
-        {
-            return m_pool.size();
-        }
-    };
 
     class World
     {
     private:
-        Container::SparseSet<Transform> m_transforms{};
-        Container::SparseSet<Model> m_models{};
-        std::vector<Object> m_objects{};
-
-        std::unordered_map<std::type_index, std::unique_ptr<IComponentPool>> m_componentPools{};
-
-
-        /***********************************  EnTT  *****************************************/
-
         entt::registry m_registry{};
-
 
     public:
         Object createObject()
@@ -95,99 +39,81 @@ namespace DF::Core
             return m_registry.create();
         }
 
+        entt::registry& getRegistry() { return m_registry; }
+
         template <typename T>
         void addComponent(const Object& object, const T& component)
         {
             m_registry.emplace<T>(object, component);
         }
 
-        const entt::registry& getObjects() const
+        template <typename T>
+        void removeComponent(const Object& object)
         {
-            return m_registry;
-        }
-
-        /************************************************************************************/
-
-    public:
-        void spawnObject(const Object& object) const
-        {
-            // Render objects
-        }
-
-        //const std::vector<Object> getObjects() const
-        //{
-        //    return m_objects;
-        //}
-
-        //Object createObject()
-        //{
-        //    static Object lastObjectId{};
-
-        //    ++lastObjectId;
-
-        //    m_objects.push_back(lastObjectId);
-
-        //    return lastObjectId;
-        //}
-
-        //template <typename T>
-        //void addComponent(const Object& object, const T& component)
-        //{
-        //    auto& poolPtr = m_componentPools[std::type_index(typeid(T))];
-
-        //    if (!poolPtr)
-        //    {
-        //        poolPtr = std::make_unique<ComponentPool<T>>();
-        //    }
-
-        //    static_cast<ComponentPool<T>*>(poolPtr.get())->addComponent(object, component);
-        //}
-
-        template <typename... Components>
-        void addComponents(const Object& object, Components... args)
-        {
-            (addComponent(object, args), ...);
+            m_registry.remove<T>(object);
         }
 
         template <typename T>
-        T* getComponent(const Object& object)
+        auto getComponent(const Object& object)
         {
-            auto pool{ m_componentPools.find(std::type_index(typeid(T))) };
+            T* component{ m_registry.try_get<T>(object) };
 
-            if (pool != m_componentPools.end())
+            if constexpr (requires(T & t) { getProxy(t); })
             {
-                auto* typedPool{ static_cast<ComponentPool<T>*>(pool->second.get()) };
-
-                return &typedPool->getComponent(object);
-            }
-
-            return nullptr;
-        }
-
-        template<typename... Components>
-        auto getComponents(const Object& object) {
-            return std::make_tuple(getComponent<Components>(object)...);
-        }
-
-        template<typename... Components, typename Callback>
-        void forEach(const Callback& callback)
-        {
-            std::array<IComponentPool*, sizeof...(Components)> pools{
-                m_componentPools[typeid(Components)].get()...
-            };
-
-            auto compare{ [](IComponentPool* a, IComponentPool* b) { return b->size() > a->size(); } };
-            auto smallestPool{ std::ranges::min_element(pools, compare) };
-
-            for (const auto& object : (*smallestPool)->getObjects())
-            {
-                Object obj{ static_cast<Object>(object) };
-
-                if ((getComponent<Components>(obj) && ...))
+                if (component)
                 {
-                    callback(*getComponent<Components>(obj)...);
+                    return std::optional{ getProxy(*component) };
                 }
+
+                return std::optional<std::decay_t<decltype(getProxy(*component))>>{};
+            }
+            else
+            {
+                return component;
             }
         }
+
+        void spawnObject(const Object& object)
+        {
+            auto* transformComp{ m_registry.try_get<Components::Transform>(object) };
+
+            assert(transformComp && "That object doesn't have transform component and cannot be spawned");
+
+            if (transformComp)
+            {
+                Math::mat4 modelMat{ Math::mat4(1.0) };
+                Components::TransformMatrix transformMatrix{};
+                transformMatrix.m_translation = Math::translateMat4(modelMat, transformComp->m_position);
+
+                addComponent<Components::TransformMatrix>(object, transformMatrix);
+                addComponent<Components::TransformDirty>(object, Components::TransformDirty{});
+            }
+        }
+
+        template <typename T>
+        void updateComponent(const Object& object, std::function<void(T&)> func)
+        {
+            m_registry.patch<T>(object, func);
+        }
+
+        template <typename... Components, typename Callback>
+        void forEach(Callback&& callback)
+        {
+            m_registry.view<Components...>().each(
+                [this, callback](Components&... comps) {
+                    callback(findProxy(comps)...);
+                }
+            );
+        }
+
+        //template <typename... Components, typename Callback>
+        //void forEach(Callback&& callback)
+        //{
+        //    m_registry.view<Components...>().each(
+        //        [this, callback](entt::entity entity, Components&... comps) {
+        //            callback(entity, findProxy(comps)...);
+        //        }
+        //    );
+        //}
     };
 }

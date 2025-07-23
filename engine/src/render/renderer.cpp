@@ -10,13 +10,16 @@
 #include "utils/math.hpp"
 #include "input/input_system.hpp"
 
+#include "components/camera.hpp"
+#include "components/transform.hpp"
+#include "components/transform_matrix.hpp"
+#include "components/model.hpp"
+
 namespace DF::Render {
     Math::vec3 g_lightPos{ 1.0f };
 
-
-    Renderer::Renderer(std::shared_ptr<Entity::Camera> camera, std::shared_ptr<Core::World> world)
-        : m_camera{ camera }
-        , m_world{ world }
+    Renderer::Renderer(Core::World* world)
+        : m_world{ world }
     {
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
@@ -75,6 +78,8 @@ namespace DF::Render {
         glEnable(GL_DEPTH_TEST);
     }
 
+    static void func(const Components::Camera& cam) {}
+
     void Renderer::render()
     {
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
@@ -85,51 +90,46 @@ namespace DF::Render {
         Math::vec3 lightColor{ 1.0f };
         Math::vec3 directionalLight{ 1.0f, -1.0f, 0.0f };
 
-        m_shaderProgram->setUniform("uView", m_camera->getTranslation());
-        m_shaderProgram->setUniform("uProjection", m_camera->getProjection());
+        /* 
+        * TODO: find a better place for systems like this
+        * (probably need to register all systems inside world?)
+        */
+        m_world->forEach<Components::Camera, Components::Transform>(
+            [this](const auto& camera, const auto& transform)
+            {
+                if (camera.m_active)
+                {
+                    const auto translation{ Math::lookAt(transform.getPosition(), transform.getForwardVector() + transform.getPosition(), Math::vec3(0.0, 0.1, 0.0))};
+                    m_shaderProgram->setUniform("uView", translation);
 
-        /////////////////////////////  CUBE  /////////////////////////////
-
-        const auto& objects{ m_world->getObjects() };
-
-        auto view{ objects.view<const Core::Model, Core::Transform>() };
-
-        view.each(
-            [this](const auto& model, const auto& transform) {
-                Math::mat4 modelMat{ Math::mat4(1.0) };
-
-                modelMat = Math::translateMat4(modelMat, transform.m_position);
-
-                m_shaderProgram->setUniform("uModel", modelMat);
-
-                model.m_mesh->draw();
+                    const auto projection{ Math::perspective(Math::degToRad(camera.m_fov), 800.0f / 600.0f, camera.m_near, camera.m_far) };
+                    m_shaderProgram->setUniform("uProjection", projection);
+                }
             }
         );
 
-        //auto objects{ m_world->getObjects() };
-
-        //for (const auto& object : objects)
-        //{
-        //    Math::mat4 modelMat{ Math::mat4(1.0) };
-
-        //    modelMat = Math::translateMat4(modelMat, m_world->getComponent<Core::Transform>(object)->m_position);
-
-        //    m_shaderProgram->setUniform("uModel", modelMat);
-
-        //    m_world->getComponent<Core::Model>(object)->m_mesh->draw();
-        //}
-
-        //m_world->forEach<Core::Model, Core::Transform>(
-        //    [this](Core::Model& model, Core::Transform& transform) {
+        /* 
+        * This is a TransformMatrix component update system for caching transform matrix
+        * calculations.
+        */
+        //m_world->forEach<Components::Transform, Components::TransformMatrix, Components::TransformDirty>(
+        //    [this](entt::entity entity, auto transform, auto& transformMatrix)
+        //    {
         //        Math::mat4 modelMat{ Math::mat4(1.0) };
-
-        //        modelMat = Math::translateMat4(modelMat, transform.m_position);
-
-        //        m_shaderProgram->setUniform("uModel", modelMat);
-
-        //        model.m_mesh->draw();
+        //        transformMatrix.m_translation = Math::translateMat4(modelMat, transform.getPosition());
+        //        m_world->removeComponent<Components::TransformDirty>(entity);
         //    }
         //);
+
+        /////////////////////////////  CUBE  /////////////////////////////
+
+        m_world->forEach<Components::Model, Components::TransformMatrix>(
+            [this](const Components::Model& model, const Components::TransformMatrix& transform)
+            {
+                m_shaderProgram->setUniform("uModel", transform.m_translation);
+                model.m_mesh->draw();
+            }
+        );
 
         m_shaderProgram->setUniform("uTexture", 0);
         m_shaderProgram->setUniform("uMaterial.diffuse", 3);

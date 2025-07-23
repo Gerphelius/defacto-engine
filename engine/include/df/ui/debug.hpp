@@ -10,7 +10,7 @@
 
 #include "render/window.hpp"
 
-namespace DF::Core {
+namespace DF {
     class Engine;
 }
 
@@ -64,6 +64,6 @@ namespace DF::UI
             ImGui::DestroyContext();
         }
 
-        friend class Core::Engine;
+        friend class Engine;
     };
 }

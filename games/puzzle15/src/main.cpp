@@ -7,19 +7,21 @@
 #include "df/input/input_system.hpp"
 #include "df/utils/math.hpp"
 #include "df/ui/debug.hpp"
+#include "df/components/transform.hpp"
+#include "df/components/model.hpp"
 
 
 /* TODO:
-* 
+*
 * Create asset manager with primitives;
 * Create mesh class that will create VBO, VAO, EBO from vertices/indices;
 * When creating primitive mesh class, create it once and store it in asset manager as shared ptr;
 * Create mesh component that will hold pointer to a mesh class;
 * Iterate mesh components inside renderer and bind mesh class VAO;
-* 
+*
 */
 
-static const std::array vertices {
+static const std::array vertices{
     // transforms            |  normals           |  texture coords
 
     /* 0 */    0.5f,  0.5f,  0.5f,    0.0f, 0.0f, 1.0f,    1.0f, 1.0f,  // Front
@@ -52,7 +54,7 @@ static const std::array vertices {
     /* 22 */   0.5f, -0.5f, -0.5f,    0.0f,-1.0f, 0.0f,    0.0f, 1.0f,
     /* 23 */  -0.5f, -0.5f, -0.5f,    0.0f,-1.0f, 0.0f,    0.0f, 0.0f,
 };
-static const std::array indices {
+static const std::array indices{
     //  triangle 1  |  triangle 2
          0, 1, 2,       1, 3, 2,       // Front
          7, 6, 4,       7, 5, 4,       // Back
@@ -66,7 +68,7 @@ static const std::array indices {
 
 int main()
 {
-    DF::Core::Engine eng{};
+    DF::Engine::init();
 
     bool testBool{};
     float testFloat{};
@@ -82,7 +84,9 @@ int main()
 
     ///////////////////////// ECS TEST /////////////////////////
 
-    const auto world{ eng.getWorld() };
+    const auto world{ DF::Engine::getWorld() };
+
+
 
     for (int i{}; i < 100; ++i)
     {
@@ -90,20 +94,22 @@ int main()
         {
             auto object{ world->createObject() };
 
-            DF::Core::Transform transformComp{};
-            DF::Core::Model modelComp{ std::make_shared<DF::Assets::Mesh>(vertices, indices) };
+            DF::Components::Transform transformComp{};
+            DF::Components::Model modelComp{ std::make_shared<DF::Assets::Mesh>(vertices, indices) };
 
             transformComp.m_position.x = i * 2.0f;
             transformComp.m_position.z = j * 2.0f;
 
             world->addComponent(object, transformComp);
             world->addComponent(object, modelComp);
+
+            world->spawnObject(object);
         }
     }
 
     ////////////////////////////////////////////////////////////
 
-    eng.run();
+    DF::Engine::run();
 
     return 0;
 }

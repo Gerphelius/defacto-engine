@@ -3,13 +3,13 @@ project("defacto-engine")
 file(
     GLOB ENGINE_INCLUDE
 
-    "include/df/input/*.hpp"
-    "include/df/core/*.hpp"
-    "include/df/render/*.hpp"
-    "include/df/entities/*.hpp"
-    "include/df/utils/*.hpp"
     "include/df/assets/*.hpp"
+    "include/df/components/*.hpp"
+    "include/df/core/*.hpp"
+    "include/df/input/*.hpp"
+    "include/df/render/*.hpp"
     "include/df/ui/*.hpp"
+    "include/df/utils/*.hpp"
 )
 
 file(
@@ -18,7 +18,6 @@ file(
     "src/input/*.cpp"
     "src/core/*.cpp"
     "src/render/*.cpp"
-    "src/entities/*.cpp"
     "src/utils/*.cpp"
 )
 

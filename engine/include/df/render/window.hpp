@@ -6,7 +6,8 @@
 #include <stdexcept>
 #include <functional>
 
-namespace DF::Core{
+namespace DF
+{
     class Engine;
 }
 
@@ -26,6 +27,6 @@ namespace DF::Render
     private:
         static std::unique_ptr<Window> create(int width, int height, std::string_view title);
 
-        friend class Core::Engine;
+        friend class Engine;
     };
 }
