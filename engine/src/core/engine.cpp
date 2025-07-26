@@ -156,9 +156,6 @@ namespace DF
         s_initialized = true;
     }
 
-    float avgFps{};
-    int frames{};
-
     void Engine::run()
     {
         assert(s_initialized && "Engine need to be initialized first. Call Engine::init() before Engine::run().");
@@ -167,9 +164,14 @@ namespace DF
 
         s_running = true;
 
+        auto engineStart{ std::chrono::high_resolution_clock::now() };
+        std::chrono::high_resolution_clock::time_point prevTime{ engineStart };
+        int totalFrames{};
+
+        std::cout << "Engine: " << s_window.get() << '\n';
+
         while (s_running && !s_window->closed())
         {
-            static std::chrono::high_resolution_clock::time_point prevTime{};
             const auto currentTime{ std::chrono::high_resolution_clock::now() };
             const std::chrono::duration<float> elapsed_seconds{ currentTime - prevTime };
 
@@ -181,11 +183,13 @@ namespace DF
             s_window->update(s_deltaTime);
             s_inputSystem->update();
 
-            avgFps += 1 / s_deltaTime;
-            ++frames;
+            ++totalFrames;
         }
 
-        std::cout << "Avg FPS: " << avgFps / frames << '\n';
+        const std::chrono::duration<float> totalFrameTime{ std::chrono::high_resolution_clock::now() - engineStart };
+        const float avgFps{ static_cast<float>(totalFrames) / totalFrameTime.count() };
+
+        std::cout << "Avg FPS: " << avgFps << '\n';
     }
 
     float Engine::getDeltaTime()
