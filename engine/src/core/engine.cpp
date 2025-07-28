@@ -6,6 +6,7 @@
 #include <imgui_impl_glfw.h>
 
 #include "core/engine.hpp"
+#include "core/backend_factory.hpp"
 #include "utils/math.hpp"
 #include "ui/debug.hpp"
 #include "components/camera.hpp"
@@ -18,7 +19,7 @@ namespace DF
     float Engine::s_deltaTime{};
 
     std::unique_ptr<DF::Render::Window> Engine::s_window{};
-    std::shared_ptr<Input::InputSystem> Engine::s_inputSystem{};
+    std::shared_ptr<Input> Engine::s_inputSystem{};
     std::unique_ptr<Render::Renderer> Engine::s_renderer{};
     std::unique_ptr<Core::World> Engine::s_world{};
 
@@ -26,8 +27,8 @@ namespace DF
     {
         if (s_initialized) return;
 
-        s_window = Render::Window::create(800, 600, "DeFacto");
-        s_inputSystem = Input::InputSystem::create(s_window.get());
+        s_window = Core::BackendFactory::createWindow(800, 600, "DeFacto");
+        s_inputSystem = Core::BackendFactory::createInput(s_window.get());
         UI::Debug::init(s_window.get());
 
         s_world = std::make_unique<Core::World>();
@@ -38,6 +39,8 @@ namespace DF
         s_world->addComponent<Components::Transform>(defaultCamera, Components::Transform{});
 
         s_renderer = std::make_unique<Render::Renderer>(s_world.get());
+
+        s_window->setResizeCallback([](float width, float height) { s_renderer->setWindowSize(width, height); });
 
         s_inputSystem->onKeyPress(
             Input::Key::ESC,
@@ -167,8 +170,6 @@ namespace DF
         auto engineStart{ std::chrono::high_resolution_clock::now() };
         std::chrono::high_resolution_clock::time_point prevTime{ engineStart };
         int totalFrames{};
-
-        std::cout << "Engine: " << s_window.get() << '\n';
 
         while (s_running && !s_window->closed())
         {

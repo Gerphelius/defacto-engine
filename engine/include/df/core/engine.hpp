@@ -5,7 +5,7 @@
 
 #include "render/renderer.hpp"
 #include "render/window.hpp"
-#include "input/input_system.hpp"
+#include "input/input.hpp"
 #include "world.hpp"
 
 namespace DF
@@ -29,7 +29,7 @@ namespace DF
         static float s_deltaTime;
 
         static std::unique_ptr<DF::Render::Window> s_window;
-        static std::shared_ptr<Input::InputSystem> s_inputSystem;
+        static std::shared_ptr<Input> s_inputSystem;
         static std::unique_ptr<Render::Renderer> s_renderer;
         static std::unique_ptr<Core::World> s_world;
     };

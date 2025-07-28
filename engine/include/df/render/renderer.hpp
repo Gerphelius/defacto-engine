@@ -15,10 +15,17 @@ namespace DF::Render
 
     class Renderer
     {
+        struct WindowSize
+        {
+            float width{};
+            float height{};
+        };
+
     private:
         DrawMode m_drawMode{ DrawMode::FILL };
         std::unique_ptr<ShaderProgram> m_shaderProgram{};
         Core::World* m_world{};
+        WindowSize m_size{ 800, 600 };
 
     public:
         explicit Renderer(Core::World* world);
@@ -26,6 +33,8 @@ namespace DF::Render
         void render();
 
         void setDrawMode(DrawMode mode);
+
+        void setWindowSize(float width, float height);
 
         DrawMode getDrawMode() const { return m_drawMode; }
     };

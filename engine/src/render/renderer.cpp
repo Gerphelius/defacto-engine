@@ -8,7 +8,7 @@
 #include "render/renderer.hpp"
 #include "render/window.hpp"
 #include "utils/math.hpp"
-#include "input/input_system.hpp"
+#include "input/input.hpp"
 
 #include "components/camera.hpp"
 #include "components/transform.hpp"
@@ -100,7 +100,7 @@ namespace DF::Render {
                     const auto translation{ Math::lookAt(transform.getPosition(), transform.getForwardVector() + transform.getPosition(), Math::vec3(0.0, 0.1, 0.0))};
                     m_shaderProgram->setUniform("uView", translation);
 
-                    const auto projection{ Math::perspective(Math::degToRad(camera.m_fov), 800.0f / 600.0f, camera.m_near, camera.m_far) };
+                    const auto projection{ Math::perspective(Math::degToRad(camera.m_fov), m_size.width / m_size.height, camera.m_near, camera.m_far) };
                     m_shaderProgram->setUniform("uProjection", projection);
                 }
             }
@@ -183,5 +183,10 @@ namespace DF::Render {
     {
         m_drawMode = mode;
         glPolygonMode(GL_FRONT_AND_BACK, mode == DrawMode::FILL ? GL_FILL : GL_LINE);
+    }
+
+    void Renderer::setWindowSize(float width, float height)
+    {
+        m_size = { width, height };
     }
 }

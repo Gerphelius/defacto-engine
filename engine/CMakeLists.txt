@@ -10,6 +10,7 @@ file(
     "include/df/render/*.hpp"
     "include/df/ui/*.hpp"
     "include/df/utils/*.hpp"
+    "backend/glfw/*.hpp"
 )
 
 file(
@@ -19,6 +20,7 @@ file(
     "src/core/*.cpp"
     "src/render/*.cpp"
     "src/utils/*.cpp"
+    "backend/glfw/*.cpp"
 )
 
 file(GLOB SHADER_FILES "resources/shaders/*.glsl")

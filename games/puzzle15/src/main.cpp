@@ -4,7 +4,7 @@
 
 #include "df/core/engine.hpp"
 #include "df/core/world.hpp"
-#include "df/input/input_system.hpp"
+#include "df/input/input.hpp"
 #include "df/utils/math.hpp"
 #include "df/ui/debug.hpp"
 #include "df/components/transform.hpp"
