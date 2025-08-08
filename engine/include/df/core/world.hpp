@@ -4,11 +4,13 @@
 #include <iostream>
 #include <cassert>
 #include <optional>
+#include <numeric>
 
 #include <entt/entt.hpp>
 
 #include "components/transform.hpp"
 #include "components/transform_matrix.hpp"
+#include "components/camera.hpp"
 
 namespace DF::Core
 {
@@ -34,6 +36,8 @@ namespace DF::Core
         entt::registry m_registry{};
 
     public:
+        World() noexcept;
+
         Object createObject()
         {
             return m_registry.create();
@@ -83,7 +87,7 @@ namespace DF::Core
             {
                 Math::mat4 modelMat{ Math::mat4(1.0) };
                 Components::TransformMatrix transformMatrix{};
-                transformMatrix.m_translation = Math::translateMat4(modelMat, transformComp->m_position);
+                transformMatrix.translation = Math::translateMat4(modelMat, transformComp->position);
 
                 addComponent<Components::TransformMatrix>(object, transformMatrix);
                 addComponent<Components::TransformDirty>(object, Components::TransformDirty{});
@@ -106,14 +110,17 @@ namespace DF::Core
             );
         }
 
-        //template <typename... Components, typename Callback>
-        //void forEach(Callback&& callback)
-        //{
-        //    m_registry.view<Components...>().each(
-        //        [this, callback](entt::entity entity, Components&... comps) {
-        //            callback(entity, findProxy(comps)...);
-        //        }
-        //    );
-        //}
+        template <typename... Components, typename Callback>
+        void forEachObject(Callback&& callback)
+        {
+            m_registry.view<Components...>().each(
+                [this, callback](Object object, Components&... comps) {
+                    callback(object, findProxy(comps)...);
+                }
+            );
+        }
+
+    private:
+        void spawnDefaultCamera();
     };
 }

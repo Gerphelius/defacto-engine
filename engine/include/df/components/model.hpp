@@ -8,6 +8,6 @@ namespace DF::Components
 {
     struct Model
     {
-        std::shared_ptr<Assets::Mesh> m_mesh{};
+        std::shared_ptr<Assets::Mesh> mesh{};
     };
 }

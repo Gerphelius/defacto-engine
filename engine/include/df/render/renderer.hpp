@@ -3,7 +3,11 @@
 #include <memory>
 
 #include "render/shader_program.hpp"
-#include "core/world.hpp"
+
+namespace DF::Core
+{
+    class World;
+}
 
 namespace DF::Render
 {

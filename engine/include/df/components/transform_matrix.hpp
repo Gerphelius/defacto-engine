@@ -10,6 +10,6 @@ namespace DF::Components
 
     struct TransformMatrix
     {
-        Math::mat4 m_translation{ 1.0 };
+        Math::mat4 translation{ 1.0 };
     };
 }

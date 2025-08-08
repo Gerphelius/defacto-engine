@@ -8,7 +8,7 @@ file(
     "include/df/core/*.hpp"
     "include/df/input/*.hpp"
     "include/df/render/*.hpp"
-    "include/df/ui/*.hpp"
+    "include/df/ui_debug/*.hpp"
     "include/df/utils/*.hpp"
     "backend/glfw/*.hpp"
 )
@@ -20,6 +20,7 @@ file(
     "src/core/*.cpp"
     "src/render/*.cpp"
     "src/utils/*.cpp"
+    "src/ui_debug/*.cpp"
     "backend/glfw/*.cpp"
 )
 
@@ -30,6 +31,7 @@ add_library(${PROJECT_NAME} STATIC ${ENGINE_SOURCES} ${ENGINE_INCLUDE})
 
 # Set directories
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/df)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/backend)
 
 # Copy images
 file(COPY "${CMAKE_SOURCE_DIR}/engine/resources/images/" DESTINATION "${CMAKE_BINARY_DIR}/resources/images/")

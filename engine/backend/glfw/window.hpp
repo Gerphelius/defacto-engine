@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <fmt/format.h>
 
-#include "../../include/df/render/window.hpp"
+#include "render/window.hpp"
 #include "input.hpp"
 
 namespace DF::Core

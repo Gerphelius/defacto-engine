@@ -1,14 +1,16 @@
 ﻿#include <deque>
-#include <numeric>
 #include <cassert>
+#include <iostream>
 
 #include <spdlog/spdlog.h>
 #include <imgui_impl_glfw.h>
 
 #include "core/engine.hpp"
+#include "core/world.hpp"
 #include "core/backend_factory.hpp"
+#include "core/service_locator.hpp"
 #include "utils/math.hpp"
-#include "ui/debug.hpp"
+#include "ui_debug/ui_manager.hpp"
 #include "components/camera.hpp"
 #include "components/transform.hpp"
 
@@ -19,7 +21,7 @@ namespace DF
     float Engine::s_deltaTime{};
 
     std::unique_ptr<DF::Render::Window> Engine::s_window{};
-    std::shared_ptr<Input> Engine::s_inputSystem{};
+    std::unique_ptr<Input> Engine::s_inputSystem{};
     std::unique_ptr<Render::Renderer> Engine::s_renderer{};
     std::unique_ptr<Core::World> Engine::s_world{};
 
@@ -29,20 +31,17 @@ namespace DF
 
         s_window = Core::BackendFactory::createWindow(800, 600, "DeFacto");
         s_inputSystem = Core::BackendFactory::createInput(s_window.get());
-        UI::Debug::init(s_window.get());
+
+        Core::ServiceLocator::registerService(s_inputSystem.get());
+        Input* input{ Core::ServiceLocator::getService<Input>() };
 
         s_world = std::make_unique<Core::World>();
-
-        auto defaultCamera{ s_world->createObject() };
-
-        s_world->addComponent<Components::Camera>(defaultCamera, Components::Camera{ .m_active{ true } });
-        s_world->addComponent<Components::Transform>(defaultCamera, Components::Transform{});
-
         s_renderer = std::make_unique<Render::Renderer>(s_world.get());
+        UI::Debug::UIManager::init(s_window.get());
 
         s_window->setResizeCallback([](float width, float height) { s_renderer->setWindowSize(width, height); });
 
-        s_inputSystem->onKeyPress(
+        input->onKeyPress(
             Input::Key::ESC,
             Input::KeyEvent::PRESS,
             []() mutable {
@@ -50,7 +49,7 @@ namespace DF
             }
         );
 
-        s_inputSystem->onKeyPress(
+        input->onKeyPress(
             Input::Key::N,
             Input::KeyEvent::PRESS,
             []() {
@@ -58,101 +57,6 @@ namespace DF
                 const auto newMode{ currentMode == Render::DrawMode::FILL ? Render::DrawMode::LINE : Render::DrawMode::FILL };
 
                 s_renderer->setDrawMode(newMode);
-            }
-        );
-
-        /*
-             ██████  █████  ███    ███ ███████ ██████   █████
-            ██      ██   ██ ████  ████ ██      ██   ██ ██   ██
-            ██      ███████ ██ ████ ██ █████   ██████  ███████
-            ██      ██   ██ ██  ██  ██ ██      ██   ██ ██   ██
-             ██████ ██   ██ ██      ██ ███████ ██   ██ ██   ██
-        */
-
-        constexpr float rotationSpeed{ 0.3f };
-        constexpr float maxCameraSpeed{ 40.0f };
-        constexpr float normalCameraSpeed{ 10.0f };
-        static float cameraSpeed{ normalCameraSpeed };
-
-        s_inputSystem->onKeyPress(
-            Input::Key::W,
-            Input::KeyEvent::HOLD,
-            [defaultCamera]() {
-                auto transform{ s_world->getComponent<Components::Transform>(defaultCamera) };
-
-                if (!transform) return;
-
-                transform->addPosition(transform->getForwardVector() * cameraSpeed * s_deltaTime);
-            }
-        );
-        s_inputSystem->onKeyPress(
-            Input::Key::S,
-            Input::KeyEvent::HOLD,
-            [defaultCamera]() {
-                auto transform{ s_world->getComponent<Components::Transform>(defaultCamera) };
-
-                if (!transform) return;
-
-                transform->addPosition(-transform->getForwardVector() * cameraSpeed * s_deltaTime);
-            }
-        );
-        s_inputSystem->onKeyPress(
-            Input::Key::D,
-            Input::KeyEvent::HOLD,
-            [defaultCamera]() {
-                auto transform{ s_world->getComponent<Components::Transform>(defaultCamera) };
-
-                if (!transform) return;
-
-                transform->addPosition(transform->getRightVector() * cameraSpeed * s_deltaTime);
-            }
-        );
-        s_inputSystem->onKeyPress(
-            Input::Key::A,
-            Input::KeyEvent::HOLD,
-            [defaultCamera]() {
-                auto transform{ s_world->getComponent<Components::Transform>(defaultCamera) };
-
-                if (!transform) return;
-
-                transform->addPosition(-transform->getRightVector() * cameraSpeed * s_deltaTime);
-            }
-        );
-
-        s_inputSystem->onKeyPress(
-            Input::Key::SHIFT_L,
-            Input::KeyEvent::PRESS,
-            [maxCameraSpeed]() mutable {
-                cameraSpeed = maxCameraSpeed;
-            }
-        );
-        s_inputSystem->onKeyPress(
-            Input::Key::SHIFT_L,
-            Input::KeyEvent::RELEASE,
-            [normalCameraSpeed]() mutable {
-                cameraSpeed = normalCameraSpeed;
-            }
-        );
-
-        s_inputSystem->onMouseMove(
-            [rotationSpeed, defaultCamera](Math::vec2 pos) {
-                static Math::vec2 s_lastPos{};
-
-                if (s_inputSystem->mouseKeyPressed(Input::MouseKey::RIGHT))
-                {
-                    Math::vec2 currentPos{ pos - s_lastPos };
-
-                    auto transform{ s_world->getComponent<Components::Transform>(defaultCamera) };
-
-                    if (!transform) return;
-
-                    auto newRotation{ transform->getRotation() - Math::vec3(currentPos.x * -rotationSpeed, currentPos.y * rotationSpeed, 0.0)};
-                    newRotation.y = std::clamp(newRotation.y, -89.0f, 89.0f);
-
-                    transform->setRotation(newRotation);
-                }
-
-                s_lastPos = pos;
             }
         );
 
@@ -180,12 +84,14 @@ namespace DF
             prevTime = currentTime;
 
             s_renderer->render();
-            UI::Debug::render();
+            UI::Debug::UIManager::render();
             s_window->update(s_deltaTime);
             s_inputSystem->update();
 
             ++totalFrames;
         }
+
+        UI::Debug::UIManager::destroy();
 
         const std::chrono::duration<float> totalFrameTime{ std::chrono::high_resolution_clock::now() - engineStart };
         const float avgFps{ static_cast<float>(totalFrames) / totalFrameTime.count() };
@@ -201,5 +107,10 @@ namespace DF
     Core::World* Engine::getWorld()
     {
         return s_world.get();
+    }
+
+    Input* Engine::getInput()
+    {
+        return s_inputSystem.get();
     }
 }

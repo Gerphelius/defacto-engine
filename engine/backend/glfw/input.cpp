@@ -116,7 +116,7 @@ namespace DF::Backend
 
     void GLFWInput::wheelCallback(double xoffset, double yoffset)
     {
-        std::cout << "Mouse wheel: (x " << xoffset << ", y " << yoffset << ")\n";
+        //std::cout << "Mouse wheel: (x " << xoffset << ", y " << yoffset << ")\n";
     }
 
     //void GLFWInput::glfwKeyCallback(GLFWwindow* window, int key, int, int action, int)

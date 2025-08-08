@@ -6,9 +6,9 @@ namespace DF::Components
 {
     struct Transform
     {
-        Math::vec3 m_position{ 0.0 };
-        Math::vec3 m_rotation{ 0.0 };
-        Math::vec3 m_scale{ 1.0 };
+        Math::vec3 position{ 0.0 };
+        Math::vec3 rotation{ 0.0 };
+        Math::vec3 scale{ 1.0 };
 
         bool m_dirty{ true };
     };
@@ -25,9 +25,9 @@ namespace DF::Components
         Math::vec3 getForwardVector() const
         {
             Math::vec3 direction{};
-            direction.x = cos(Math::degToRad(m_transform.m_rotation.x)) * cos(Math::degToRad(m_transform.m_rotation.y));
-            direction.y = sin(Math::degToRad(m_transform.m_rotation.y));
-            direction.z = sin(Math::degToRad(m_transform.m_rotation.x)) * cos(Math::degToRad(m_transform.m_rotation.y));
+            direction.x = cos(Math::degToRad(m_transform.rotation.x)) * cos(Math::degToRad(m_transform.rotation.y));
+            direction.y = sin(Math::degToRad(m_transform.rotation.y));
+            direction.z = sin(Math::degToRad(m_transform.rotation.x)) * cos(Math::degToRad(m_transform.rotation.y));
 
             return Math::normalize(direction);
         }
@@ -46,45 +46,45 @@ namespace DF::Components
 
         void resetDirty() { m_transform.m_dirty = false; }
 
-        Math::vec3 getPosition() const { return m_transform.m_position; }
+        Math::vec3 getPosition() const { return m_transform.position; }
 
         void setPosition(const Math::vec3 newPosition)
         {
-            m_transform.m_position = newPosition;
+            m_transform.position = newPosition;
             m_transform.m_dirty = true;
         }
 
         void addPosition(const Math::vec3 position)
         {
-            m_transform.m_position += position;
+            m_transform.position += position;
             m_transform.m_dirty = true;
         }
 
-        Math::vec3 getRotation() const { return m_transform.m_rotation; }
+        Math::vec3 getRotation() const { return m_transform.rotation; }
 
         void setRotation(const Math::vec3 newRotation)
         {
-            m_transform.m_rotation = newRotation;
+            m_transform.rotation = newRotation;
             m_transform.m_dirty = true;
         }
 
         void addRotation(const Math::vec3 rotation)
         {
-            m_transform.m_rotation += rotation;
+            m_transform.rotation += rotation;
             m_transform.m_dirty = true;
         }
 
-        Math::vec3 getScale() const { return m_transform.m_scale; }
+        Math::vec3 getScale() const { return m_transform.scale; }
 
         void setScale(const Math::vec3 newScale)
         {
-            m_transform.m_scale = newScale;
+            m_transform.scale = newScale;
             m_transform.m_dirty = true;
         }
 
         void addScale(const Math::vec3 scale)
         {
-            m_transform.m_scale += scale;
+            m_transform.scale += scale;
             m_transform.m_dirty = true;
         }
     };

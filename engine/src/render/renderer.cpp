@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 #include <sail-c++/sail-c++.h>
 
+#include "core/world.hpp"
 #include "render/renderer.hpp"
 #include "render/window.hpp"
 #include "utils/math.hpp"
@@ -95,12 +96,12 @@ namespace DF::Render {
         m_world->forEach<Components::Camera, Components::Transform>(
             [this](const auto& camera, const auto& transform)
             {
-                if (camera.m_active)
+                if (camera.active)
                 {
                     const auto translation{ Math::lookAt(transform.getPosition(), transform.getForwardVector() + transform.getPosition(), Math::vec3(0.0, 0.1, 0.0))};
                     m_shaderProgram->setUniform("uView", translation);
 
-                    const auto projection{ Math::perspective(Math::degToRad(camera.m_fov), m_size.width / m_size.height, camera.m_near, camera.m_far) };
+                    const auto projection{ Math::perspective(Math::degToRad(camera.fov), m_size.width / m_size.height, camera.near, camera.far) };
                     m_shaderProgram->setUniform("uProjection", projection);
                 }
             }
@@ -124,8 +125,8 @@ namespace DF::Render {
         m_world->forEach<Components::Model, Components::TransformMatrix>(
             [this](const Components::Model& model, const Components::TransformMatrix& transform)
             {
-                m_shaderProgram->setUniform("uModel", transform.m_translation);
-                model.m_mesh->draw();
+                m_shaderProgram->setUniform("uModel", transform.translation);
+                model.mesh->draw();
             }
         );
 

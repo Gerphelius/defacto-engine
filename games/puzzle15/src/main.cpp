@@ -2,23 +2,30 @@
 #include <string>
 #include <array>
 
-#include "df/core/engine.hpp"
-#include "df/core/world.hpp"
-#include "df/input/input.hpp"
-#include "df/utils/math.hpp"
-#include "df/ui/debug.hpp"
-#include "df/components/transform.hpp"
-#include "df/components/model.hpp"
+#include <fmt/format.h>
+
+#include "core/engine.hpp"
+#include "core/world.hpp"
+#include "input/input.hpp"
+#include "utils/math.hpp"
+#include "components/transform.hpp"
+#include "components/model.hpp"
+#include "components/metadata.hpp"
 
 
 /* TODO:
+* # Create API for getting references to window, input etc. (service locator)
+* # Make a UI to list all spawned objects in the world:
+*  -- Create base UI class/struct with some methods like render;
+*  -- Create a world objects list (WOL) UI inherited from base UI;
+*  -- Register WOL UI inside debug UI system;
+*  -- Create some kind of callbacks or basic observable to decouple UI from systems like renderer etc;
+*  -- Add an ability to create new object, add components, spawn object in the world.
 *
-* Create asset manager with primitives;
-* Create mesh class that will create VBO, VAO, EBO from vertices/indices;
-* When creating primitive mesh class, create it once and store it in asset manager as shared ptr;
-* Create mesh component that will hold pointer to a mesh class;
-* Iterate mesh components inside renderer and bind mesh class VAO;
-*
+* # Move default camera logic to world class and create it on init.
+* # Create asset manager and refactor path to use std::filesystem::path instead of relative.
+* # CMake - check path definition to assets, so during build on other machines assets are properly copied
+*   to where .exe lives and are loaded to the game.
 */
 
 static const std::array vertices{
@@ -70,23 +77,9 @@ int main()
 {
     DF::Engine::init();
 
-    bool testBool{};
-    float testFloat{};
-
-    DF::UI::Debug::addWidget(
-        "Test",
-        [&]() mutable {
-            ImGui::Text("This is window A");
-            ImGui::Checkbox("Demo Window", &testBool);
-            ImGui::SliderFloat("float", &testFloat, 0.0f, 1.0f);
-        }
-    );
-
     ///////////////////////// ECS TEST /////////////////////////
 
     const auto world{ DF::Engine::getWorld() };
-
-
 
     for (int i{}; i < 100; ++i)
     {
@@ -97,11 +90,12 @@ int main()
             DF::Components::Transform transformComp{};
             DF::Components::Model modelComp{ std::make_shared<DF::Assets::Mesh>(vertices, indices) };
 
-            transformComp.m_position.x = i * 2.0f;
-            transformComp.m_position.z = j * 2.0f;
+            transformComp.position.x = i * 2.0f;
+            transformComp.position.z = j * 2.0f;
 
             world->addComponent(object, transformComp);
             world->addComponent(object, modelComp);
+            world->addComponent(object, DF::Components::Metadata{ .name{ fmt::format("Cube {}", 100 * i + j) } });
 
             world->spawnObject(object);
         }

@@ -6,7 +6,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "../../include/df/input/input.hpp"
+#include "input/input.hpp"
 
 namespace DF::Backend
 {

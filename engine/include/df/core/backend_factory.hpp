@@ -3,8 +3,14 @@
 #include <memory>
 #include <string_view>
 
-#include "../render/window.hpp"
-#include "../input/input.hpp"
+namespace DF::Render
+{
+    class Window;
+}
+namespace DF
+{
+    class Input;
+}
 
 namespace DF::Core
 {

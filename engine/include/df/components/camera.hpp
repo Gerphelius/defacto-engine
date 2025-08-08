@@ -10,11 +10,11 @@ namespace DF::Components
             PERSPECTIVE,
         };
 
-        Projection m_projecton{ Projection::PERSPECTIVE };
-        float m_fov{ 45.0f };
-        bool m_active{};
-        float m_near{ 0.1f };
-        float m_far{ 10000.0f };
+        Projection projecton{ Projection::PERSPECTIVE };
+        float fov{ 45.0f };
+        bool active{};
+        float near{ 0.1f };
+        float far{ 10000.0f };
     };
 
 

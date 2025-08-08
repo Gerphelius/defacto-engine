@@ -3,8 +3,15 @@
 #include <functional>
 #include <memory>
 
-#include "render/window.hpp"
 #include "utils/math.hpp"
+
+/* TODO:
+* 
+* Update input system to be able to register actions associated with callbacks or events, so
+* you can create an action as a string key or something, then connect a callback to it and a key.
+* This will help to list all available key mappings with names so it can be configured like in
+* game menu controls settings.
+*/
 
 namespace DF
 {
