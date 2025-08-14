@@ -8,7 +8,7 @@
 #include <typeinfo>
 #include <iostream>
 
-#include "utils/math.hpp"
+#include "math/math.hpp"
 #include "utils/sparse_set.hpp"
 
 // For entities recycling make an array of entities [A, A, A, A, D, D], where A - Alive, D - Dead.

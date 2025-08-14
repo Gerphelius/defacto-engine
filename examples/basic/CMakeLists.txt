@@ -1,6 +1,6 @@
-project(puzzle15)
+project(basic_example)
 
-file(GLOB GAME_SOURCES "src/*.cpp")
+file(GLOB GAME_SOURCES "main.cpp")
 
 add_executable(${PROJECT_NAME} ${GAME_SOURCES})
 

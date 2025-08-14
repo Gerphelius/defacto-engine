@@ -8,7 +8,7 @@
 #include "core/world.hpp"
 #include "render/renderer.hpp"
 #include "render/window.hpp"
-#include "utils/math.hpp"
+#include "math/math.hpp"
 #include "input/input.hpp"
 
 #include "components/camera.hpp"

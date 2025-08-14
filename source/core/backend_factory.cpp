@@ -1,6 +1,6 @@
 #include "core/backend_factory.hpp"
-#include "glfw/window.hpp"
-#include "glfw/input.hpp"
+#include "backend/glfw/window.hpp"
+#include "backend/glfw/input.hpp"
 
 namespace DF::Core
 {

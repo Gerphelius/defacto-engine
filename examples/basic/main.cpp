@@ -7,7 +7,7 @@
 #include "core/engine.hpp"
 #include "core/world.hpp"
 #include "input/input.hpp"
-#include "utils/math.hpp"
+#include "math/math.hpp"
 #include "components/transform.hpp"
 #include "components/model.hpp"
 #include "components/metadata.hpp"

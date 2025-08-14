@@ -3,7 +3,7 @@
 #include <functional>
 #include <memory>
 
-#include "utils/math.hpp"
+#include "math/math.hpp"
 
 /* TODO:
 * 

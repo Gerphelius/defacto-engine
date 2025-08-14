@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils/math.hpp"
+#include "math/math.hpp"
 
 namespace DF::Components
 {

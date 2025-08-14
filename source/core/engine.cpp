@@ -9,7 +9,7 @@
 #include "core/world.hpp"
 #include "core/backend_factory.hpp"
 #include "core/service_locator.hpp"
-#include "utils/math.hpp"
+#include "math/math.hpp"
 #include "ui_debug/ui_manager.hpp"
 #include "components/camera.hpp"
 #include "components/transform.hpp"

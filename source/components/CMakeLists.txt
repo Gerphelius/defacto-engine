@@ -1,0 +1,9 @@
+target_sources(${PROJECT_NAME}
+    PUBLIC
+        camera.hpp
+        metadata.hpp
+        model.hpp
+        transform.hpp
+    PRIVATE
+        transform_matrix.hpp
+)
