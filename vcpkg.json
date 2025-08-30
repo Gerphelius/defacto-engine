@@ -10,6 +10,7 @@
         "assimp",
         "spdlog",
         "entt",
+        "flecs",
         {
             "name": "imgui",
             "features": [

@@ -6,8 +6,8 @@
 #include <imgui_impl_glfw.h>
 
 #include "core/engine.hpp"
-#include "core/world.hpp"
-#include "core/backend_factory.hpp"
+#include "world/world.hpp"
+#include "backend/backend_factory.hpp"
 #include "core/service_locator.hpp"
 #include "math/math.hpp"
 #include "ui_debug/ui_manager.hpp"
@@ -20,7 +20,7 @@ namespace DF
     bool Engine::s_running{};
     float Engine::s_deltaTime{};
 
-    std::unique_ptr<DF::Render::Window> Engine::s_window{};
+    std::unique_ptr<Render::Window> Engine::s_window{};
     std::unique_ptr<Input> Engine::s_inputSystem{};
     std::unique_ptr<Render::Renderer> Engine::s_renderer{};
     std::unique_ptr<Core::World> Engine::s_world{};

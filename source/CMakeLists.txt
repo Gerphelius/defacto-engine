@@ -6,14 +6,17 @@ add_library(${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(assets)
+add_subdirectory(backend)
 add_subdirectory(backend/glfw)
 add_subdirectory(components)
 add_subdirectory(core)
 add_subdirectory(input)
 add_subdirectory(math)
+add_subdirectory(observer)
 add_subdirectory(render)
 add_subdirectory(ui_debug)
 add_subdirectory(utils)
+add_subdirectory(world)
 
 # Copy images
 file(COPY "${CMAKE_SOURCE_DIR}/resources/images/" DESTINATION "${CMAKE_BINARY_DIR}/resources/images/")
@@ -50,7 +53,14 @@ add_dependencies(${PROJECT_NAME} CopyShaders)
 # target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
 
 # Set consistent runtime library for hot reload
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+# set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+# Enable Hot Reload for MSVC compilers if supported.
+if (POLICY CMP0141)
+  cmake_policy(SET CMP0141 NEW)
+  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+endif()
+
 
 if (MSVC)
     add_compile_options(/W4 /WX)

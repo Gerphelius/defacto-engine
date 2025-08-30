@@ -1,4 +1,4 @@
-#include "core/world.hpp"
+#include "world/world.hpp"
 #include "core/engine.hpp"
 #include "core/service_locator.hpp"
 #include "input/input.hpp"

@@ -8,6 +8,7 @@
 
 #include <entt/entt.hpp>
 
+#include "observer/subject.hpp"
 #include "components/transform.hpp"
 #include "components/transform_matrix.hpp"
 #include "components/camera.hpp"
@@ -32,9 +33,6 @@ namespace DF::Core
 
     class World
     {
-    private:
-        entt::registry m_registry{};
-
     public:
         World() noexcept;
 
@@ -42,8 +40,6 @@ namespace DF::Core
         {
             return m_registry.create();
         }
-
-        entt::registry& getRegistry() { return m_registry; }
 
         template <typename T>
         void addComponent(const Object& object, const T& component)
@@ -121,6 +117,9 @@ namespace DF::Core
         }
 
     private:
+        entt::registry m_registry{};
+        //Subject<> m_{};
+
         void spawnDefaultCamera();
     };
 }

@@ -5,7 +5,7 @@
 #include <glad/glad.h>
 #include <sail-c++/sail-c++.h>
 
-#include "core/world.hpp"
+#include "world/world.hpp"
 #include "render/renderer.hpp"
 #include "render/window.hpp"
 #include "math/math.hpp"
