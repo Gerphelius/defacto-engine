@@ -16,7 +16,10 @@ namespace DF::Components
     /* 
     * Probably better to use this tag instead of dirty flag to reduce transform system update iterations.
     */
-    struct TransformDirty {};
+    struct TransformDirty
+    {
+        bool dirty{ true };   // Used to bypass flecs error that empty structs cannot be set, only add.
+    };
 
     struct TransformProxy
     {

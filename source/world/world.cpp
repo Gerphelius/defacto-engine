@@ -1,9 +1,11 @@
+#include <algorithm>
+
 #include "world/world.hpp"
 #include "core/engine.hpp"
 #include "core/service_locator.hpp"
 #include "input/input.hpp"
 
-namespace DF::Core
+namespace DF
 {
     World::World() noexcept
     {
@@ -17,17 +19,17 @@ namespace DF::Core
         constexpr float normalCameraSpeed{ 10.0f };
         static float cameraSpeed{ normalCameraSpeed };
 
-        auto* input{ ServiceLocator::getService<Input>() };
+        auto* input{ Core::ServiceLocator::getService<Input>() };
         auto defaultCamera{ createObject() };
 
-        addComponent<Components::Camera>(defaultCamera, Components::Camera{ .active{ true } });
-        addComponent<Components::Transform>(defaultCamera, Components::Transform{});
+        defaultCamera.addComponent<Components::Camera>(Components::Camera{ .active{ true } });
+        defaultCamera.addComponent<Components::Transform>(Components::Transform{});
 
         input->onKeyPress(
             Input::Key::W,
             Input::KeyEvent::HOLD,
-            [this, defaultCamera]() {
-                auto transform{ getComponent<Components::Transform>(defaultCamera) };
+            [this, defaultCamera]() mutable {
+                auto transform{ defaultCamera.getComponent<Components::Transform>() };
 
                 if (!transform) return;
 
@@ -37,8 +39,8 @@ namespace DF::Core
         input->onKeyPress(
             Input::Key::S,
             Input::KeyEvent::HOLD,
-            [this, defaultCamera]() {
-                auto transform{ getComponent<Components::Transform>(defaultCamera) };
+            [this, defaultCamera]() mutable {
+                auto transform{ defaultCamera.getComponent<Components::Transform>() };
 
                 if (!transform) return;
 
@@ -48,8 +50,8 @@ namespace DF::Core
         input->onKeyPress(
             Input::Key::D,
             Input::KeyEvent::HOLD,
-            [this, defaultCamera]() {
-                auto transform{ getComponent<Components::Transform>(defaultCamera) };
+            [this, defaultCamera]() mutable {
+                auto transform{ defaultCamera.getComponent<Components::Transform>() };
 
                 if (!transform) return;
 
@@ -59,8 +61,8 @@ namespace DF::Core
         input->onKeyPress(
             Input::Key::A,
             Input::KeyEvent::HOLD,
-            [this, defaultCamera]() {
-                auto transform{ getComponent<Components::Transform>(defaultCamera) };
+            [this, defaultCamera]() mutable {
+                auto transform{ defaultCamera.getComponent<Components::Transform>() };
 
                 if (!transform) return;
 
@@ -84,14 +86,14 @@ namespace DF::Core
         );
 
         input->onMouseMove(
-            [this, rotationSpeed, defaultCamera, input](Math::vec2 pos) {
+            [this, rotationSpeed, defaultCamera, input](Math::vec2 pos) mutable {
                 static Math::vec2 s_lastPos{};
 
                 if (input->mouseKeyPressed(Input::MouseKey::RIGHT))
                 {
                     Math::vec2 currentPos{ pos - s_lastPos };
 
-                    auto transform{ getComponent<Components::Transform>(defaultCamera) };
+                    auto transform{ defaultCamera.getComponent<Components::Transform>() };
 
                     if (!transform) return;
 

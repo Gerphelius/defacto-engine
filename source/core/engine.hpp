@@ -7,7 +7,7 @@
 #include "render/window.hpp"
 #include "input/input.hpp"
 
-namespace DF::Core
+namespace DF
 {
     class World;
 }
@@ -25,7 +25,7 @@ namespace DF
 
         static float getDeltaTime();
 
-        static Core::World* getWorld();
+        static World* getWorld();
 
         static Input* getInput();
 
@@ -37,6 +37,6 @@ namespace DF
         static std::unique_ptr<DF::Render::Window> s_window;
         static std::unique_ptr<Input> s_inputSystem;
         static std::unique_ptr<Render::Renderer> s_renderer;
-        static std::unique_ptr<Core::World> s_world;
+        static std::unique_ptr<World> s_world;
     };
 }

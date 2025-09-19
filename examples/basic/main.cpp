@@ -80,7 +80,7 @@ int main()
 
     ///////////////////////// ECS TEST /////////////////////////
 
-    const auto world{ DF::Engine::getWorld() };
+    //const auto world{ DF::Engine::getWorld() };
 
     //for (int i{}; i < 100; ++i)
     //{
@@ -94,9 +94,9 @@ int main()
     //        transformComp.position.x = i * 2.0f;
     //        transformComp.position.z = j * 2.0f;
 
-    //        world->addComponent(object, transformComp);
-    //        world->addComponent(object, modelComp);
-    //        world->addComponent(object, DF::Components::Metadata{ .name{ fmt::format("Cube {}", 100 * i + j) } });
+    //        object.addComponent(transformComp);
+    //        object.addComponent(modelComp);
+    //        object.addComponent(DF::Components::Metadata{ .name{ fmt::format("Cube {}", 100 * i + j) } });
 
     //        world->spawnObject(object);
     //    }

@@ -23,7 +23,7 @@ namespace DF
     std::unique_ptr<Render::Window> Engine::s_window{};
     std::unique_ptr<Input> Engine::s_inputSystem{};
     std::unique_ptr<Render::Renderer> Engine::s_renderer{};
-    std::unique_ptr<Core::World> Engine::s_world{};
+    std::unique_ptr<World> Engine::s_world{};
 
     void Engine::init()
     {
@@ -35,7 +35,7 @@ namespace DF
         Core::ServiceLocator::registerService(s_inputSystem.get());
         Input* input{ Core::ServiceLocator::getService<Input>() };
 
-        s_world = std::make_unique<Core::World>();
+        s_world = std::make_unique<World>();
         s_renderer = std::make_unique<Render::Renderer>(s_world.get());
         UI::Debug::UIManager::init(s_window.get());
 
@@ -104,7 +104,7 @@ namespace DF
         return s_deltaTime;
     }
 
-    Core::World* Engine::getWorld()
+    World* Engine::getWorld()
     {
         return s_world.get();
     }

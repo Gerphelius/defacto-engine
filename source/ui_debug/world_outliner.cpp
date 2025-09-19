@@ -73,9 +73,9 @@ namespace DF::UI::Debug
     {
         ImGui::BeginChild(ImGui::GetID(1), ImVec2(ImGui::GetContentRegionAvail().x, 200.0f));
 
-        std::vector<Core::Object> objects{};
-        m_world->forEachObject<Components::TransformMatrix>(
-            [&objects](Core::Object& obj, const auto&) {
+        std::vector<Object> objects{};
+        m_world->forEach<Object, Components::TransformMatrix>(
+            [&objects](auto obj, auto&) {
                 objects.push_back(obj);
             }
         );
@@ -84,11 +84,11 @@ namespace DF::UI::Debug
         {
             static int counter{};
 
-            Core::Object object{ m_world->createObject() };
+            Object object{ m_world->createObject() };
 
-            m_world->addComponent(object, Components::Transform{});
-            m_world->addComponent(object, Components::Model{ std::make_shared<DF::Assets::Mesh>(vertices, indices) });
-            m_world->addComponent(object, DF::Components::Metadata{ .name{ fmt::format("New object {}", counter++) } });
+            object.addComponent(Components::Transform{});
+            object.addComponent(Components::Model{ std::make_shared<DF::Assets::Mesh>(vertices, indices) });
+            object.addComponent(DF::Components::Metadata{ .name{ fmt::format("New object {}", counter++) } });
 
             m_world->spawnObject(object);
         }
@@ -98,8 +98,8 @@ namespace DF::UI::Debug
 
         while (clipper.Step()) {
             for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i) {
-                auto obj = objects[i];
-                auto metadata = m_world->getComponent<Components::Metadata>(obj);
+                auto& obj = objects[i];
+                auto metadata = obj.getComponent<Components::Metadata>();
 
                 std::string objectName{ metadata ? metadata->name.c_str() : "Unknown" };
 

@@ -6,7 +6,7 @@
 
 #include "widget.hpp"
 
-namespace DF::Core
+namespace DF
 {
     class World;
 }
@@ -17,7 +17,7 @@ namespace DF::UI::Debug
     {
     private:
         std::string m_name{ "World Outliner" };
-        Core::World* m_world{};
+        World* m_world{};
 
     public:
         WorldOutliner() noexcept;

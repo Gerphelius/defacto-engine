@@ -1,36 +1,26 @@
 #pragma once
 
+#include <string>
+#include <utility>
 #include <functional>
-#include <iostream>
 #include <cassert>
-#include <optional>
-#include <numeric>
 
-#include <entt/entt.hpp>
+#define FLECS_CUSTOM_BUILD // Don't build all addons
+#define FLECS_CPP
+#define FLECS_MODULE
+#define FLECS_SYSTEM
+#define FLECS_PIPELINE
 
-#include "observer/subject.hpp"
+#include <flecs.h>
+
+#include "utils/function_traits.hpp"
+#include "object.hpp"
 #include "components/transform.hpp"
 #include "components/transform_matrix.hpp"
 #include "components/camera.hpp"
 
-namespace DF::Core
+namespace DF
 {
-    template <typename Component>
-    inline Component& getProxy(Component& component)
-    {
-        return component;
-    }
-
-    template <typename Component>
-    inline decltype(auto) findProxy(Component& component)
-    {
-        using DF::Core::getProxy;
-
-        return getProxy(component);
-    }
-
-    using Object = entt::entity;
-
     class World
     {
     public:
@@ -38,88 +28,92 @@ namespace DF::Core
 
         Object createObject()
         {
-            return m_registry.create();
+            return Object{ m_world.entity() };
         }
 
-        template <typename T>
-        void addComponent(const Object& object, const T& component)
+        Object createObject(const std::string& name)
         {
-            m_registry.emplace<T>(object, component);
+            return Object{ m_world.entity(name.c_str()) };
         }
 
-        template <typename T>
-        void removeComponent(const Object& object)
+        template <typename T, typename... Components, typename Func>
+        void forEach(Func&& callback)
         {
-            m_registry.remove<T>(object);
+            // Previously component types has been deduced from callback arguments,
+            // but because there are component proxies for some of them, findProxy() returns a ComponentProxy type
+            // instead of plain Component type, so when forEach callback is specified like this:
+            // 
+            // forEach([](Camera& camera, Transform& transform) { ... })
+            // 
+            // and Transform component has proxy, compiler complains about types mismatch, because findProxy()
+            // returns TransformProxy as a second argument, but if second argument is of type TransformProxy,
+            // flecs can not find any entity with this component, because it was never added, because it is not
+            // even a component.
+            // 
+            // Here type T is used as a workaround for deducing if forEach is used with or without Object
+            // as first callback argument. The problem is that function_traits templates cannot deduce auto types
+            // from callback, because types of components are listed inside forEach template itself for now, so
+            // there is no reason to specify them twice, also inside callback arguments.
+            // 
+            // TODO: find a way to pass right component type to flecs even if it has proxy, by putting component
+            //       type inside Proxy definition and pass it to flecs so it can find proper entities.
+
+            ForEachImpl<T, Components...> forEachImpl{ m_world, callback };
         }
 
-        template <typename T>
-        auto getComponent(const Object& object)
+        void spawnObject(Object& object)
         {
-            T* component{ m_registry.try_get<T>(object) };
-
-            if constexpr (requires(T & t) { getProxy(t); })
-            {
-                if (component)
-                {
-                    return std::optional{ getProxy(*component) };
-                }
-
-                return std::optional<std::decay_t<decltype(getProxy(*component))>>{};
-            }
-            else
-            {
-                return component;
-            }
-        }
-
-        void spawnObject(const Object& object)
-        {
-            auto* transformComp{ m_registry.try_get<Components::Transform>(object) };
+            auto transformComp{ object.getComponent<Components::Transform>() };
 
             assert(transformComp && "That object doesn't have transform component and cannot be spawned");
 
             if (transformComp)
             {
-                Math::mat4 modelMat{ Math::mat4(1.0) };
+                Math::mat4 modelMat{ 1.0 };
                 Components::TransformMatrix transformMatrix{};
-                transformMatrix.translation = Math::translateMat4(modelMat, transformComp->position);
+                transformMatrix.translation = Math::translateMat4(modelMat, transformComp->getPosition());
 
-                addComponent<Components::TransformMatrix>(object, transformMatrix);
-                addComponent<Components::TransformDirty>(object, Components::TransformDirty{});
+                object.addComponent<Components::TransformMatrix>(transformMatrix);
+                object.addComponent<Components::TransformDirty>(Components::TransformDirty{});
             }
         }
 
-        template <typename T>
-        void updateComponent(const Object& object, std::function<void(T&)> func)
-        {
-            m_registry.patch<T>(object, func);
-        }
-
-        template <typename... Components, typename Callback>
-        void forEach(Callback&& callback)
-        {
-            m_registry.view<Components...>().each(
-                [this, callback](Components&... comps) {
-                    callback(findProxy(comps)...);
-                }
-            );
-        }
-
-        template <typename... Components, typename Callback>
-        void forEachObject(Callback&& callback)
-        {
-            m_registry.view<Components...>().each(
-                [this, callback](Object object, Components&... comps) {
-                    callback(object, findProxy(comps)...);
-                }
-            );
-        }
+        flecs::world& getRaw() { return m_world; }
 
     private:
-        entt::registry m_registry{};
-        //Subject<> m_{};
+        flecs::world m_world{};
 
+        //template <typename ArgsList>
+        //struct ForEachImpl;
+
+        template <typename FirstArg, typename... Rest>
+        struct ForEachImpl
+        {
+            template <typename Func>
+            ForEachImpl(flecs::world& world, Func&& callback)
+            {
+                if constexpr (std::is_same_v<std::remove_cvref_t<FirstArg>, DF::Object>)
+                {
+                    world.each(
+                        [cb = std::forward<Func>(callback)](flecs::entity e, Rest... rest)
+                        {
+                            cb(Object{ e }, findProxy(rest)...);
+                        }
+                    );
+                }
+                else
+                {
+                    world.each(
+                        [cb = std::forward<Func>(callback)](FirstArg first, Rest... rest)
+                        {
+                            cb(findProxy(first), findProxy(rest)...);
+                        }
+                    );
+                }
+            }
+        };
+
+        // TODO: Refactor or find a better place for default camera
         void spawnDefaultCamera();
     };
 }

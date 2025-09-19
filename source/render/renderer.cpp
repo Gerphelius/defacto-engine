@@ -19,7 +19,7 @@
 namespace DF::Render {
     Math::vec3 g_lightPos{ 1.0f };
 
-    Renderer::Renderer(Core::World* world)
+    Renderer::Renderer(World* world)
         : m_world{ world }
     {
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -123,7 +123,7 @@ namespace DF::Render {
         /////////////////////////////  CUBE  /////////////////////////////
 
         m_world->forEach<Components::Model, Components::TransformMatrix>(
-            [this](const Components::Model& model, const Components::TransformMatrix& transform)
+            [this](const auto& model, const auto& transform)
             {
                 m_shaderProgram->setUniform("uModel", transform.translation);
                 model.mesh->draw();

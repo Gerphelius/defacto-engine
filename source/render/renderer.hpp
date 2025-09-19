@@ -4,7 +4,7 @@
 
 #include "render/shader_program.hpp"
 
-namespace DF::Core
+namespace DF
 {
     class World;
 }
@@ -28,11 +28,11 @@ namespace DF::Render
     private:
         DrawMode m_drawMode{ DrawMode::FILL };
         std::unique_ptr<ShaderProgram> m_shaderProgram{};
-        Core::World* m_world{};
+        World* m_world{};
         WindowSize m_size{ 800, 600 };
 
     public:
-        explicit Renderer(Core::World* world);
+        explicit Renderer(World* world);
 
         void render();
 
