@@ -4,7 +4,8 @@
 
 #include <imgui.h>
 
-#include "widget.hpp"
+#include "ui_debug/widget.hpp"
+#include "world/object.hpp"
 
 namespace DF
 {
@@ -15,9 +16,6 @@ namespace DF::UI::Debug
 {
     class WorldOutliner : public IDebugWidget
     {
-    private:
-        std::string m_name{ "World Outliner" };
-        World* m_world{};
 
     public:
         WorldOutliner() noexcept;
@@ -25,5 +23,10 @@ namespace DF::UI::Debug
         const std::string& getName() const override;
 
         void render() override;
+
+    private:
+        std::string m_name{ "World Outliner" };
+        World* m_world{};
+        Object::Id m_selectedObjectId{};
     };
 }

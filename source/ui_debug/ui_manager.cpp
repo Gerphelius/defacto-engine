@@ -5,7 +5,7 @@
 #include <imgui_impl_opengl3.h>
 
 #include "ui_debug/ui_manager.hpp"
-#include "ui_debug/world_outliner.hpp"
+#include "ui_debug/world_outliner/world_outliner.hpp"
 #include "render/window.hpp"
 
 namespace DF::UI::Debug

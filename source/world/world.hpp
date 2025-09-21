@@ -36,6 +36,11 @@ namespace DF
             return Object{ m_world.entity(name.c_str()) };
         }
 
+        Object getObject(Object::Id id)
+        {
+            return Object{ m_world.get_alive(id) };
+        }
+
         template <typename T, typename... Components, typename Func>
         void forEach(Func&& callback)
         {
@@ -74,8 +79,14 @@ namespace DF
                 transformMatrix.translation = Math::translateMat4(modelMat, transformComp->getPosition());
 
                 object.addComponent<Components::TransformMatrix>(transformMatrix);
-                object.addComponent<Components::TransformDirty>(Components::TransformDirty{});
+                //object.addComponent<Components::TransformDirty>(Components::TransformDirty{});
             }
+        }
+
+        template <typename Component>
+        bool isComponentType(Object::Id id) const
+        {
+            return id == m_world.id<Component>();
         }
 
         flecs::world& getRaw() { return m_world; }
@@ -95,7 +106,7 @@ namespace DF
                 if constexpr (std::is_same_v<std::remove_cvref_t<FirstArg>, DF::Object>)
                 {
                     world.each(
-                        [cb = std::forward<Func>(callback)](flecs::entity e, Rest... rest)
+                        [cb = std::forward<Func>(callback)](flecs::entity e, Rest&... rest)
                         {
                             cb(Object{ e }, findProxy(rest)...);
                         }
@@ -104,7 +115,7 @@ namespace DF
                 else
                 {
                     world.each(
-                        [cb = std::forward<Func>(callback)](FirstArg first, Rest... rest)
+                        [cb = std::forward<Func>(callback)](FirstArg& first, Rest&... rest)
                         {
                             cb(findProxy(first), findProxy(rest)...);
                         }

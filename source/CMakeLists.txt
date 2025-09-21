@@ -15,6 +15,7 @@ add_subdirectory(math)
 add_subdirectory(observer)
 add_subdirectory(render)
 add_subdirectory(ui_debug)
+add_subdirectory(ui_debug/world_outliner)
 add_subdirectory(utils)
 add_subdirectory(world)
 

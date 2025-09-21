@@ -111,14 +111,26 @@ namespace DF::Render {
         * This is a TransformMatrix component update system for caching transform matrix
         * calculations.
         */
-        //m_world->forEach<Components::Transform, Components::TransformMatrix, Components::TransformDirty>(
-        //    [this](entt::entity entity, auto transform, auto& transformMatrix)
-        //    {
-        //        Math::mat4 modelMat{ Math::mat4(1.0) };
-        //        transformMatrix.m_translation = Math::translateMat4(modelMat, transform.getPosition());
-        //        m_world->removeComponent<Components::TransformDirty>(entity);
-        //    }
-        //);
+        m_world->forEach<Components::Transform, Components::TransformMatrix>(
+            [this](auto transform, auto& transformMatrix)
+            {
+                if (transform.getDirty())
+                {
+                    Math::mat4 modelMat{ Math::mat4(1.0) };
+                    modelMat = Math::translateMat4(modelMat, transform.getPosition());
+
+                    Math::vec3 rot{ transform.getRotation() };
+                    modelMat = Math::rotateMat4(modelMat, rot.x, Math::vec3(1.0f, 0.0f, 0.0f));
+                    modelMat = Math::rotateMat4(modelMat, rot.y, Math::vec3(0.0f, 1.0f, 0.0f));
+                    modelMat = Math::rotateMat4(modelMat, rot.z, Math::vec3(0.0f, 0.0f, 1.0f));
+
+                    modelMat = Math::scaleMat4(modelMat, transform.getScale());
+
+                    transformMatrix.translation = modelMat;
+                    transform.resetDirty();
+                }
+            }
+        );
 
         /////////////////////////////  CUBE  /////////////////////////////
 

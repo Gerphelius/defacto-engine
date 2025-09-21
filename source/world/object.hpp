@@ -31,9 +31,9 @@ namespace DF
 
     class Object
     {
+    public:
         using Id = std::uint64_t;
 
-    public:
         template <typename Component>
         void addComponent(const Component& comp)
         {
@@ -46,6 +46,8 @@ namespace DF
             Component* component{ m_entity.get_mut<Component>() };
 
             assert(component && "Object doesn't have this component.");
+
+            // TODO: investigate the problem that components without proxy possibly return by copy
 
             if constexpr (requires(Component& t) { getProxy(t); })
             {
@@ -62,7 +64,8 @@ namespace DF
             }
         }
 
-        void forEachComponent(std::function<void(Id)> callback)
+        template <typename Func>
+        void forEachComponent(Func&& callback)
         {
             m_entity.each(
                 [&](flecs::id id)
@@ -71,6 +74,13 @@ namespace DF
                 }
             );
         }
+
+        Id getId() const
+        {
+            return m_id;
+        }
+
+        explicit operator bool() const { return !!m_entity.is_valid(); }
 
     private:
         friend class World;
