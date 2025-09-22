@@ -68,19 +68,16 @@ namespace DF
 
         void spawnObject(Object& object)
         {
-            auto transformComp{ object.getComponent<Components::Transform>() };
+            auto transform{ object.getComponent<Components::Transform>() };
 
-            assert(transformComp && "That object doesn't have transform component and cannot be spawned");
+            //assert(transformComp && "That object doesn't have transform component and cannot be spawned");
 
-            if (transformComp)
-            {
-                Math::mat4 modelMat{ 1.0 };
-                Components::TransformMatrix transformMatrix{};
-                transformMatrix.translation = Math::translateMat4(modelMat, transformComp->getPosition());
+            Math::mat4 modelMat{ 1.0 };
+            Components::TransformMatrix transformMatrix{};
+            transformMatrix.translation = Math::translateMat4(modelMat, transform.getPosition());
 
-                object.addComponent<Components::TransformMatrix>(transformMatrix);
-                //object.addComponent<Components::TransformDirty>(Components::TransformDirty{});
-            }
+            object.addComponent<Components::TransformMatrix>(transformMatrix);
+            //object.addComponent<Components::TransformDirty>(Components::TransformDirty{});
         }
 
         template <typename Component>

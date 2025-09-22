@@ -121,11 +121,11 @@ namespace DF::UI::Debug
                 for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i)
                 {
                     auto& obj = objects[i];
-                    auto metadata = obj.getComponent<Components::Metadata>();
+                    auto& metadata = obj.getComponent<Components::Metadata>();
 
-                    std::string objectName{ metadata ? metadata->name.c_str() : "Unknown" };
+                    ImGui::PushID(i);
 
-                    if (ImGui::Selectable(objectName.c_str(), selection[i]))
+                    if (ImGui::Selectable(metadata.name.c_str(), selection[i]))
                     {
                         if (selectedIndex != i && ImGui::IsItemFocused())
                         {
@@ -139,6 +139,8 @@ namespace DF::UI::Debug
                             m_selectedObjectId = objects[i].getId();
                         }
                     }
+
+                    ImGui::PopID();
                 }
             }
 
@@ -153,8 +155,9 @@ namespace DF::UI::Debug
             {
                 Object object{ m_world->getObject(m_selectedObjectId) };
 
-                auto metadata{ object.getComponent<Components::Metadata>() };
-                ImGui::Text(metadata ? metadata->name.c_str() : "Unknown");
+                auto& metadata{ object.getComponent<Components::Metadata>() };
+
+                ImGui::Text(metadata.name.c_str());
                 ImGui::Separator();
 
                 m_world->getObject(m_selectedObjectId).forEachComponent(
@@ -164,20 +167,12 @@ namespace DF::UI::Debug
                         {
                             auto transform{ object.getComponent<Components::Transform>() };
 
-                            if (transform)
-                            {
-                                TransformInfo::render(transform.value());
-                            }
+                            TransformInfo::render(transform);
                         }
 
                         if (m_world->isComponentType<Components::Metadata>(id))
                         {
-                            if (metadata)
-                            {
-                                MetadataInfo::render(metadata.value());
-
-                                // std::cout << metadata->name << '\n';
-                            }
+                            MetadataInfo::render(metadata);
                         }
                     }
                 );

@@ -25,10 +25,7 @@ namespace DF::UI::Debug
                 ImGui::TableNextColumn();
                 ImGui::TextUnformatted("Name");
                 ImGui::TableNextColumn();
-
-                static std::string newName{ component.name };
-                ImGui::InputText("##", &newName, 128);
-                component.name = newName;
+                ImGui::InputText("##", &component.name, 128);
 
                 ImGui::EndTable();
             }

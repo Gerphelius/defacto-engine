@@ -41,26 +41,19 @@ namespace DF
         }
 
         template <typename Component>
-        auto getComponent()
+        decltype(auto) getComponent()
         {
             Component* component{ m_entity.get_mut<Component>() };
 
             assert(component && "Object doesn't have this component.");
 
-            // TODO: investigate the problem that components without proxy possibly return by copy
-
             if constexpr (requires(Component& t) { getProxy(t); })
             {
-                if (component)
-                {
-                    return std::optional{ getProxy(*component) };
-                }
-
-                return std::optional<std::decay_t<decltype(getProxy(*component))>>{};
+                return getProxy(*component);
             }
             else
             {
-                return component;
+                return *component;
             }
         }
 

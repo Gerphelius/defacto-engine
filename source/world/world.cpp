@@ -31,9 +31,7 @@ namespace DF
             [this, defaultCamera]() mutable {
                 auto transform{ defaultCamera.getComponent<Components::Transform>() };
 
-                if (!transform) return;
-
-                transform->addPosition(transform->getForwardVector() * cameraSpeed * Engine::getDeltaTime());
+                transform.addPosition(transform.getForwardVector() * cameraSpeed * Engine::getDeltaTime());
             }
         );
         input->onKeyPress(
@@ -42,9 +40,7 @@ namespace DF
             [this, defaultCamera]() mutable {
                 auto transform{ defaultCamera.getComponent<Components::Transform>() };
 
-                if (!transform) return;
-
-                transform->addPosition(-transform->getForwardVector() * cameraSpeed * Engine::getDeltaTime());
+                transform.addPosition(-transform.getForwardVector() * cameraSpeed * Engine::getDeltaTime());
             }
         );
         input->onKeyPress(
@@ -53,9 +49,7 @@ namespace DF
             [this, defaultCamera]() mutable {
                 auto transform{ defaultCamera.getComponent<Components::Transform>() };
 
-                if (!transform) return;
-
-                transform->addPosition(transform->getRightVector() * cameraSpeed * Engine::getDeltaTime());
+                transform.addPosition(transform.getRightVector() * cameraSpeed * Engine::getDeltaTime());
             }
         );
         input->onKeyPress(
@@ -64,9 +58,7 @@ namespace DF
             [this, defaultCamera]() mutable {
                 auto transform{ defaultCamera.getComponent<Components::Transform>() };
 
-                if (!transform) return;
-
-                transform->addPosition(-transform->getRightVector() * cameraSpeed * Engine::getDeltaTime());
+                transform.addPosition(-transform.getRightVector() * cameraSpeed * Engine::getDeltaTime());
             }
         );
 
@@ -94,13 +86,10 @@ namespace DF
                     Math::vec2 currentPos{ pos - s_lastPos };
 
                     auto transform{ defaultCamera.getComponent<Components::Transform>() };
-
-                    if (!transform) return;
-
-                    auto newRotation{ transform->getRotation() - Math::vec3(currentPos.x * -rotationSpeed, currentPos.y * rotationSpeed, 0.0) };
+                    auto newRotation{ transform.getRotation() - Math::vec3(currentPos.x * -rotationSpeed, currentPos.y * rotationSpeed, 0.0) };
                     newRotation.y = std::clamp(newRotation.y, -89.0f, 89.0f);
 
-                    transform->setRotation(newRotation);
+                    transform.setRotation(newRotation);
                 }
 
                 s_lastPos = pos;

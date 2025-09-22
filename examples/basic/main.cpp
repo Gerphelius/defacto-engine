@@ -14,13 +14,11 @@
 
 
 /* TODO:
-* # Create API for getting references to window, input etc. (service locator)
+* # Create API for getting references to window, input etc. (service locator)  +
 * # Make a UI to list all spawned objects in the world:
-*  -- Create base UI class/struct with some methods like render;
-*  -- Create a world objects list (WOL) UI inherited from base UI;
-*  -- Register WOL UI inside debug UI system;
-*  -- Create some kind of callbacks or basic observable to decouple UI from systems like renderer etc;
-*  -- Add an ability to create new object, add components, spawn object in the world.
+*  -- Create base UI class/struct with some methods like render;  +
+*  -- Create a world objects list (WOL) UI inherited from base UI;  +
+*  -- Add an ability to spawn object in the world,  +
 *
 * # Move default camera logic to world class and create it on init.
 * # Create asset manager and refactor path to use std::filesystem::path instead of relative.
