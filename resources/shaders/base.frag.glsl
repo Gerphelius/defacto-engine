@@ -1,5 +1,25 @@
 #version 460 core
 
+struct PointLight
+{
+    vec4 position;
+
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+
+    float constant;
+    float linear;
+    float quadratic;
+
+    float padding;
+};
+
+layout(binding = 2, std430) readonly buffer pointLightsSSBO
+{
+    PointLight pointLights[];
+};
+
 struct Material
 {
     sampler2D diffuse;
@@ -8,64 +28,49 @@ struct Material
     float     shininess;
 };
 
-struct Light
-{
-    vec3 position; // Currently unused, using in LightPos, because it is in view space.
-
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-
-    float constant;
-    float linear;
-    float quadratic;
-
-    float innerCone;
-    float outerCone;
-};
-
 in vec2 TexCoord;
 in vec3 Normal;
 in vec3 FragPos;
-in vec3 LightPos;
-in vec3 LightDir;
 
 out vec4 FragColor;
 
 uniform Material uMaterial;
-uniform Light uLight;
+uniform int uPointLightsNum;
+uniform vec3 uLightColor;
 
 void main()
 {
     vec3 norm = normalize(Normal);
-    vec3 tex = vec3(texture(uMaterial.diffuse, TexCoord));
+    vec3 tex = texture(uMaterial.diffuse, TexCoord).rgb;
 
-    vec3 ambient = uLight.ambient * tex;
+    vec3 result = vec3(0.0);
 
-//    vec3 lightDir = normalize(-LightDir);               // Directional light
-//    vec3 lightDir = normalize(LightPos - FragPos);   // Point light
-//    float angle = max(dot(norm, lightDir), 0.0f);
-//    vec3 diffuse = uLight.diffuse * angle * tex;
+    for (int i = 0; i < uPointLightsNum; ++i)
+    {
+        PointLight light = pointLights[i];
 
+        vec3 ambient = light.ambient.rgb * tex;
 
-    /****** SPOTLIGHT ******/
-    vec3 spotDir = normalize(-LightDir);
-    vec3 lightDir = normalize(LightPos - FragPos);
-    float angle = max(dot(spotDir, lightDir), 0.0f);
-    float intensity = smoothstep(0.0f, 1.0f, (angle - uLight.outerCone) / (uLight.innerCone - uLight.outerCone));
-    vec3 diffuse = uLight.diffuse * intensity * tex;
+        vec3 lightDir = normalize(light.position.xyz - FragPos);
+        float angle = max(dot(norm, lightDir), 0.0f);
+        vec3 diffuse = angle * light.diffuse.rgb * tex;
+
+        float dist = distance(FragPos, light.position.xyz);
+        float attenuation = 1.0f / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
+
+        vec3 specTex = texture(uMaterial.specular, TexCoord).rgb;
+        vec3 reflectDir = reflect(-lightDir, norm);
+        float shininess = pow(max(dot(normalize(-FragPos), reflectDir), 0.0), uMaterial.shininess);
+        vec3 specular = specTex * shininess * light.specular.rgb;
+
+        result += (ambient + diffuse + specular) * attenuation;
+    }
 
     vec4 specTex = texture(uMaterial.specular, TexCoord);
-    vec3 reflectDir = reflect(-lightDir, norm);
-    float shininess = pow(max(dot(normalize(-FragPos), reflectDir), 0.0), uMaterial.shininess);
-    vec3 specular = vec3(specTex) * shininess * uLight.specular;
+    //vec4 emmisive = (1 - ceil(specTex)) * texture(uMaterial.emmisive, TexCoord);
+    //                ^^^^^^^^^^^^^^^^^^^  this is used to draw emissive texture only on black portion
+    //                                     of specular texture (discards metal frame from container texture)
+    vec4 emmisive = texture(uMaterial.emmisive, TexCoord) * vec4(uLightColor, 1.0);
 
-    vec4 emmisive = (1 - ceil(specTex)) * texture(uMaterial.emmisive, TexCoord);
-
-    float dist = distance(FragPos, LightPos);
-    float attenuation = 1.0f / (uLight.constant + uLight.linear * dist + uLight.quadratic * (dist * dist));
-
-    FragColor = vec4((diffuse + ambient + specular) * attenuation, 1.0)/* + emmisive*/;
-
-//    FragColor = vec4(ceil(uLight.phi - angle), 0.0f, 0.0f, 1.0f);
+    FragColor = vec4(result, 1.0) + emmisive;
 }

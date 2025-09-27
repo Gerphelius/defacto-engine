@@ -3,14 +3,16 @@
 #include <fmt/format.h>
 
 #include "ui_debug/world_outliner/world_outliner.hpp"
-#include "transform-info.hpp"
-#include "metadata-info.hpp"
+#include "transform.hpp"
+#include "metadata.hpp"
+#include "point_light.hpp"
 #include "core/engine.hpp"
 #include "world/world.hpp"
 
 #include "components/metadata.hpp"
 #include "components/transform_matrix.hpp"
 #include "components/model.hpp"
+#include "components/point_light.hpp"
 
 static const std::array vertices{
     // transforms            |  normals           |  texture coords
@@ -106,6 +108,18 @@ namespace DF::UI::Debug
             m_world->spawnObject(object);
         }
 
+        if (ImGui::Button("Spawn Point Light"))
+        {
+            Object object{ m_world->createObject() };
+
+            object.addComponent(Components::Transform{ .scale{ 0.2, 0.2, 0.2 } });
+            object.addComponent(Components::PointLight{});
+            object.addComponent(Components::Model{ std::make_shared<DF::Assets::Mesh>(vertices, indices) });
+            object.addComponent(DF::Components::Metadata{ .name{ "Point Light" } });
+
+            m_world->spawnObject(object);
+        }
+
         if (ImGui::BeginChild("##objects_list", ImVec2(0, 300.0f), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened | ImGuiChildFlags_ResizeY))
         {
             ImGuiListClipper clipper{};
@@ -163,16 +177,23 @@ namespace DF::UI::Debug
                 m_world->getObject(m_selectedObjectId).forEachComponent(
                     [this, &object, &metadata](Object::Id id)
                     {
+                        if (m_world->isComponentType<Components::Metadata>(id))
+                        {
+                            Metadata::render(metadata);
+                        }
+
                         if (m_world->isComponentType<Components::Transform>(id))
                         {
                             auto transform{ object.getComponent<Components::Transform>() };
 
-                            TransformInfo::render(transform);
+                            Transform::render(transform);
                         }
 
-                        if (m_world->isComponentType<Components::Metadata>(id))
+                        if (m_world->isComponentType<Components::PointLight>(id))
                         {
-                            MetadataInfo::render(metadata);
+                            auto& pointLight{ object.getComponent<Components::PointLight>() };
+
+                            PointLight::render(pointLight);
                         }
                     }
                 );

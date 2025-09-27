@@ -6,7 +6,7 @@ namespace DF::Components
 {
     struct Metadata
     {
-        std::string name{};
-        std::string description{};
+        std::string name{ "Name" };
+        std::string description{ "Description" };
     };
 }

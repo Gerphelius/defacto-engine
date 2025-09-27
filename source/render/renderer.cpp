@@ -15,9 +15,24 @@
 #include "components/transform.hpp"
 #include "components/transform_matrix.hpp"
 #include "components/model.hpp"
+#include "components/point_light.hpp"
 
-namespace DF::Render {
-    Math::vec3 g_lightPos{ 1.0f };
+namespace DF::Render
+{
+    struct PointLightData
+    {
+        Math::vec4 position;
+
+        Math::vec4 ambient;
+        Math::vec4 diffuse;
+        Math::vec4 specular;
+
+        float constant;
+        float linear;
+        float quadratic;
+
+        float padding;
+    };
 
     Renderer::Renderer(World* world)
         : m_world{ world }
@@ -89,17 +104,19 @@ namespace DF::Render {
         Math::vec3 lightColor{ 1.0f };
         Math::vec3 directionalLight{ 1.0f, -1.0f, 0.0f };
 
-        /* 
+        Math::mat4 view{};
+
+        /*
         * TODO: find a better place for systems like this
         * (probably need to register all systems inside world?)
         */
         m_world->forEach<Components::Camera, Components::Transform>(
-            [this](const auto& camera, const auto& transform)
+            [this, &view](const auto& camera, const auto& transform)
             {
-                if (camera.active)
+                if (camera.active && transform.getDirty())
                 {
-                    const auto translation{ Math::lookAt(transform.getPosition(), transform.getForwardVector() + transform.getPosition(), Math::vec3(0.0, 0.1, 0.0))};
-                    m_shaderProgram->setUniform("uView", translation);
+                    view = Math::lookAt(transform.getPosition(), transform.getForwardVector() + transform.getPosition(), Math::vec3(0.0, 0.1, 0.0));
+                    m_shaderProgram->setUniform("uView", view);
 
                     const auto projection{ Math::perspective(Math::degToRad(camera.fov), m_size.width / m_size.height, camera.near, camera.far) };
                     m_shaderProgram->setUniform("uProjection", projection);
@@ -107,7 +124,7 @@ namespace DF::Render {
             }
         );
 
-        /* 
+        /*
         * This is a TransformMatrix component update system for caching transform matrix
         * calculations.
         */
@@ -134,62 +151,80 @@ namespace DF::Render {
 
         /////////////////////////////  CUBE  /////////////////////////////
 
-        m_world->forEach<Components::Model, Components::TransformMatrix>(
-            [this](const auto& model, const auto& transform)
+        m_shaderProgram->setUniform("uMaterial.diffuse", 0);
+        m_shaderProgram->setUniform("uMaterial.specular", 1);
+        m_shaderProgram->setUniform("uMaterial.shininess", 32.0f);
+
+        m_world->forEach<Object, Components::Model, Components::TransformMatrix>(
+            [this](auto obj, const auto& model, const auto& transform)
             {
+                if (!obj.hasComponent<Components::PointLight>())
+                {
+                    m_shaderProgram->setUniform("uLightColor", Math::vec3(0.0f));
+                    m_shaderProgram->setUniform("uModel", transform.translation);
+                    model.mesh->draw();
+                }
+
+            }
+        );
+
+        m_shaderProgram->setUniform("uMaterial.diffuse", 3);
+        m_shaderProgram->setUniform("uMaterial.specular", 3);
+        m_shaderProgram->setUniform("uMaterial.emmisive", 3);
+
+        m_world->forEach<Components::Model, Components::TransformMatrix, Components::PointLight>(
+            [this](const auto& model, const auto& transform, const auto& light)
+            {
+                m_shaderProgram->setUniform("uLightColor", light.color);
                 m_shaderProgram->setUniform("uModel", transform.translation);
                 model.mesh->draw();
             }
         );
 
-        m_shaderProgram->setUniform("uTexture", 0);
-        m_shaderProgram->setUniform("uMaterial.diffuse", 3);
-        m_shaderProgram->setUniform("uMaterial.specular", 3);
-        m_shaderProgram->setUniform("uMaterial.shininess", 32.0f);
-        m_shaderProgram->setUniform("uLight.ambient", lightColor);
-        m_shaderProgram->setUniform("uLight.diffuse", lightColor);
+        /////////////////////////////  Lights SSBO  /////////////////////////////
 
+        static GLuint pointLightsBuffer{};
 
+        if (!pointLightsBuffer)
+        {
+            glCreateBuffers(1, &pointLightsBuffer);
+        }
 
-        //// First way of doing flashlight type of spotlight
-        ////m_shaderProgram->setUniform("uLightDir", m_camera->getForwardVector());
-        ////m_shaderProgram->setUniform("uLightPos", m_camera->getLocation());
+        std::vector<PointLightData> pointLights{};
 
-        //// Second way of doing flashlight type of spotlight considering using view space in shader calculations
-        //m_shaderProgram->setUniform("uLightDir", Math::vec3(0.0f, 0.0f, -1.0f));
-        //m_shaderProgram->setUniform("uLightPos", Math::vec3(0.0f));
+        m_world->forEach<Components::PointLight, Components::Transform>(
+            [this, &pointLights, &view](const auto& light, const auto& transform)
+            {
+                pointLights.emplace_back(
+                    PointLightData
+                    {
+                        view * Math::vec4(transform.getPosition(), 1.0f),
 
-        //m_shaderProgram->setUniform("uLight.ambient", lightColor * 0.05f);
-        //m_shaderProgram->setUniform("uLight.diffuse", lightColor * 1.5f);
-        //m_shaderProgram->setUniform("uLight.specular", lightColor);
+                        Math::vec4(light.color * 0.05f, 1.0f),
+                        Math::vec4(light.color * 1.5f, 1.0f),
+                        Math::vec4(light.color, 1.0f),
 
-        //m_shaderProgram->setUniform("uLight.constant", 1.0f);
-        //m_shaderProgram->setUniform("uLight.linear", 0.14f);
-        //m_shaderProgram->setUniform("uLight.quadratic", 0.07f);
-        //m_shaderProgram->setUniform("uLight.innerCone", glm::cos(Math::degToRad(12.0f)));
-        //m_shaderProgram->setUniform("uLight.outerCone", glm::cos(Math::degToRad(15.0f)));
+                        light.constant,
+                        light.linear,
+                        light.quadratic,
 
-        //m_shaderProgram->setUniform("uMaterial.diffuse", 0);
-        //m_shaderProgram->setUniform("uMaterial.specular", 1);
-        //m_shaderProgram->setUniform("uMaterial.emmisive", 2);
-        //m_shaderProgram->setUniform("uMaterial.shininess", 32.0f);
+                        1.0f,
+                    }
+                    );
+            }
+        );
 
-        ///////////////////////////////  LIGHT  /////////////////////////////
+        glNamedBufferData(
+            pointLightsBuffer,
+            sizeof(PointLightData) * pointLights.size(),
+            pointLights.data(),
+            GL_DYNAMIC_DRAW
+        );
 
-        //model = Math::mat4(1.0);
-        ////model = Math::rotateMat4(model, time, Math::vec3(0.0, 1.0, 0.0));
-        //model = Math::translateMat4(model, g_lightPos);
-        //model = Math::scaleMat4(model, Math::vec3(0.2, 0.2, 0.2));
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, pointLightsBuffer);
+        m_shaderProgram->setUniform("uPointLightsNum", static_cast<int>(pointLights.size()));
 
-        //m_shaderProgram->setUniform("uLight.ambient", lightColor);
-        //m_shaderProgram->setUniform("uLight.diffuse", lightColor);
-
-        //m_shaderProgram->setUniform("uModel", model);
-        //m_shaderProgram->setUniform("uMaterial.diffuse", 3);
-        //m_shaderProgram->setUniform("uMaterial.specular", 3);
-        //m_shaderProgram->setUniform("uMaterial.shininess", 32.0f);
-
-        //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        /////////////////////////////////////////////////////////////////////////
     }
 
     void Renderer::setDrawMode(DrawMode mode)

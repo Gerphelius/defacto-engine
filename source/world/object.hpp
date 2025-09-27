@@ -57,6 +57,12 @@ namespace DF
             }
         }
 
+        template <typename Component>
+        bool hasComponent()
+        {
+            return m_entity.has<Component>();
+        }
+
         template <typename Func>
         void forEachComponent(Func&& callback)
         {

@@ -6,7 +6,7 @@
 
 namespace DF::UI::Debug
 {
-    struct MetadataInfo
+    struct Metadata
     {
         static void render(Components::Metadata& component);
     };

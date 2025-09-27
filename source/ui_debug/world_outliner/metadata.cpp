@@ -1,7 +1,6 @@
 #include <string>
-#include <iostream>
 
-#include "metadata-info.hpp"
+#include "metadata.hpp"
 
 namespace ImGui
 {
@@ -12,7 +11,7 @@ namespace ImGui
 
 namespace DF::UI::Debug
 {
-    void MetadataInfo::render(Components::Metadata& component)
+    void Metadata::render(Components::Metadata& component)
     {
         if (ImGui::CollapsingHeader("Metadata", ImGuiTreeNodeFlags_None))
         {

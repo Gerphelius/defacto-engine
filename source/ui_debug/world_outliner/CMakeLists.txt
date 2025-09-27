@@ -1,11 +1,13 @@
 target_sources(${PROJECT_NAME}
     PRIVATE
         world_outliner.cpp
-        transform-info.cpp
-        metadata-info.cpp
+        transform.cpp
+        metadata.cpp
+        point_light.cpp
 
     PRIVATE
         world_outliner.hpp
-        transform-info.hpp
-        metadata-info.hpp
+        transform.hpp
+        metadata.hpp
+        point_light.hpp
 )

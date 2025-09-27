@@ -6,7 +6,7 @@
 
 namespace DF::UI::Debug
 {
-    struct TransformInfo
+    struct Transform
     {
         static void render(Components::TransformProxy& transform);
     };

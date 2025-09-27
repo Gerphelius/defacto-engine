@@ -4,6 +4,7 @@ target_sources(${PROJECT_NAME}
         metadata.hpp
         model.hpp
         transform.hpp
+        point_light.hpp
     PRIVATE
         transform_matrix.hpp
 )
