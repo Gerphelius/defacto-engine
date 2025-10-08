@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+#include <string>
 
 #include "assets/mesh.hpp"
 
@@ -8,6 +8,6 @@ namespace DF::Components
 {
     struct Model
     {
-        std::shared_ptr<Assets::Mesh> mesh{};
+        std::string modelHandle{};
     };
 }

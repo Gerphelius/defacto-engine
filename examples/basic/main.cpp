@@ -21,7 +21,7 @@
 *  -- Create a world objects list (WOL) UI inherited from base UI;  +
 *  -- Add an ability to spawn object in the world,  +
 *
-* # Move default camera logic to world class and create it on init.
+* # Move default camera logic to world class and create it on init.  +
 * # Create asset manager and refactor path to use std::filesystem::path instead of relative.
 * # CMake - check path definition to assets, so during build on other machines assets are properly copied
 *   to where .exe lives and are loaded to the game.

@@ -19,8 +19,9 @@ add_subdirectory(ui_debug/world_outliner)
 add_subdirectory(utils)
 add_subdirectory(world)
 
-# Copy images
+# Copy static resources
 file(COPY "${CMAKE_SOURCE_DIR}/resources/images/" DESTINATION "${CMAKE_BINARY_DIR}/resources/images/")
+file(COPY "${CMAKE_SOURCE_DIR}/resources/models/" DESTINATION "${CMAKE_BINARY_DIR}/resources/models/")
 
 # Handle shader files
 file(GLOB SHADER_FILES "${CMAKE_SOURCE_DIR}/resources/shaders/*.glsl")

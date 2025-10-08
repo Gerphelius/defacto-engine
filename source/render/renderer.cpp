@@ -1,15 +1,18 @@
 #include <iostream>
+#include <array>
+#include <vector>
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
-#include <sail-c++/sail-c++.h>
 
-#include "world/world.hpp"
 #include "render/renderer.hpp"
 #include "render/window.hpp"
+#include "world/world.hpp"
 #include "math/math.hpp"
 #include "input/input.hpp"
+#include "assets/asset_manager.hpp"
+#include "assets/model.hpp"
 
 #include "components/camera.hpp"
 #include "components/transform.hpp"
@@ -43,53 +46,10 @@ namespace DF::Render
         }
 
         m_shaderProgram = std::make_unique<ShaderProgram>(
-            "../../resources/shaders/base.vert.glsl",
-            "../../resources/shaders/base.frag.glsl"
+            "../../resources/shaders/phong.vert.glsl",
+            "../../resources/shaders/phong.frag.glsl"
         );
-
         m_shaderProgram->use();
-
-        /////////////////////////////  TEXTURES  /////////////////////////////
-
-        sail::image container{ "../../resources/images/container2.png" };
-        sail::image container_spec{ "../../resources/images/container2_specular.png" };
-        sail::image container_emissive{ "../../resources/images/matrix.jpg" };
-
-        if (container.is_valid() && container_spec.is_valid())
-        {
-            GLuint textures[4]{};
-            glGenTextures(4, textures);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, textures[0]);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, container.width(), container.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, container.pixels());
-            glGenerateMipmap(GL_TEXTURE_2D);
-
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, textures[1]);
-
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, container_spec.width(), container_spec.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, container_spec.pixels());
-            glGenerateMipmap(GL_TEXTURE_2D);
-
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, textures[2]);
-
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, container_emissive.width(), container_emissive.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, container_emissive.pixels());
-            glGenerateMipmap(GL_TEXTURE_2D);
-
-            constexpr unsigned char whitePixel[]{ 0xFF, 0xFF, 0xFF };
-            glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_2D, textures[3]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, whitePixel);
-        }
-
-        //////////////////////////////////////////////////////////////////////
 
         glEnable(GL_DEPTH_TEST);
     }
@@ -101,10 +61,7 @@ namespace DF::Render
 
         float time{ static_cast<float>(glfwGetTime()) };
 
-        Math::vec3 lightColor{ 1.0f };
-        Math::vec3 directionalLight{ 1.0f, -1.0f, 0.0f };
-
-        Math::mat4 view{};
+        Math::mat4 view{}; // Used to transform point light position into view space for SSBO
 
         /*
         * TODO: find a better place for systems like this
@@ -162,9 +119,9 @@ namespace DF::Render
                 {
                     m_shaderProgram->setUniform("uLightColor", Math::vec3(0.0f));
                     m_shaderProgram->setUniform("uModel", transform.translation);
-                    model.mesh->draw();
+                    Assets::Model* m{ Assets::AssetManager::getModel(model.modelHandle) };
+                    m->draw();
                 }
-
             }
         );
 
@@ -177,7 +134,8 @@ namespace DF::Render
             {
                 m_shaderProgram->setUniform("uLightColor", light.color);
                 m_shaderProgram->setUniform("uModel", transform.translation);
-                model.mesh->draw();
+                Assets::Model* m{ Assets::AssetManager::getModel(model.modelHandle) };
+                m->draw();
             }
         );
 
@@ -195,7 +153,8 @@ namespace DF::Render
         m_world->forEach<Components::PointLight, Components::Transform>(
             [this, &pointLights, &view](const auto& light, const auto& transform)
             {
-                pointLights.emplace_back(
+                pointLights.emplace_back
+                (
                     PointLightData
                     {
                         view * Math::vec4(transform.getPosition(), 1.0f),
@@ -210,7 +169,7 @@ namespace DF::Render
 
                         1.0f,
                     }
-                    );
+                );
             }
         );
 

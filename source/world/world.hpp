@@ -10,14 +10,16 @@
 #define FLECS_MODULE
 #define FLECS_SYSTEM
 #define FLECS_PIPELINE
-
 #include <flecs.h>
 
 #include "utils/function_traits.hpp"
 #include "object.hpp"
+#include "assets/asset_manager.hpp"
+
 #include "components/transform.hpp"
 #include "components/transform_matrix.hpp"
 #include "components/camera.hpp"
+#include "components/model.hpp"
 
 namespace DF
 {
@@ -68,9 +70,11 @@ namespace DF
 
         void spawnObject(Object& object)
         {
-            auto transform{ object.getComponent<Components::Transform>() };
+            Components::TransformProxy transform{ object.getComponent<Components::Transform>() };
+            Components::Model model{ object.getComponent<Components::Model>() };
+            Assets::AssetManager::loadModel(model.modelHandle);
 
-            //assert(transformComp && "That object doesn't have transform component and cannot be spawned");
+            //assert(transform && "That object doesn't have transform component and cannot be spawned");
 
             Math::mat4 modelMat{ 1.0 };
             Components::TransformMatrix transformMatrix{};
