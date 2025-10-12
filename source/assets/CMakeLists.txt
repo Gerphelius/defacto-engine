@@ -3,14 +3,12 @@ target_sources(${PROJECT_NAME}
         asset_manager.hpp
         mesh.hpp
         model.hpp
-        material.hpp
         texture.hpp
 
     PRIVATE
         asset_manager.cpp
         mesh.cpp
         model.cpp
-        material.cpp
         texture.cpp
 )
 

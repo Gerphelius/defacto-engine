@@ -106,8 +106,6 @@ namespace DF::Render
             }
         );
 
-        /////////////////////////////  CUBE  /////////////////////////////
-
         m_shaderProgram->setUniform("uMaterial.diffuse", 0);
         m_shaderProgram->setUniform("uMaterial.specular", 1);
         m_shaderProgram->setUniform("uMaterial.shininess", 32.0f);
@@ -119,22 +117,18 @@ namespace DF::Render
                 {
                     m_shaderProgram->setUniform("uLightColor", Math::vec3(0.0f));
                     m_shaderProgram->setUniform("uModel", transform.translation);
-                    Assets::Model* m{ Assets::AssetManager::getModel(model.modelHandle) };
+                    Assets::Model* m{ Assets::AssetManager::getModel(model.model) };
                     m->draw();
                 }
             }
         );
-
-        m_shaderProgram->setUniform("uMaterial.diffuse", 3);
-        m_shaderProgram->setUniform("uMaterial.specular", 3);
-        m_shaderProgram->setUniform("uMaterial.emmisive", 3);
 
         m_world->forEach<Components::Model, Components::TransformMatrix, Components::PointLight>(
             [this](const auto& model, const auto& transform, const auto& light)
             {
                 m_shaderProgram->setUniform("uLightColor", light.color);
                 m_shaderProgram->setUniform("uModel", transform.translation);
-                Assets::Model* m{ Assets::AssetManager::getModel(model.modelHandle) };
+                Assets::Model* m{ Assets::AssetManager::getModel(model.model) };
                 m->draw();
             }
         );

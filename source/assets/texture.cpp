@@ -6,7 +6,7 @@
 
 namespace DF::Assets
 {
-    Texture::Texture(unsigned int width, unsigned int height, void* data) noexcept
+    Texture::Texture(unsigned int width, unsigned int height, const void* data) noexcept
     {
         glGenTextures(1, &m_texture);
         glBindTexture(GL_TEXTURE_2D, m_texture);

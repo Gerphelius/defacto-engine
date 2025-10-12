@@ -4,13 +4,12 @@
 
 #include "mesh.hpp"
 #include "texture.hpp"
-#include "asset_manager.hpp"
 
 namespace DF::Assets
 {
-    Mesh::Mesh(const std::vector<float>& vertices, const std::vector<int>& indices, Material material)
+    Mesh::Mesh(const std::vector<float>& vertices, const std::vector<int>& indices, unsigned int materialIndex)
         : m_indicesCount{ static_cast<GLsizei>(std::ssize(indices)) }
-        , m_material{ std::move(material) }
+        , m_materialIndex{ materialIndex }
     {
         glGenBuffers(1, &m_vbo);
         glGenBuffers(1, &m_ebo);
@@ -40,9 +39,6 @@ namespace DF::Assets
 
     void Mesh::draw() const
     {
-        AssetManager::getTexture(m_material.diffuseHandle)->bind(0);
-        AssetManager::getTexture(m_material.specularHandle)->bind(1);
-
         glBindVertexArray(m_vao);
         glDrawElements(GL_TRIANGLES, m_indicesCount, GL_UNSIGNED_INT, 0);
     }

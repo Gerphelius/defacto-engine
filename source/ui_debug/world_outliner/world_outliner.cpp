@@ -5,6 +5,7 @@
 #include "ui_debug/world_outliner/world_outliner.hpp"
 #include "transform.hpp"
 #include "metadata.hpp"
+#include "model.hpp"
 #include "point_light.hpp"
 #include "core/engine.hpp"
 #include "world/world.hpp"
@@ -93,7 +94,7 @@ namespace DF::UI::Debug
             Object object{ m_world->createObject() };
 
             object.addComponent(Components::Transform{});
-            object.addComponent(Components::Model{ "../../resources/models/backpack.obj" });
+            object.addComponent(Components::Model{ "../../resources/models/backpack/backpack.obj" });
 
             std::string newName{ objectName };
 
@@ -114,7 +115,7 @@ namespace DF::UI::Debug
 
             object.addComponent(Components::Transform{ .scale{ 0.2, 0.2, 0.2 } });
             object.addComponent(Components::PointLight{});
-            object.addComponent(Components::Model{ "../../resources/models/backpack.obj" });
+            object.addComponent(Components::Model{ "../../resources/models/cube/cube.obj" });
             object.addComponent(DF::Components::Metadata{ .name{ "Point Light" } });
 
             m_world->spawnObject(object);
@@ -194,6 +195,13 @@ namespace DF::UI::Debug
                             auto& pointLight{ object.getComponent<Components::PointLight>() };
 
                             PointLight::render(pointLight);
+                        }
+
+                        if (m_world->isComponentType<Components::Model>(id))
+                        {
+                            auto& model{ object.getComponent<Components::Model>() };
+
+                            Model::render(model);
                         }
                     }
                 );

@@ -5,12 +5,14 @@
 #include <spdlog/spdlog.h>
 #include <imgui_impl_glfw.h>
 
+#include "math/math.hpp"
 #include "core/engine.hpp"
 #include "world/world.hpp"
 #include "backend/backend_factory.hpp"
 #include "core/service_locator.hpp"
-#include "math/math.hpp"
 #include "ui_debug/ui_manager.hpp"
+#include "assets/asset_manager.hpp"
+
 #include "components/camera.hpp"
 #include "components/transform.hpp"
 
@@ -38,6 +40,7 @@ namespace DF
         s_world = std::make_unique<World>();
         s_renderer = std::make_unique<Render::Renderer>(s_world.get());
         UI::Debug::UIManager::init(s_window.get());
+        Assets::AssetManager::init();
 
         s_window->setResizeCallback([](float width, float height) { s_renderer->setWindowSize(width, height); });
 

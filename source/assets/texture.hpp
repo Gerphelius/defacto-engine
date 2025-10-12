@@ -5,7 +5,7 @@ namespace DF::Assets
     class Texture
     {
     public:
-        Texture(unsigned int width, unsigned int height, void* data) noexcept;
+        Texture(unsigned int width, unsigned int height, const void* data) noexcept;
 
         void bind(int pos) const;
 

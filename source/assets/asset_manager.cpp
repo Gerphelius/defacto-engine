@@ -7,20 +7,11 @@
 
 #include "asset_manager.hpp"
 #include "mesh.hpp"
-#include "model.hpp"
-#include "material.hpp"
-#include "texture.hpp"
 
 // TODO: make a system to check reference count to assets and unload unused assets on next frame.
 
 namespace DF::Assets
 {
-    std::unordered_map<std::string, std::unique_ptr<Model>> AssetManager::s_models{};
-    std::unordered_map<std::string, std::unique_ptr<Texture>> AssetManager::s_textures{};
-    std::vector<std::unique_ptr<Material>> AssetManager::s_materials{};
-
-    std::filesystem::path AssetManager::m_assetsDirectory{ "../../resources/" };
-
     // TODO: need to create a clear initialization flow for all engine modules, because for now,
     //       if you try to create ShaderProgram as static when opengl/glad is not initialized,
     //       engine would crash.
@@ -31,11 +22,17 @@ namespace DF::Assets
     //    "../../resources/shaders/phong.frag.glsl"
     //};
 
-    void AssetManager::loadModel(const std::string& path)
+    void AssetManager::init()
+    {
+        constexpr unsigned char whitePixel[]{ 0xFF, 0xFF, 0xFF };
+        s_textures["white"] = std::make_unique<Texture>(1, 1, (void*)(whitePixel));
+    }
+
+    bool AssetManager::loadModel(const std::string& path)
     {
         auto it = s_models.find(path);
 
-        if (it != s_models.end()) return;
+        if (it != s_models.end()) return true;
 
         Assimp::Importer importer{};
         const aiScene* aiScene = importer.ReadFile(
@@ -50,10 +47,11 @@ namespace DF::Assets
         {
             std::cout << "Assimp import failed: " << importer.GetErrorString() << '\n';
 
-            return;
+            return false;
         }
 
         std::vector<Mesh> meshes{};
+        std::vector<Material> materials{};
 
         for (unsigned int meshIndex{}; meshIndex < aiScene->mNumMeshes; ++meshIndex)
         {
@@ -92,30 +90,42 @@ namespace DF::Assets
                 }
             }
 
-            Material material{};
-
             if (aiScene->HasMaterials())
             {
                 aiMaterial* aiMaterial{ aiScene->mMaterials[mesh->mMaterialIndex] };
 
-                // TODO: Total garbage, remove asap
+                std::string diffuse{};
+                std::string specular{};
 
-                aiString texPath{};
-                aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
-                std::string realpath{ m_assetsDirectory.string() + "models/" + texPath.C_Str() };
-                loadTexture(realpath);
-                material.diffuseHandle = realpath;
+                if (aiMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+                {
+                    aiString diffusePath{};
+                    aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &diffusePath);
+                    auto modelDir = std::filesystem::path(path).parent_path();
+                    auto realpath{ modelDir / diffusePath.C_Str() };
+                    loadTexture(realpath.string());
+                    diffuse = realpath.string();
+                }
 
-                aiMaterial->GetTexture(aiTextureType_SPECULAR, 0, &texPath);
-                realpath = m_assetsDirectory.string() + "models/" + texPath.C_Str();
-                loadTexture(realpath);
-                material.specularHandle = realpath;
+                if (aiMaterial->GetTextureCount(aiTextureType_SPECULAR) > 0)
+                {
+                    aiString specularPath{};
+                    aiMaterial->GetTexture(aiTextureType_SPECULAR, 0, &specularPath);
+                    auto modelDir = std::filesystem::path(path).parent_path();
+                    auto realpath{ modelDir / specularPath.C_Str() };
+                    loadTexture(realpath.string());
+                    specular = realpath.string();
+                }
+
+                materials.emplace_back(Material{ diffuse, specular });
             }
 
-            meshes.emplace_back(Assets::Mesh{ vertices, indices, std::move(material) });
+            meshes.emplace_back(Assets::Mesh{ vertices, indices, mesh->mMaterialIndex });
         }
 
-        s_models[path] = std::make_unique<Assets::Model>(std::move(meshes));
+        s_models[path] = std::make_unique<Assets::Model>(std::move(meshes), std::move(materials));
+
+        return true;
     }
 
     void AssetManager::loadTexture(const std::string& path)
@@ -162,9 +172,9 @@ namespace DF::Assets
 
         if (it == s_textures.end())
         {
-            std::cout << "No cached texture found, loading " << path << '\n';
+            //std::cerr << "No cached texture found, need to load it first: " << path << '\n';
 
-            loadTexture(path);
+            return s_textures["white"].get();
         }
 
         return s_textures[path].get();

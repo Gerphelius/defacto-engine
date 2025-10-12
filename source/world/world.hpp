@@ -72,7 +72,7 @@ namespace DF
         {
             Components::TransformProxy transform{ object.getComponent<Components::Transform>() };
             Components::Model model{ object.getComponent<Components::Model>() };
-            Assets::AssetManager::loadModel(model.modelHandle);
+            Assets::AssetManager::loadModel(model.model);
 
             //assert(transform && "That object doesn't have transform component and cannot be spawned");
 
