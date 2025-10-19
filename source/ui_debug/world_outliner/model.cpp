@@ -26,7 +26,8 @@ namespace DF::UI::Debug
                 ImGui::TextUnformatted("Path");
                 ImGui::TableNextColumn();
 
-                static std::string path{ component.model };
+                static std::string path{};
+                path = component.model;
                 ImGui::InputText("##", &path, 128);
                 ImGui::SameLine();
 
@@ -40,6 +41,14 @@ namespace DF::UI::Debug
                     {
                         path = component.model;
                     }
+                }
+
+                Assets::Model* model{ Assets::AssetManager::getModel(path) };
+                const auto& materials{ model->getMaterials() };
+
+                for (const auto& material : materials)
+                {
+                    ImGui::Text(material.name.c_str());
                 }
 
                 ImGui::EndTable();

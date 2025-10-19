@@ -7,11 +7,14 @@
 namespace DF::Assets
 {
     class Mesh;
+    enum class Shader;
 
     struct Material
     {
+        std::string name{};
         std::string diffuse{};
         std::string specular{};
+        Shader shader{};
     };
 
     class Model
@@ -19,11 +22,13 @@ namespace DF::Assets
     public:
         explicit Model(std::vector<Mesh> meshes, std::vector<Material> materials) noexcept
             : m_meshes{ std::move(meshes) }
-            , m_materials{ std::move(materials)}
+            , m_materials{ std::move(materials) }
         {
         }
 
         void draw();
+
+        const std::vector<Material>& getMaterials() const { return m_materials; }
 
     private:
         std::vector<Mesh> m_meshes{};

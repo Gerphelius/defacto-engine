@@ -1,6 +1,7 @@
 #include "model.hpp"
 #include "mesh.hpp"
 #include "asset_manager.hpp"
+#include "render/shader_program.hpp"
 
 namespace DF::Assets
 {
@@ -12,6 +13,7 @@ namespace DF::Assets
 
             AssetManager::getTexture(material.diffuse)->bind(0);
             AssetManager::getTexture(material.specular)->bind(1);
+            AssetManager::getShader(material.shader)->use();
 
             mesh.draw();
         }

@@ -45,12 +45,6 @@ namespace DF::Render
             std::cout << "Failed to initialize GLAD" << '\n';
         }
 
-        m_shaderProgram = std::make_unique<ShaderProgram>(
-            "../../resources/shaders/phong.vert.glsl",
-            "../../resources/shaders/phong.frag.glsl"
-        );
-        m_shaderProgram->use();
-
         glEnable(GL_DEPTH_TEST);
     }
 
@@ -63,20 +57,31 @@ namespace DF::Render
 
         Math::mat4 view{}; // Used to transform point light position into view space for SSBO
 
+        ShaderProgram* phong{ Assets::AssetManager::getShader(Assets::Shader::PHONG) };
+        ShaderProgram* unlit{ Assets::AssetManager::getShader(Assets::Shader::UNLIT) };
+
         /*
         * TODO: find a better place for systems like this
         * (probably need to register all systems inside world?)
         */
         m_world->forEach<Components::Camera, Components::Transform>(
-            [this, &view](const auto& camera, const auto& transform)
+            [this, &view, phong, unlit](const auto& camera, const auto& transform)
             {
                 if (camera.active && transform.getDirty())
                 {
                     view = Math::lookAt(transform.getPosition(), transform.getForwardVector() + transform.getPosition(), Math::vec3(0.0, 0.1, 0.0));
-                    m_shaderProgram->setUniform("uView", view);
+
+                    phong->use();
+                    phong->setUniform("uView", view);
+                    unlit->use();
+                    unlit->setUniform("uView", view);
 
                     const auto projection{ Math::perspective(Math::degToRad(camera.fov), m_size.width / m_size.height, camera.near, camera.far) };
-                    m_shaderProgram->setUniform("uProjection", projection);
+
+                    phong->use();
+                    phong->setUniform("uProjection", projection);
+                    unlit->use();
+                    unlit->setUniform("uProjection", projection);
                 }
             }
         );
@@ -106,28 +111,22 @@ namespace DF::Render
             }
         );
 
-        m_shaderProgram->setUniform("uMaterial.diffuse", 0);
-        m_shaderProgram->setUniform("uMaterial.specular", 1);
-        m_shaderProgram->setUniform("uMaterial.shininess", 32.0f);
+        phong->use();
+        phong->setUniform("uMaterial.diffuse", 0);
+        phong->setUniform("uMaterial.specular", 1);
+        phong->setUniform("uMaterial.shininess", 32.0f);
+        unlit->use();
+        unlit->setUniform("uMaterial.diffuse", 0);
+        unlit->setUniform("uMaterial.specular", 1);
+        unlit->setUniform("uMaterial.shininess", 32.0f);
 
-        m_world->forEach<Object, Components::Model, Components::TransformMatrix>(
-            [this](auto obj, const auto& model, const auto& transform)
+        m_world->forEach<Components::Model, Components::TransformMatrix>(
+            [this, unlit, phong](const auto& model, const auto& transform)
             {
-                if (!obj.hasComponent<Components::PointLight>())
-                {
-                    m_shaderProgram->setUniform("uLightColor", Math::vec3(0.0f));
-                    m_shaderProgram->setUniform("uModel", transform.translation);
-                    Assets::Model* m{ Assets::AssetManager::getModel(model.model) };
-                    m->draw();
-                }
-            }
-        );
-
-        m_world->forEach<Components::Model, Components::TransformMatrix, Components::PointLight>(
-            [this](const auto& model, const auto& transform, const auto& light)
-            {
-                m_shaderProgram->setUniform("uLightColor", light.color);
-                m_shaderProgram->setUniform("uModel", transform.translation);
+                phong->use();
+                phong->setUniform("uModel", transform.translation);
+                unlit->use();
+                unlit->setUniform("uModel", transform.translation);
                 Assets::Model* m{ Assets::AssetManager::getModel(model.model) };
                 m->draw();
             }
@@ -175,7 +174,8 @@ namespace DF::Render
         );
 
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, pointLightsBuffer);
-        m_shaderProgram->setUniform("uPointLightsNum", static_cast<int>(pointLights.size()));
+        phong->use();
+        phong->setUniform("uPointLightsNum", static_cast<int>(pointLights.size()));
 
         /////////////////////////////////////////////////////////////////////////
     }

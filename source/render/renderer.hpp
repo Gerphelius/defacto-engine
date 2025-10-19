@@ -2,8 +2,6 @@
 
 #include <memory>
 
-#include "render/shader_program.hpp"
-
 namespace DF
 {
     class World;
@@ -27,7 +25,6 @@ namespace DF::Render
 
     private:
         DrawMode m_drawMode{ DrawMode::FILL };
-        std::unique_ptr<ShaderProgram> m_shaderProgram{};
         World* m_world{};
         WindowSize m_size{ 800, 600 };
 

@@ -12,20 +12,19 @@
 
 namespace DF::Assets
 {
-    // TODO: need to create a clear initialization flow for all engine modules, because for now,
-    //       if you try to create ShaderProgram as static when opengl/glad is not initialized,
-    //       engine would crash.
-
-    //Render::ShaderProgram AssetManager::m_phongShader
-    //{
-    //    "../../resources/shaders/phong.vert.glsl",
-    //    "../../resources/shaders/phong.frag.glsl"
-    //};
-
     void AssetManager::init()
     {
         constexpr unsigned char whitePixel[]{ 0xFF, 0xFF, 0xFF };
         s_textures["white"] = std::make_unique<Texture>(1, 1, (void*)(whitePixel));
+
+        s_shaders[Shader::PHONG] = std::make_unique<Render::ShaderProgram>(
+            "../../resources/shaders/phong.vert.glsl",
+            "../../resources/shaders/phong.frag.glsl"
+        );
+        s_shaders[Shader::UNLIT] = std::make_unique<Render::ShaderProgram>(
+            "../../resources/shaders/unlit.vert.glsl",
+            "../../resources/shaders/unlit.frag.glsl"
+        );
     }
 
     bool AssetManager::loadModel(const std::string& path)
@@ -90,10 +89,16 @@ namespace DF::Assets
                 }
             }
 
-            if (aiScene->HasMaterials())
-            {
-                aiMaterial* aiMaterial{ aiScene->mMaterials[mesh->mMaterialIndex] };
+            meshes.emplace_back(Assets::Mesh{ vertices, indices, mesh->mMaterialIndex });
+        }
 
+        if (aiScene->HasMaterials())
+        {
+            for (unsigned int i{}; i < aiScene->mNumMaterials; ++i)
+            {
+                aiMaterial* aiMaterial{ aiScene->mMaterials[i] };
+
+                std::string name{ aiMaterial->GetName().C_Str() };
                 std::string diffuse{};
                 std::string specular{};
 
@@ -117,10 +122,8 @@ namespace DF::Assets
                     specular = realpath.string();
                 }
 
-                materials.emplace_back(Material{ diffuse, specular });
+                materials.emplace_back(Material{ name, diffuse, specular });
             }
-
-            meshes.emplace_back(Assets::Mesh{ vertices, indices, mesh->mMaterialIndex });
         }
 
         s_models[path] = std::make_unique<Assets::Model>(std::move(meshes), std::move(materials));
@@ -178,5 +181,12 @@ namespace DF::Assets
         }
 
         return s_textures[path].get();
+    }
+
+    Render::ShaderProgram* AssetManager::getShader(Shader shader)
+    {
+        auto it = s_shaders.find(shader);
+
+        return s_shaders[shader].get();
     }
 }

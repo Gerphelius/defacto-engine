@@ -36,7 +36,6 @@ out vec4 FragColor;
 
 uniform Material uMaterial;
 uniform int uPointLightsNum;
-uniform vec3 uLightColor;
 
 void main()
 {
@@ -70,7 +69,7 @@ void main()
     //vec4 emmisive = (1 - ceil(specTex)) * texture(uMaterial.emmisive, TexCoord);
     //                ^^^^^^^^^^^^^^^^^^^  this is used to draw emissive texture only on black portion
     //                                     of specular texture (discards metal frame from container texture)
-    vec4 emmisive = texture(uMaterial.emmisive, TexCoord) * vec4(uLightColor, 1.0);
+    vec4 emmisive = texture(uMaterial.emmisive, TexCoord);
 
-    FragColor = vec4(result, 1.0) + emmisive;
+    FragColor = vec4(result, 1.0)/* + emmisive*/;
 }

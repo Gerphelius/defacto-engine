@@ -17,19 +17,6 @@ CMakeFiles/
 *.so
 *.dylib
 
-# Ignore object and intermediate files
-*.obj
-*.o
-*.ilk
-*.pch
-*.pdb
-*.idb
-*.ipdb
-*.iobj
-*.tlog
-*.lastbuildstate
-*.log
-
 # Ignore editor/project-specific files
 .vscode/
 .vs/
@@ -38,3 +25,6 @@ CMakeFiles/
 
 # Ignore shader binaries if precompiled
 src/shaders/*.spv
+
+# Ignore logs
+*.log
