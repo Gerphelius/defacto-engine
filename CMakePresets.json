@@ -15,7 +15,7 @@
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
             },
-            "toolchainFile": "$env{REAL_VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
             "environment": {
                 "VCPKG_FEATURE_FLAGS": "manifests",
                 "VCPKG_MANIFEST_MODE":  "OFF"

@@ -2,7 +2,7 @@
 
 #include <string>
 #include <unordered_map>
-#include <vector>
+#include <array>
 #include <memory>
 #include <filesystem>
 
@@ -16,6 +16,8 @@ namespace DF::Assets
     {
         PHONG,
         UNLIT,
+
+        SHADERS_COUNT,
     };
 
     struct AssetHandle
@@ -36,10 +38,13 @@ namespace DF::Assets
 
         static Render::ShaderProgram* getShader(Shader shader);
 
+        static const auto& getShaderNames() { return s_shaderToName; }
+
     private:
         static inline std::unordered_map<std::string, std::unique_ptr<Model>> s_models{};
         static inline std::unordered_map<std::string, std::unique_ptr<Texture>> s_textures{};
         static inline std::unordered_map<Shader, std::unique_ptr<Render::ShaderProgram>> s_shaders{};
+        static inline std::array<std::string, static_cast<int>(Shader::SHADERS_COUNT)> s_shaderToName{ "Phong", "Unlit" };
 
         static inline std::filesystem::path m_assetsDirectory{ "../../resources/" };
 

@@ -28,7 +28,7 @@ namespace DF::Assets
 
         void draw();
 
-        const std::vector<Material>& getMaterials() const { return m_materials; }
+        std::vector<Material>& getMaterials() { return m_materials; }
 
     private:
         std::vector<Mesh> m_meshes{};

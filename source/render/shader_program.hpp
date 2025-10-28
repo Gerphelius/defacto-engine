@@ -9,9 +9,6 @@ namespace DF::Render
 {
     class ShaderProgram
     {
-    private:
-        GLuint m_id{};
-
     public:
         explicit ShaderProgram(const std::string& vertexPath, const std::string& fragmentPath);
 
@@ -29,6 +26,8 @@ namespace DF::Render
         void setUniform(const std::string& name, Math::mat4 value) const;
 
     private:
+        GLuint m_id{};
+
         GLuint compileShader(const std::string& path, GLenum type) const;
     };
 }

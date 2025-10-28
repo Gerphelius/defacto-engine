@@ -7,7 +7,7 @@ namespace ImGui
 {
     // ImGui::InputText() with std::string
     // Because text input needs dynamic resizing, we need to setup a callback to grow the capacity
-    IMGUI_API bool  InputText(const char* label, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+    IMGUI_API bool InputText(const char* label, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
 }
 
 namespace DF::UI::Debug
@@ -44,11 +44,41 @@ namespace DF::UI::Debug
                 }
 
                 Assets::Model* model{ Assets::AssetManager::getModel(path) };
-                const auto& materials{ model->getMaterials() };
+                auto& materials{ model->getMaterials() };
 
-                for (const auto& material : materials)
+                for (auto& material : materials)
                 {
-                    ImGui::Text(material.name.c_str());
+                    const auto& shaders{ Assets::AssetManager::getShaderNames() };
+                    const int currentShaderType{ static_cast<int>(material.shader) };
+                    const char* selected = shaders[currentShaderType].c_str();
+                    int selectedIndex = currentShaderType;
+
+                    if (ImGui::BeginCombo("##xx", selected))
+                    {
+                        for (int i{}; i < shaders.size(); ++i)
+                        {
+                            const bool is_selected = (shaders[i] == selected);
+
+                            if (ImGui::Selectable(shaders[i].c_str(), is_selected))
+                            {
+                                selected = shaders[i].c_str();
+                                selectedIndex = i;
+                            }
+
+                            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                            if (is_selected)
+                            {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+
+                        ImGui::EndCombo();
+                    }
+
+                    if (selectedIndex != currentShaderType)
+                    {
+                        material.shader = static_cast<Assets::Shader>(selectedIndex);
+                    }
                 }
 
                 ImGui::EndTable();
