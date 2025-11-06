@@ -1,35 +1,35 @@
 #include <iostream>
 
-#include "input.hpp"
+#include "input_glfw.hpp"
 
 namespace DF::Backend
 {
-    bool GLFWInput::keyPressed(Key key) const
+    bool InputGLFW::keyPressed(Key key) const
     {
         return false;
     }
 
-    bool GLFWInput::mouseKeyPressed(MouseKey key) const
+    bool InputGLFW::mouseKeyPressed(MouseKey key) const
     {
         return m_pressedMouseKeys.contains(key);
     }
 
-    void GLFWInput::onKeyPress(Key key, KeyEvent event, KeyPressCallback callback)
+    void InputGLFW::onKeyPress(Key key, KeyEvent event, KeyPressCallback callback)
     {
         m_keyCallbacksMap[key][event].push_back(std::move(callback));
     }
 
-    void GLFWInput::onMouseKeyPress(MouseKey button, KeyPressCallback callback)
+    void InputGLFW::onMouseKeyPress(MouseKey button, KeyPressCallback callback)
     {
 
     }
 
-    void GLFWInput::onMouseMove(MouseMoveCallback callback)
+    void InputGLFW::onMouseMove(MouseMoveCallback callback)
     {
         m_mouseMoveCallbacks.push_back(callback);
     }
 
-    void GLFWInput::update()
+    void InputGLFW::update()
     {
         for (Key key : m_pressedKeys)
         {
@@ -42,7 +42,7 @@ namespace DF::Backend
         }
     }
 
-    Input::Key GLFWInput::getMappedKeyGLFW(int key) const
+    Input::Key InputGLFW::getMappedKeyGLFW(int key) const
     {
         auto it{ m_glfwKeyMap.find(key) };
 
@@ -51,7 +51,7 @@ namespace DF::Backend
         return it->second;
     }
 
-    void GLFWInput::keyCallback(GLFWKey key, GLFWKeyAction action)
+    void InputGLFW::keyCallback(GLFWKey key, GLFWKeyAction action)
     {
         if (action == GLFW_REPEAT) return;
 
@@ -78,7 +78,7 @@ namespace DF::Backend
         }
     }
 
-    void GLFWInput::mouseKeyCallback(GLFWKey key, GLFWKeyAction action)
+    void InputGLFW::mouseKeyCallback(GLFWKey key, GLFWKeyAction action)
     {
         MouseKey dfMouseKey{};
 
@@ -106,7 +106,7 @@ namespace DF::Backend
         }
     }
 
-    void GLFWInput::cursorCallback(double xpos, double ypos)
+    void InputGLFW::cursorCallback(double xpos, double ypos)
     {
         for (const auto& callback : m_mouseMoveCallbacks)
         {
@@ -114,14 +114,14 @@ namespace DF::Backend
         }
     }
 
-    void GLFWInput::wheelCallback(double xoffset, double yoffset)
+    void InputGLFW::wheelCallback(double xoffset, double yoffset)
     {
         //std::cout << "Mouse wheel: (x " << xoffset << ", y " << yoffset << ")\n";
     }
 
-    //void GLFWInput::glfwKeyCallback(GLFWwindow* window, int key, int, int action, int)
+    //void InputGLFW::glfwKeyCallback(GLFWwindow* window, int key, int, int action, int)
     //{
-    //    auto* self = static_cast<GLFWInput*>(glfwGetWindowUserPointer(window));
+    //    auto* self = static_cast<InputGLFW*>(glfwGetWindowUserPointer(window));
 
     //    if (!self || action == GLFW_REPEAT) return;
 
@@ -148,9 +148,9 @@ namespace DF::Backend
     //    }
     //}
 
-    //void GLFWInput::glfwMouseCallback(GLFWwindow* window, int button, int action, int)
+    //void InputGLFW::glfwMouseCallback(GLFWwindow* window, int button, int action, int)
     //{
-    //    auto* self = static_cast<GLFWInput*>(glfwGetWindowUserPointer(window));
+    //    auto* self = static_cast<InputGLFW*>(glfwGetWindowUserPointer(window));
 
     //    if (!self) return;
 
@@ -180,9 +180,9 @@ namespace DF::Backend
     //    }
     //}
 
-    //void GLFWInput::glfwCursorCallback(GLFWwindow* window, double xpos, double ypos)
+    //void InputGLFW::glfwCursorCallback(GLFWwindow* window, double xpos, double ypos)
     //{
-    //    auto* self = static_cast<GLFWInput*>(glfwGetWindowUserPointer(window));
+    //    auto* self = static_cast<InputGLFW*>(glfwGetWindowUserPointer(window));
 
     //    if (!self) return;
 
@@ -192,7 +192,7 @@ namespace DF::Backend
     //    }
     //}
 
-    //void GLFWInput::glfwWheelCallback(GLFWwindow* window, double xoffset, double yoffset)
+    //void InputGLFW::glfwWheelCallback(GLFWwindow* window, double xoffset, double yoffset)
     //{
     //    std::cout << "Mouse wheel: (x " << xoffset << ", y " << yoffset << ")\n";
     //}

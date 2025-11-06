@@ -10,7 +10,7 @@
 
 namespace DF::Backend
 {
-    class GLFWInput : public DF::Input
+    class InputGLFW : public DF::Input
     {
     private:
         friend class WindowGLFW;
@@ -42,7 +42,7 @@ namespace DF::Backend
         std::vector<MouseMoveCallback> m_mouseMoveCallbacks{};
 
     public:
-        GLFWInput() noexcept = default;
+        InputGLFW() noexcept = default;
 
         bool keyPressed(Key key) const override;
 

@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "window.hpp"
+#include "window_glfw.hpp"
 
 namespace DF::Backend
 {
@@ -61,7 +61,7 @@ namespace DF::Backend
         m_resizeCallback = callback;
     }
 
-    void WindowGLFW::connectInput(GLFWInput* input)
+    void WindowGLFW::connectInput(InputGLFW* input)
     {
         m_input = input;
     }

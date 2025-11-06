@@ -1,6 +1,6 @@
 #include "backend/backend_factory.hpp"
-#include "backend/glfw/window.hpp"
-#include "backend/glfw/input.hpp"
+#include "backend/glfw/window_glfw.hpp"
+#include "backend/glfw/input_glfw.hpp"
 
 namespace DF::Core
 {
@@ -11,7 +11,7 @@ namespace DF::Core
 
     std::unique_ptr<Input> BackendFactory::createInput(Render::Window* window)
     {
-        auto input{ std::make_unique<Backend::GLFWInput>() };
+        auto input{ std::make_unique<Backend::InputGLFW>() };
 
         static_cast<Backend::WindowGLFW*>(window)->connectInput(input.get());
 

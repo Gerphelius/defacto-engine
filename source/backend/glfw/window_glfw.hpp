@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 
 #include "render/window.hpp"
-#include "input.hpp"
+#include "input_glfw.hpp"
 
 namespace DF::Core
 {
@@ -28,7 +28,7 @@ namespace DF::Backend
         int m_height{ 600 };
         std::string m_title{ "Window" };
         std::unique_ptr<GLFWwindow, GLFWwindowDeleter> m_window{};
-        GLFWInput* m_input{};
+        InputGLFW* m_input{};
         ResizeCallback m_resizeCallback{};
 
     public:
@@ -47,7 +47,7 @@ namespace DF::Backend
         void setResizeCallback(ResizeCallback callback);
 
     private:
-        void connectInput(GLFWInput* input);
+        void connectInput(InputGLFW* input);
 
         static void glfwResize(GLFWwindow* window, int width, int height);
 

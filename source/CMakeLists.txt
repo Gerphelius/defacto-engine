@@ -51,19 +51,6 @@ endforeach()
 add_custom_target(CopyShaders ALL DEPENDS ${SHADER_DEST_FILES})
 add_dependencies(${PROJECT_NAME} CopyShaders)
 
-# find_package(assimp CONFIG REQUIRED)
-# target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
-
-# Set consistent runtime library for hot reload
-# set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
-# Enable Hot Reload for MSVC compilers if supported.
-if (POLICY CMP0141)
-  cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
-endif()
-
-
 if (MSVC)
     add_compile_options(/W4 /WX)
     set_property(TARGET ${PROJECT_NAME} PROPERTY COMPILE_WARNING_AS_ERROR ON)
