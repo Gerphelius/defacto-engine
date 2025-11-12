@@ -3,12 +3,13 @@
 #include <string>
 #include <vector>
 
-#include "assets/mesh.hpp"
+#include "assets/model.hpp"
 
 namespace DF::Components
 {
     struct Model
     {
         std::string model{};
+        Assets::MaterialOverrides materialOverrides{};
     };
 }

@@ -27,7 +27,7 @@ namespace DF::Assets
         );
     }
 
-    bool AssetManager::loadModel(const std::string& path)
+    bool AssetManager::loadModel(const std::string& path, const MaterialOverrides& materialOverrides)
     {
         auto it = s_models.find(path);
 
@@ -122,7 +122,7 @@ namespace DF::Assets
                     specular = realpath.string();
                 }
 
-                materials.emplace_back(Material{ name, diffuse, specular });
+                materials.emplace_back(Material{ name, diffuse, specular, Shader::PHONG });
             }
         }
 

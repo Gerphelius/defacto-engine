@@ -31,7 +31,7 @@ namespace DF
     {
         if (s_initialized) return;
 
-        s_window = Core::BackendFactory::createWindow(800, 600, "DeFacto");
+        s_window = Core::BackendFactory::createWindow(1024, 768, "DeFacto");
         s_inputSystem = Core::BackendFactory::createInput(s_window.get());
 
         Core::ServiceLocator::registerService(s_inputSystem.get());

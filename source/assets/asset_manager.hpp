@@ -30,7 +30,7 @@ namespace DF::Assets
     public:
         static void init();
 
-        static bool loadModel(const std::string& path);
+        static bool loadModel(const std::string& path, const MaterialOverrides& materialOverrides = {});
         static void loadTexture(const std::string& path);
 
         static Model* getModel(const std::string& path);

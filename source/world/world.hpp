@@ -20,6 +20,7 @@
 #include "components/transform_matrix.hpp"
 #include "components/camera.hpp"
 #include "components/model.hpp"
+#include "components/metadata.hpp"
 
 namespace DF
 {

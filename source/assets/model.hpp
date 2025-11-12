@@ -1,8 +1,11 @@
 #pragma once
 
-#include <vector>
+#include <unordered_map>
 #include <string>
 #include <utility>
+#include <optional>
+
+#include "mesh.hpp"
 
 namespace DF::Assets
 {
@@ -11,11 +14,21 @@ namespace DF::Assets
 
     struct Material
     {
-        std::string name{};
-        std::string diffuse{};
-        std::string specular{};
-        Shader shader{};
+        std::optional<std::string> name{};
+        std::optional<std::string> diffuse{};
+        std::optional<std::string> specular{};
+        std::optional<Shader> shader{};
     };
+
+    //struct Material
+    //{
+    //    std::string name{};
+    //    std::string diffuse{};
+    //    std::string specular{};
+    //    Shader shader{};
+    //};
+
+    using MaterialOverrides = std::unordered_map<std::size_t, Material>;
 
     class Model
     {
@@ -26,7 +39,7 @@ namespace DF::Assets
         {
         }
 
-        void draw();
+        void draw(const MaterialOverrides& overrides);
 
         std::vector<Material>& getMaterials() { return m_materials; }
 

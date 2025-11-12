@@ -5,6 +5,8 @@
 
 #include <flecs.h>
 
+//#include "components/metadata.hpp"
+
 namespace DF
 {
     /*
@@ -88,6 +90,7 @@ namespace DF
             : m_entity{ entity }
             , m_id{ entity.id() }
         {
+            //addComponent(Components::Metadata{ entity.name().c_str() });
         }
 
         flecs::entity m_entity{};
