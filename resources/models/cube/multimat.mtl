@@ -2,14 +2,14 @@
 # www.blender.org
 
 newmtl CubeMaterial
-Ns 293.168915
+Ns 0.000000
 Ka 1.000000 1.000000 1.000000
-Kd 0.800710 0.658166 0.000000
 Ks 0.443005 0.443005 0.443005
 Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
+map_Kd C:/dev/defacto-engine/resources/images/container2.png
 
 newmtl SphereMaterial
 Ns 250.000000

@@ -26,6 +26,12 @@ namespace DF::Render
     private:
         DrawMode m_drawMode{ DrawMode::FILL };
         World* m_world{};
+
+        /**
+        * TODO: set window size on its initialization. Currently it is used to update
+        *       camera aspect ration on window resize. Try to move this logic to camera
+        *       and window instead.
+        */
         WindowSize m_size{ 800, 600 };
 
     public:

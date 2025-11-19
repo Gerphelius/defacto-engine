@@ -120,14 +120,6 @@ namespace DF::Render
         unlit->setUniform("uMaterial.specular", 1);
         unlit->setUniform("uMaterial.shininess", 32.0f);
 
-        /**
-        * Add overrides to model component
-        * Pass overrides into model->draw()
-        * Inside model->draw() on loop, check if current material index has overrides
-        * If yes, apply overrided properties
-        * If no, use default
-        */
-
         m_world->forEach<Components::Model, Components::TransformMatrix>(
             [this, unlit, phong](const auto& model, const auto& transform)
             {

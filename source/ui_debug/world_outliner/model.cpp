@@ -19,6 +19,7 @@ namespace DF::UI::Debug
         if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_None))
         {
             std::string path{ component.model };
+            static std::string newPath{ path };
 
             if (ImGui::BeginTable("##properties", 2, ImGuiTableFlags_Resizable))
             {
@@ -30,21 +31,8 @@ namespace DF::UI::Debug
                 ImGui::TextUnformatted("Path");
                 ImGui::TableNextColumn();
 
-                static std::string newPath{ path };
                 ImGui::InputText("##", &newPath, 128);
                 ImGui::SameLine();
-
-                if (ImGui::Button("Apply"))
-                {
-                    if (Assets::AssetManager::loadModel(path))
-                    {
-                        component.model = newPath;
-                    }
-                    else
-                    {
-                        newPath = component.model;
-                    }
-                }
 
                 ImGui::EndTable();
             }
@@ -53,92 +41,118 @@ namespace DF::UI::Debug
 
             Assets::Model* model{ Assets::AssetManager::getModel(path) };
             auto& materials{ model->getMaterials() };
+            static Assets::MaterialOverrides matOverrides{};
+            static Assets::Model* prevModel{ model };
+
+            // TODO: move it after apply button to reset overrides
+            if (prevModel != model)
+            {
+                prevModel = model;
+                matOverrides.clear();
+            }
 
             for (int i{}; i < materials.size(); ++i)
             {
-                ImGui::TextUnformatted(fmt::format("{}: {}", i, *materials[i].name).c_str());
-
-                std::string diffuse{};
-                std::string specular{};
-                Assets::Shader shader{};
-
-                const auto& matOverride{ component.materialOverrides.find(i) };
-
-                if (matOverride != component.materialOverrides.end())
+                if (ImGui::TreeNode(fmt::format("{}: {}", i, *materials[i].name).c_str()))
                 {
-                    diffuse = matOverride->second.diffuse.value_or(*materials[i].diffuse);
-                    specular = matOverride->second.specular.value_or(*materials[i].specular);
-                    shader = matOverride->second.shader.value_or(*materials[i].shader);
+                    const auto& matOverride{ component.materialOverrides.find(i) };
+                    const bool hasOverride{ matOverride != component.materialOverrides.end() };
+
+                    matOverrides[i].diffuse = matOverrides[i].diffuse.value_or(hasOverride ? matOverride->second.diffuse.value_or(*materials[i].diffuse) : *materials[i].diffuse);
+                    matOverrides[i].specular = matOverrides[i].specular.value_or(hasOverride ? matOverride->second.specular.value_or(*materials[i].specular) : *materials[i].specular);
+                    matOverrides[i].shader = matOverrides[i].shader.value_or(hasOverride ? matOverride->second.shader.value_or(*materials[i].shader) : *materials[i].shader);
+
+                    if (ImGui::BeginTable("##properties", 2, ImGuiTableFlags_Resizable))
+                    {
+                        ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
+                        ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 2.0f);
+
+                        ImGui::TableNextRow();
+                        ImGui::TableNextColumn();
+                        ImGui::TextUnformatted("Diffuse");
+                        ImGui::TableNextColumn();
+
+                        ImGui::InputText("##diffuse", &matOverrides[i].diffuse.value(), 128);
+
+                        ImGui::TableNextRow();
+                        ImGui::TableNextColumn();
+                        ImGui::TextUnformatted("Specular");
+                        ImGui::TableNextColumn();
+
+                        ImGui::InputText("##specular", &matOverrides[i].specular.value(), 128);
+
+                        ImGui::TableNextRow();
+                        ImGui::TableNextColumn();
+                        ImGui::TextUnformatted("Shader");
+                        ImGui::TableNextColumn();
+
+                        const auto& shaders{ Assets::AssetManager::getShaderNames() };
+                        int shaderType{ static_cast<int>(matOverrides[i].shader.value()) };
+                        int selectedShaderType{ shaderType };
+                        const char* selectedShaderName = shaders[selectedShaderType].c_str();
+
+                        if (ImGui::BeginCombo("##shader", selectedShaderName))
+                        {
+                            for (int j{}; j < shaders.size(); ++j)
+                            {
+                                const bool is_selected = (j == selectedShaderType);
+
+                                if (ImGui::Selectable(shaders[j].c_str(), is_selected))
+                                {
+                                    selectedShaderType = j;
+                                }
+
+                                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                if (is_selected)
+                                {
+                                    ImGui::SetItemDefaultFocus();
+                                }
+                            }
+
+                            ImGui::EndCombo();
+                        }
+
+                        if (shaderType != selectedShaderType)
+                        {
+                            matOverrides[i].shader = static_cast<Assets::Shader>(selectedShaderType);
+                        }
+
+                        ImGui::EndTable();
+                    }
+
+                    ImGui::TreePop();
+                }
+            }
+
+            ImVec2 buttonSize{ 100.0f, 0.0f };
+            float padding{ 5.0f };
+
+            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - buttonSize.x - padding);
+
+            if (ImGui::Button("Apply changes", buttonSize))
+            {
+                if (Assets::AssetManager::loadModel(path))
+                {
+                    component.model = newPath;
+                }
+                else
+                {
+                    newPath = component.model;
                 }
 
-                if (ImGui::BeginTable("##properties", 2, ImGuiTableFlags_Resizable))
+                /**
+                * TODO: For now, if one model has more than one material applied and i.e. second material then overriten,
+                *       if model has been changed to one that has less materials, redundant overrides will be saved to
+                *       model component.
+                * Example: Have 2 models, first with 1 material, second with 3 materials. If second model was set in model component
+                *          and material 2 or 3 has been overriten, when changin to first model, 2nd or 3rd override will be still
+                *          present in material component overrides, even though model only has 1 material.
+                */
+                for (const auto& matOverride : matOverrides)
                 {
-                    ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
-                    ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 2.0f);
-
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::TextUnformatted("Diffuse");
-                    ImGui::TableNextColumn();
-                    ImGui::TextUnformatted(diffuse.data());
-
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::TextUnformatted("Specular");
-                    ImGui::TableNextColumn();
-                    ImGui::TextUnformatted(specular.data());
-
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::TextUnformatted("Shader");
-                    ImGui::TableNextColumn();
-
-                    const auto& shaders{ Assets::AssetManager::getShaderNames() };
-                    const int currentShaderType{ static_cast<int>(shader) };
-                    ImGui::TextUnformatted(shaders[currentShaderType].c_str());
-
-                    //for (int i{}; i < materials.size(); ++i)
-                    //{
-                    //    const auto& shaders{ Assets::AssetManager::getShaderNames() };
-                    //    const int currentShaderType{ static_cast<int>(*materials[i].shader) };
-                    //    const char* selected = shaders[currentShaderType].c_str();
-                    //    int selectedIndex = currentShaderType;
-
-                    //    ImGui::PushID(i);
-                    //    ImGui::TextUnformatted(materials[i].name.value().c_str());
-                    //    ImGui::SameLine();
-
-                    //    if (ImGui::BeginCombo("##shader", selected))
-                    //    {
-                    //        for (int j{}; j < shaders.size(); ++j)
-                    //        {
-                    //            const bool is_selected = (shaders[j] == selected);
-
-                    //            if (ImGui::Selectable(shaders[j].c_str(), is_selected))
-                    //            {
-                    //                selected = shaders[j].c_str();
-                    //                selectedIndex = j;
-                    //            }
-
-                    //            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-                    //            if (is_selected)
-                    //            {
-                    //                ImGui::SetItemDefaultFocus();
-                    //            }
-                    //        }
-
-                    //        ImGui::EndCombo();
-                    //    }
-
-                    //    ImGui::PopID();
-
-                    //    if (selectedIndex != currentShaderType)
-                    //    {
-                    //        materials[i].shader = static_cast<Assets::Shader>(selectedIndex);
-                    //    }
-                    //}
-
-                    ImGui::EndTable();
+                    component.materialOverrides[matOverride.first].diffuse = matOverride.second.diffuse;
+                    component.materialOverrides[matOverride.first].specular = matOverride.second.specular;
+                    component.materialOverrides[matOverride.first].shader = matOverride.second.shader;
                 }
             }
         }

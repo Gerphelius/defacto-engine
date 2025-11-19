@@ -17,5 +17,5 @@ void main()
 {
     vec4 emmisive = texture(uMaterial.emmisive, TexCoord);
 
-    FragColor = vec4(1.0f); //texture(uMaterial.diffuse, TexCoord) + emmisive;
+    FragColor = texture(uMaterial.diffuse, TexCoord) + emmisive;
 }

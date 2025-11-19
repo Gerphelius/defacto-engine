@@ -15,7 +15,7 @@ namespace DF::Assets
     void AssetManager::init()
     {
         constexpr unsigned char whitePixel[]{ 0xFF, 0xFF, 0xFF };
-        s_textures["white"] = std::make_unique<Texture>(1, 1, (void*)(whitePixel));
+        s_textures["white"] = std::make_unique<Texture>(1, 1, TextureFormat::RGB, (void*)(whitePixel));
 
         s_shaders[Shader::PHONG] = std::make_unique<Render::ShaderProgram>(
             "../../resources/shaders/phong.vert.glsl",
@@ -141,13 +141,19 @@ namespace DF::Assets
 
         if (image.is_valid())
         {
-            s_textures[path] = std::make_unique<Assets::Texture>(image.width(), image.height(), image.pixels());
-        }
-        else
-        {
-            constexpr unsigned char whitePixel[]{ 0xFF, 0xFF, 0xFF };
+            TextureFormat format{};
 
-            s_textures[path] = std::make_unique<Assets::Texture>(1, 1, (void*)whitePixel);
+            switch (image.pixel_format())
+            {
+            case(SailPixelFormat::SAIL_PIXEL_FORMAT_BPP24_RGB):
+                format = TextureFormat::RGB;
+                break;
+            case(SailPixelFormat::SAIL_PIXEL_FORMAT_BPP32_RGBA):
+                format = TextureFormat::RGBA;
+                break;
+            }
+
+            s_textures[path] = std::make_unique<Assets::Texture>(image.width(), image.height(), format, image.pixels());
         }
     }
 

@@ -11,13 +11,14 @@ namespace DF::Assets
     {
         for (std::size_t i{}; i < m_meshes.size(); ++i)
         {
-            Material material{ m_materials[m_meshes[i].getMaterialIndex()]};
+            int matIndex{ m_meshes[i].getMaterialIndex() };
+            Material material{ m_materials[matIndex] };
 
             std::string diffuse{};
             std::string specular{};
             Shader shader{};
 
-            const auto& matOverride{ overrides.find(i) };
+            const auto& matOverride{ overrides.find(matIndex) };
 
             if (matOverride != overrides.end())
             {

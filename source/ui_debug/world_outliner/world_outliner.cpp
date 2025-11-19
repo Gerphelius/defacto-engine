@@ -115,7 +115,15 @@ namespace DF::UI::Debug
 
             object.addComponent(Components::Transform{ .scale{ 0.2, 0.2, 0.2 } });
             object.addComponent(Components::PointLight{});
-            object.addComponent(Components::Model{ "../../resources/models/cube/cube.obj" });
+
+            Components::Model model{ "../../resources/models/cube/cube.obj" };
+            model.materialOverrides[0] = DF::Assets::Material
+            {
+                .diffuse{ "../../resources/images/matrix.jpg" },
+                .shader{ DF::Assets::Shader::UNLIT },
+            };
+            object.addComponent(model);
+
             object.addComponent(DF::Components::Metadata{ .name{ "Point Light" } });
 
             m_world->spawnObject(object);
@@ -164,7 +172,7 @@ namespace DF::UI::Debug
 
         ImGui::Text("Components");
 
-        if (ImGui::BeginChild("##components_list", ImVec2(0, 200.0f), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened | ImGuiChildFlags_ResizeY))
+        if (ImGui::BeginChild("##components_list", ImVec2(0, 300.0f), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY))
         {
             if (m_selectedObjectId)
             {
