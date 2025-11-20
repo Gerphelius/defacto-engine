@@ -1,11 +1,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
-#include "render/shader_program.hpp"
+#include "shader.hpp"
 #include "utils/file_io.hpp"
 
-namespace DF::Render
+namespace DF::Assets
 {
-    ShaderProgram::ShaderProgram(const std::string& vertexPath, const std::string& fragmentPath)
+    Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
         : m_id{ glCreateProgram() }
     {
         GLuint vertexShader{ compileShader(vertexPath, GL_VERTEX_SHADER) };
@@ -35,32 +35,32 @@ namespace DF::Render
         glDeleteShader(fragmentShader);
     }
  
-    void ShaderProgram::setUniform(const std::string& name, bool value) const
+    void Shader::setUniform(const std::string& name, bool value) const
     {
         glUniform1i(glGetUniformLocation(m_id, name.c_str()), value);
     }
 
-    void ShaderProgram::setUniform(const std::string& name, int value) const
+    void Shader::setUniform(const std::string& name, int value) const
     {
         glUniform1i(glGetUniformLocation(m_id, name.c_str()), value);
     }
 
-    void ShaderProgram::setUniform(const std::string& name, float value) const
+    void Shader::setUniform(const std::string& name, float value) const
     {
         glUniform1f(glGetUniformLocation(m_id, name.c_str()), value);
     }
 
-    void ShaderProgram::setUniform(const std::string& name, Math::vec3 value) const
+    void Shader::setUniform(const std::string& name, Math::vec3 value) const
     {
         glUniform3f(glGetUniformLocation(m_id, name.c_str()), value.x, value.y, value.z);
     }
 
-    void ShaderProgram::setUniform(const std::string& name, Math::mat4 value) const
+    void Shader::setUniform(const std::string& name, Math::mat4 value) const
     {
         glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
     }
 
-    GLuint ShaderProgram::compileShader(const std::string& path, GLenum type) const
+    GLuint Shader::compileShader(const std::string& path, GLenum type) const
     {
         GLuint shader{ glCreateShader(type) };
         auto shaderSource{ File::read(path) };

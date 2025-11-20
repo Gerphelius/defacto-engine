@@ -48,6 +48,7 @@ namespace DF::UI::Debug
             if (prevModel != model)
             {
                 prevModel = model;
+                newPath = path;
                 matOverrides.clear();
             }
 
@@ -114,7 +115,7 @@ namespace DF::UI::Debug
 
                         if (shaderType != selectedShaderType)
                         {
-                            matOverrides[i].shader = static_cast<Assets::Shader>(selectedShaderType);
+                            matOverrides[i].shader = static_cast<Assets::ShaderType>(selectedShaderType);
                         }
 
                         ImGui::EndTable();

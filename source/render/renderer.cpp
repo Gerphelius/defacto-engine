@@ -57,8 +57,8 @@ namespace DF::Render
 
         Math::mat4 view{}; // Used to transform point light position into view space for SSBO
 
-        ShaderProgram* phong{ Assets::AssetManager::getShader(Assets::Shader::PHONG) };
-        ShaderProgram* unlit{ Assets::AssetManager::getShader(Assets::Shader::UNLIT) };
+        Assets::Shader* phong{ Assets::AssetManager::getShader(Assets::ShaderType::PHONG) };
+        Assets::Shader* unlit{ Assets::AssetManager::getShader(Assets::ShaderType::UNLIT) };
 
         /*
         * TODO: find a better place for systems like this

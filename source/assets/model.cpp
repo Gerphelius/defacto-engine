@@ -1,6 +1,6 @@
 #include "model.hpp"
 #include "asset_manager.hpp"
-#include "render/shader_program.hpp"
+#include "shader.hpp"
 
 #include <iostream>
 #include <string>
@@ -16,7 +16,7 @@ namespace DF::Assets
 
             std::string diffuse{};
             std::string specular{};
-            Shader shader{};
+            ShaderType shader{};
 
             const auto& matOverride{ overrides.find(matIndex) };
 

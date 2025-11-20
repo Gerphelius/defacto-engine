@@ -57,17 +57,17 @@ int main()
     model.materialOverrides[0] = DF::Assets::Material
     {
         .diffuse{ "../../resources/images/container2.png" },
-        .shader{ DF::Assets::Shader::PHONG },
+        .shader{ DF::Assets::ShaderType::PHONG },
     };
     model.materialOverrides[1] = DF::Assets::Material
     {
         .diffuse{ "../../resources/images/awesomeface.png" },
-        .shader{ DF::Assets::Shader::PHONG },
+        .shader{ DF::Assets::ShaderType::PHONG },
     };
     model.materialOverrides[2] = DF::Assets::Material
     {
         .diffuse{ "../../resources/images/matrix.jpg" },
-        .shader{ DF::Assets::Shader::PHONG },
+        .shader{ DF::Assets::ShaderType::PHONG },
     };
     obj2.addComponent(model);
 

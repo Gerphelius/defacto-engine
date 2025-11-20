@@ -7,6 +7,7 @@
 
 #include "asset_manager.hpp"
 #include "mesh.hpp"
+#include "default/cube.hpp"
 
 // TODO: make a system to check reference count to assets and unload unused assets on next frame.
 
@@ -17,14 +18,16 @@ namespace DF::Assets
         constexpr unsigned char whitePixel[]{ 0xFF, 0xFF, 0xFF };
         s_textures["white"] = std::make_unique<Texture>(1, 1, TextureFormat::RGB, (void*)(whitePixel));
 
-        s_shaders[Shader::PHONG] = std::make_unique<Render::ShaderProgram>(
+        s_shaders[ShaderType::PHONG] = std::make_unique<Shader>(
             "../../resources/shaders/phong.vert.glsl",
             "../../resources/shaders/phong.frag.glsl"
         );
-        s_shaders[Shader::UNLIT] = std::make_unique<Render::ShaderProgram>(
+        s_shaders[ShaderType::UNLIT] = std::make_unique<Shader>(
             "../../resources/shaders/unlit.vert.glsl",
             "../../resources/shaders/unlit.frag.glsl"
         );
+
+        s_models["cube"] = std::make_unique<Assets::Default::Cube>();
     }
 
     bool AssetManager::loadModel(const std::string& path, const MaterialOverrides& materialOverrides)
@@ -122,7 +125,7 @@ namespace DF::Assets
                     specular = realpath.string();
                 }
 
-                materials.emplace_back(Material{ name, diffuse, specular, Shader::PHONG });
+                materials.emplace_back(Material{ name, diffuse, specular, ShaderType::PHONG });
             }
         }
 
@@ -189,7 +192,7 @@ namespace DF::Assets
         return s_textures[path].get();
     }
 
-    Render::ShaderProgram* AssetManager::getShader(Shader shader)
+    Shader* AssetManager::getShader(ShaderType shader)
     {
         auto it = s_shaders.find(shader);
 

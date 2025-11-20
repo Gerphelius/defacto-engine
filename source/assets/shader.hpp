@@ -5,14 +5,22 @@
 #include <glad/glad.h>
 #include "math/math.hpp"
 
-namespace DF::Render
+namespace DF::Assets
 {
-    class ShaderProgram
+    enum class ShaderType
+    {
+        PHONG,
+        UNLIT,
+
+        SHADERS_COUNT,
+    };
+
+    class Shader
     {
     public:
-        explicit ShaderProgram(const std::string& vertexPath, const std::string& fragmentPath);
+        explicit Shader(const std::string& vertexPath, const std::string& fragmentPath);
 
-        ~ShaderProgram()
+        ~Shader()
         {
             glDeleteProgram(m_id);
         }

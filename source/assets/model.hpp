@@ -1,35 +1,16 @@
 #pragma once
 
 #include <unordered_map>
+#include <vector>
 #include <string>
 #include <utility>
 #include <optional>
 
 #include "mesh.hpp"
+#include "material.hpp"
 
 namespace DF::Assets
 {
-    class Mesh;
-    enum class Shader;
-
-    struct Material
-    {
-        std::optional<std::string> name{};
-        std::optional<std::string> diffuse{};
-        std::optional<std::string> specular{};
-        std::optional<Shader> shader{};
-    };
-
-    //struct Material
-    //{
-    //    std::string name{};
-    //    std::string diffuse{};
-    //    std::string specular{};
-    //    Shader shader{};
-    //};
-
-    using MaterialOverrides = std::unordered_map<std::size_t, Material>;
-
     class Model
     {
     public:

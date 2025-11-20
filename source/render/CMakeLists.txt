@@ -1,11 +1,9 @@
 target_sources(${PROJECT_NAME}
     PRIVATE
         renderer.cpp
-        shader_program.cpp
 
     PRIVATE
         renderer.hpp
-        shader_program.hpp
         window.hpp
 )
 
