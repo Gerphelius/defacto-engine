@@ -7,7 +7,10 @@
 
 #include "asset_manager.hpp"
 #include "mesh.hpp"
-#include "default/cube.hpp"
+#include "models/cube.hpp"
+
+// This header is cmake generated. See generated_shaders.cmake
+#include "shaders.hpp"
 
 // TODO: make a system to check reference count to assets and unload unused assets on next frame.
 
@@ -17,17 +20,16 @@ namespace DF::Assets
     {
         constexpr unsigned char whitePixel[]{ 0xFF, 0xFF, 0xFF };
         s_textures["white"] = std::make_unique<Texture>(1, 1, TextureFormat::RGB, (void*)(whitePixel));
+        s_models["cube"] = std::make_unique<Assets::Models::Cube>();
 
         s_shaders[ShaderType::PHONG] = std::make_unique<Shader>(
-            "../../resources/shaders/phong.vert.glsl",
-            "../../resources/shaders/phong.frag.glsl"
+            Generated::shaders.at("phong.vert.glsl"),
+            Generated::shaders.at("phong.frag.glsl")
         );
         s_shaders[ShaderType::UNLIT] = std::make_unique<Shader>(
-            "../../resources/shaders/unlit.vert.glsl",
-            "../../resources/shaders/unlit.frag.glsl"
+            Generated::shaders.at("unlit.vert.glsl"),
+            Generated::shaders.at("unlit.frag.glsl")
         );
-
-        s_models["cube"] = std::make_unique<Assets::Default::Cube>();
     }
 
     bool AssetManager::loadModel(const std::string& path, const MaterialOverrides& materialOverrides)
@@ -38,7 +40,7 @@ namespace DF::Assets
 
         Assimp::Importer importer{};
         const aiScene* aiScene = importer.ReadFile(
-            path,
+            (m_assetsDirectory / path).string(),
             aiProcess_CalcTangentSpace |
             aiProcess_Triangulate |
             aiProcess_JoinIdenticalVertices |
@@ -109,20 +111,40 @@ namespace DF::Assets
                 {
                     aiString diffusePath{};
                     aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &diffusePath);
-                    auto modelDir = std::filesystem::path(path).parent_path();
-                    auto realpath{ modelDir / diffusePath.C_Str() };
-                    loadTexture(realpath.string());
-                    diffuse = realpath.string();
+
+                    std::string texPath{ diffusePath.C_Str() };
+                    std::size_t pos = texPath.find(m_assetsDirectory.string());
+
+                    if (pos != std::string::npos)
+                    {
+                        texPath = texPath.substr(pos + m_assetsDirectory.string().length());
+                        loadTexture(texPath);
+                        diffuse = texPath;
+                    }
+                    else
+                    {
+                        std::cerr << "Cannot load texture: " << texPath << '\n';
+                    }
                 }
 
                 if (aiMaterial->GetTextureCount(aiTextureType_SPECULAR) > 0)
                 {
                     aiString specularPath{};
                     aiMaterial->GetTexture(aiTextureType_SPECULAR, 0, &specularPath);
-                    auto modelDir = std::filesystem::path(path).parent_path();
-                    auto realpath{ modelDir / specularPath.C_Str() };
-                    loadTexture(realpath.string());
-                    specular = realpath.string();
+
+                    std::string texPath{ specularPath.C_Str() };
+                    std::size_t pos = texPath.find(m_assetsDirectory.string());
+
+                    if (pos != std::string::npos)
+                    {
+                        texPath = texPath.substr(pos + m_assetsDirectory.string().length());
+                        loadTexture(texPath);
+                        specular = texPath;
+                    }
+                    else
+                    {
+                        std::cerr << "Cannot load texture: " << texPath << '\n';
+                    }
                 }
 
                 materials.emplace_back(Material{ name, diffuse, specular, ShaderType::PHONG });
@@ -140,7 +162,7 @@ namespace DF::Assets
 
         if (it != s_textures.end()) return;
 
-        sail::image image{ path };
+        sail::image image{ (m_assetsDirectory / path).string() };
 
         if (image.is_valid())
         {

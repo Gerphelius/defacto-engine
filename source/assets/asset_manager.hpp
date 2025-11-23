@@ -38,7 +38,7 @@ namespace DF::Assets
         static inline std::unordered_map<ShaderType, std::unique_ptr<Shader>> s_shaders{};
         static inline std::array<std::string, static_cast<int>(ShaderType::SHADERS_COUNT)> s_shaderToName{"Phong", "Unlit"};
 
-        static inline std::filesystem::path m_assetsDirectory{ "../../resources/" };
+        static inline std::filesystem::path m_assetsDirectory{ "resources/" };
 
         AssetManager() = delete;
     };

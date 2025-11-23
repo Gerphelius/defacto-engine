@@ -48,25 +48,25 @@ int main()
 
     DF::Object obj2{ world->createObject() };
 
-    DF::Assets::AssetManager::loadTexture("../../resources/images/container2.png");
-    DF::Assets::AssetManager::loadTexture("../../resources/images/awesomeface.png");
-    DF::Assets::AssetManager::loadTexture("../../resources/images/matrix.jpg");
+    DF::Assets::AssetManager::loadTexture("images/container2.png");
+    DF::Assets::AssetManager::loadTexture("images/awesomeface.png");
+    DF::Assets::AssetManager::loadTexture("images/matrix.jpg");
 
 
-    DF::Components::Model model{ "../../resources/models/cube/multimat.obj" };
+    DF::Components::Model model{ "models/cube/multimat.obj" };
     model.materialOverrides[0] = DF::Assets::Material
     {
-        .diffuse{ "../../resources/images/container2.png" },
+        .diffuse{ "images/container2.png" },
         .shader{ DF::Assets::ShaderType::PHONG },
     };
     model.materialOverrides[1] = DF::Assets::Material
     {
-        .diffuse{ "../../resources/images/awesomeface.png" },
+        .diffuse{ "images/awesomeface.png" },
         .shader{ DF::Assets::ShaderType::PHONG },
     };
     model.materialOverrides[2] = DF::Assets::Material
     {
-        .diffuse{ "../../resources/images/matrix.jpg" },
+        .diffuse{ "images/matrix.jpg" },
         .shader{ DF::Assets::ShaderType::PHONG },
     };
     obj2.addComponent(model);

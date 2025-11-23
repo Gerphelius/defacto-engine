@@ -49,7 +49,7 @@ static const std::vector indices{
          20, 22, 23,    20, 23, 21     // Bottom
 };
 
-namespace DF::Assets::Default
+namespace DF::Assets::Models
 {
     Cube::Cube() noexcept
         : Assets::Model::Model(

@@ -2,7 +2,7 @@
 
 #include "assets/model.hpp"
 
-namespace DF::Assets::Default
+namespace DF::Assets::Models
 {
     class Cube : public Assets::Model
     {

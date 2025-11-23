@@ -17,4 +17,4 @@ target_sources(${PROJECT_NAME}
 find_package(assimp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
 
-add_subdirectory(default)
+add_subdirectory(models)

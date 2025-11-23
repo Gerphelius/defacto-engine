@@ -7,5 +7,7 @@ target_sources(${PROJECT_NAME}
         widget.hpp
 )
 
+add_subdirectory(world_outliner)
+
 find_package(imgui CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)

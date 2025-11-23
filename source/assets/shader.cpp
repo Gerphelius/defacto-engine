@@ -5,11 +5,11 @@
 
 namespace DF::Assets
 {
-    Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
+    Shader::Shader(const std::string& vertexSource, const std::string& fragmentSource)
         : m_id{ glCreateProgram() }
     {
-        GLuint vertexShader{ compileShader(vertexPath, GL_VERTEX_SHADER) };
-        GLuint fragmentShader{ compileShader(fragmentPath, GL_FRAGMENT_SHADER) };
+        GLuint vertexShader{ compileShader(vertexSource, GL_VERTEX_SHADER) };
+        GLuint fragmentShader{ compileShader(fragmentSource, GL_FRAGMENT_SHADER) };
 
         glAttachShader(m_id, vertexShader);
         glAttachShader(m_id, fragmentShader);
@@ -60,13 +60,12 @@ namespace DF::Assets
         glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
     }
 
-    GLuint Shader::compileShader(const std::string& path, GLenum type) const
+    GLuint Shader::compileShader(const std::string& source, GLenum type) const
     {
         GLuint shader{ glCreateShader(type) };
-        auto shaderSource{ File::read(path) };
-        auto source{ shaderSource.c_str() };
+        const char* src{ source.c_str() };
 
-        glShaderSource(shader, 1, &source, NULL);
+        glShaderSource(shader, 1, &src, NULL);
         glCompileShader(shader);
 
         int success;
