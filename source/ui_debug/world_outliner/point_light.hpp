@@ -1,13 +1,17 @@
 #pragma once
 
-#include <imgui.h>
-
-#include "components/point_light.hpp"
+#include "component_widget.hpp"
 
 namespace DF::UI::Debug
 {
-    struct PointLight
+    class PointLight : public IComponentWidget
     {
-        static void render(Components::PointLight& component);
+    public:
+        const std::string& getName() const override;
+
+        void render(void* component) override;
+
+    private:
+        std::string m_name{ "Point Light" };
     };
 }

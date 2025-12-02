@@ -1,13 +1,24 @@
 #include <limits.h>
 
+#include <imgui.h>
+
 #include "transform.hpp"
 #include "math/math.hpp"
 
+#include "fmt/format.h"
+
 namespace DF::UI::Debug
 {
-    void Transform::render(Components::TransformProxy& transform)
+    const std::string& Transform::getName() const
     {
-        if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_None))
+        return m_name;
+    }
+
+    void Transform::render(void* component)
+    {
+        Components::TransformProxy transform{ *static_cast<Components::Transform*>(component) };
+
+        if (ImGui::CollapsingHeader(m_name.c_str(), ImGuiTreeNodeFlags_None))
         {
             if (ImGui::BeginTable("##properties", 2, ImGuiTableFlags_Resizable))
             {

@@ -16,10 +16,16 @@ namespace DF::UI::Debug
     {
         friend class Engine;
 
-    private:
-        static std::vector<std::unique_ptr<IDebugWidget>> s_widgets;
+    public:
+        template <typename Widget>
+        static inline void addWidget(const Widget& widget)
+        {
+            s_widgets.emplace_back(std::make_unique<Widget>(widget));
+        }
 
     private:
+        static inline std::vector<std::unique_ptr<IWidget>> s_widgets{};
+
         static void init(const Render::Window* window);
 
         static void render();

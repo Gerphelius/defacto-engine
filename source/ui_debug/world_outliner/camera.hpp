@@ -4,7 +4,7 @@
 
 namespace DF::UI::Debug
 {
-    class Model : public IComponentWidget
+    struct Camera : public IComponentWidget
     {
     public:
         const std::string& getName() const override;
@@ -12,6 +12,6 @@ namespace DF::UI::Debug
         void render(void* component) override;
 
     private:
-        std::string m_name{ "Model" };
+        std::string m_name{ "Camera" };
     };
 }

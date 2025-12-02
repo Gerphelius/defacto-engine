@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <optional>
+#include <iostream>
 
 #include <flecs.h>
 
@@ -11,7 +12,6 @@ namespace DF
 {
     /*
     * TODO:
-    *   - Create id inside object to match flecs::entity id and use it instead  +
     *   - Remove forEachComponent and use raw flecs instead?
     */
 
@@ -81,12 +81,22 @@ namespace DF
             return m_id;
         }
 
+        void destroy() const
+        {
+            m_entity.destruct();
+        }
+
+        flecs::entity raw()
+        {
+            return m_entity;
+        }
+
         explicit operator bool() const { return !!m_entity.is_valid(); }
 
     private:
         friend class World;
 
-        Object(flecs::entity entity)
+        Object(flecs::entity entity) noexcept
             : m_entity{ entity }
             , m_id{ entity.id() }
         {

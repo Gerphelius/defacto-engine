@@ -20,7 +20,6 @@
 #include "components/transform_matrix.hpp"
 #include "components/camera.hpp"
 #include "components/model.hpp"
-#include "components/metadata.hpp"
 
 namespace DF
 {
@@ -89,6 +88,12 @@ namespace DF
         bool isComponentType(Object::Id id) const
         {
             return id == m_world.id<Component>();
+        }
+
+        template <typename Component>
+        Object::Id getComponentId() const
+        {
+            return m_world.id<Component>();
         }
 
         flecs::world& getRaw() { return m_world; }

@@ -1,12 +1,23 @@
 #include <string>
 
+#include <imgui.h>
+
 #include "point_light.hpp"
+
+#include "components/point_light.hpp"
 
 namespace DF::UI::Debug
 {
-    void PointLight::render(Components::PointLight& component)
+    const std::string& PointLight::getName() const
     {
-        if (ImGui::CollapsingHeader("Point Light", ImGuiTreeNodeFlags_None))
+        return m_name;
+    }
+
+    void PointLight::render(void* component)
+    {
+        auto* pointLight{ static_cast<Components::PointLight*>(component) };
+
+        if (ImGui::CollapsingHeader(m_name.c_str(), ImGuiTreeNodeFlags_None))
         {
             if (ImGui::BeginTable("##properties", 2, ImGuiTableFlags_Resizable))
             {
@@ -17,7 +28,7 @@ namespace DF::UI::Debug
                 ImGui::TableNextColumn();
                 ImGui::TextUnformatted("Color");
                 ImGui::TableNextColumn();
-                ImGui::ColorEdit3("##", (float*)&component.color, ImGuiColorEditFlags_None);
+                ImGui::ColorEdit3("##", (float*)&pointLight->color, ImGuiColorEditFlags_None);
 
                 ImGui::EndTable();
             }

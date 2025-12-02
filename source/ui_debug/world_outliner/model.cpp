@@ -1,9 +1,11 @@
 #include <string>
 
-#include "fmt/format.h"
+#include <imgui.h>
+#include <fmt/format.h>
 
 #include "model.hpp"
 #include "assets/asset_manager.hpp"
+#include "components/model.hpp"
 
 namespace ImGui
 {
@@ -14,11 +16,17 @@ namespace ImGui
 
 namespace DF::UI::Debug
 {
-    void Model::render(Components::Model& component)
+    const std::string& Model::getName() const
     {
-        if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_None))
+        return m_name;
+    }
+
+    void Model::render(void* component)
+    {
+        if (ImGui::CollapsingHeader(m_name.c_str(), ImGuiTreeNodeFlags_None))
         {
-            std::string path{ component.model };
+            auto* modelComp{ static_cast<Components::Model*>(component) };
+            std::string path{ modelComp->model };
             static std::string newPath{ path };
 
             if (ImGui::BeginTable("##properties", 2, ImGuiTableFlags_Resizable))
@@ -56,8 +64,8 @@ namespace DF::UI::Debug
             {
                 if (ImGui::TreeNode(fmt::format("{}: {}", i, *materials[i].name).c_str()))
                 {
-                    const auto& matOverride{ component.materialOverrides.find(i) };
-                    const bool hasOverride{ matOverride != component.materialOverrides.end() };
+                    const auto& matOverride{ modelComp->materialOverrides.find(i) };
+                    const bool hasOverride{ matOverride != modelComp->materialOverrides.end() };
 
                     matOverrides[i].diffuse = matOverrides[i].diffuse.value_or(hasOverride ? matOverride->second.diffuse.value_or(*materials[i].diffuse) : *materials[i].diffuse);
                     matOverrides[i].specular = matOverrides[i].specular.value_or(hasOverride ? matOverride->second.specular.value_or(*materials[i].specular) : *materials[i].specular);
@@ -134,26 +142,26 @@ namespace DF::UI::Debug
             {
                 if (Assets::AssetManager::loadModel(path))
                 {
-                    component.model = newPath;
+                    modelComp->model = newPath;
                 }
                 else
                 {
-                    newPath = component.model;
+                    newPath = modelComp->model;
                 }
 
                 /**
                 * TODO: For now, if one model has more than one material applied and i.e. second material then overriten,
                 *       if model has been changed to one that has less materials, redundant overrides will be saved to
-                *       model component.
+                *       model modelComp->
                 * Example: Have 2 models, first with 1 material, second with 3 materials. If second model was set in model component
                 *          and material 2 or 3 has been overriten, when changin to first model, 2nd or 3rd override will be still
                 *          present in material component overrides, even though model only has 1 material.
                 */
                 for (const auto& matOverride : matOverrides)
                 {
-                    component.materialOverrides[matOverride.first].diffuse = matOverride.second.diffuse;
-                    component.materialOverrides[matOverride.first].specular = matOverride.second.specular;
-                    component.materialOverrides[matOverride.first].shader = matOverride.second.shader;
+                    modelComp->materialOverrides[matOverride.first].diffuse = matOverride.second.diffuse;
+                    modelComp->materialOverrides[matOverride.first].specular = matOverride.second.specular;
+                    modelComp->materialOverrides[matOverride.first].shader = matOverride.second.shader;
                 }
             }
         }

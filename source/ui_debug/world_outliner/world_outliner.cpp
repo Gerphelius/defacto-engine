@@ -1,12 +1,21 @@
 #include <iostream>
 
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+#include <memory>
+#include <string>
+
 #include <fmt/format.h>
 
-#include "ui_debug/world_outliner/world_outliner.hpp"
+#include "world_outliner.hpp"
+#include "component_widget.hpp"
 #include "transform.hpp"
 #include "metadata.hpp"
 #include "model.hpp"
 #include "point_light.hpp"
+#include "camera.hpp"
+
 #include "core/engine.hpp"
 #include "world/world.hpp"
 
@@ -14,12 +23,34 @@
 #include "components/transform_matrix.hpp"
 #include "components/model.hpp"
 #include "components/point_light.hpp"
+#include "components/camera.hpp"
 
 namespace DF::UI::Debug
 {
+    static std::unordered_map<Object::Id, std::unique_ptr<IComponentWidget>> s_componentToWidget{};
+    /*
+    * @brief Set of disabled components so user cannot delete them on components add or remove,
+    * because they are required for object to be spawned in the world
+    */
+    static std::unordered_set<Object::Id> s_disabledComponents{};
+
     WorldOutliner::WorldOutliner() noexcept
     {
         m_world = Engine::getWorld();
+
+        Object::Id transformId{ m_world->getComponentId<Components::Transform>() };
+        Object::Id modelId{ m_world->getComponentId<Components::Model>() };
+        Object::Id metadataId{ m_world->getComponentId<Components::Metadata>() };
+
+        s_componentToWidget[transformId] = std::make_unique<Transform>();
+        s_componentToWidget[modelId] = std::make_unique<Model>();
+        s_componentToWidget[metadataId] = std::make_unique<Metadata>();
+        s_componentToWidget[m_world->getComponentId<Components::PointLight>()] = std::make_unique<PointLight>();
+        s_componentToWidget[m_world->getComponentId<Components::Camera>()] = std::make_unique<Camera>();
+
+        s_disabledComponents.insert(transformId);
+        s_disabledComponents.insert(modelId);
+        s_disabledComponents.insert(metadataId);
     }
 
     const std::string& WorldOutliner::getName() const
@@ -64,110 +95,247 @@ namespace DF::UI::Debug
             m_world->spawnObject(object);
         }
 
-        if (ImGui::Button("Spawn Point Light"))
-        {
-            Object object{ m_world->createObject() };
-
-            object.addComponent(Components::Transform{ .scale{ 0.2, 0.2, 0.2 } });
-            object.addComponent(Components::PointLight{});
-
-            Components::Model model{ "../../resources/models/cube/cube.obj" };
-            model.materialOverrides[0] = DF::Assets::Material
-            {
-                .diffuse{ "../../resources/images/matrix.jpg" },
-                .shader{ DF::Assets::ShaderType::UNLIT },
-            };
-            object.addComponent(model);
-
-            object.addComponent(DF::Components::Metadata{ .name{ "Point Light" } });
-
-            m_world->spawnObject(object);
-        }
+        static int selectedIndex{ -1 };
 
         if (ImGui::BeginChild("##objects_list", ImVec2(0, 300.0f), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened | ImGuiChildFlags_ResizeY))
         {
-            ImGuiListClipper clipper{};
-            clipper.Begin(static_cast<int>(objects.size()));
-
-            static std::vector<bool> selection{};
-            selection.resize(objects.size());
-
-            static int selectedIndex{ -1 };
-
-            while (clipper.Step())
+            if (ImGui::BeginTable("##", 2, ImGuiTableFlags_RowBg))
             {
-                for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i)
+                ImGuiListClipper clipper{};
+                clipper.Begin(static_cast<int>(objects.size()));
+
+                ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthFixed);
+
+                while (clipper.Step())
                 {
-                    auto& obj = objects[i];
-                    auto& metadata = obj.getComponent<Components::Metadata>();
-
-                    ImGui::PushID(i);
-
-                    if (ImGui::Selectable(metadata.name.c_str(), selection[i]))
+                    for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i)
                     {
-                        if (selectedIndex != i && ImGui::IsItemFocused())
+                        ImGui::TableNextRow();
+                        ImGui::TableNextColumn();
+
+                        auto& obj = objects[i];
+                        auto& metadata = obj.getComponent<Components::Metadata>();
+
+                        ImGui::PushID(i);
+                        ImGui::SetNextItemAllowOverlap();
+
+                        if (ImGui::Selectable(metadata.name.c_str(), selectedIndex == i, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap))
                         {
-                            if (selectedIndex >= 0)
+                            if (selectedIndex != i && ImGui::IsItemFocused())
                             {
-                                selection[selectedIndex] = false;
+                                selectedIndex = i;
                             }
-
-                            selection[i] = true;
-                            selectedIndex = i;
-                            m_selectedObjectId = objects[i].getId();
                         }
-                    }
 
-                    ImGui::PopID();
+                        ImGui::TableNextColumn();
+
+                        if (ImGui::SmallButton("Delete"))
+                        {
+                            obj.destroy();
+                            selectedIndex = -1;
+                        }
+
+                        ImGui::PopID();
+                    }
                 }
+
+                ImGui::EndTable();
             }
+
         }
 
         ImGui::EndChild();
 
+        renderComponentsList(selectedIndex, objects);
+    }
+
+    void WorldOutliner::renderComponentsList(int selectedIndex, std::vector<Object>& objects)
+    {
         ImGui::Text("Components");
 
         if (ImGui::BeginChild("##components_list", ImVec2(0, 300.0f), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY))
         {
-            if (m_selectedObjectId)
+            if (selectedIndex >= 0)
             {
-                Object object{ m_world->getObject(m_selectedObjectId) };
+                Object object{ objects[selectedIndex] };
 
-                auto& metadata{ object.getComponent<Components::Metadata>() };
+                static bool addNew{};
+                static std::unordered_set<Object::Id> itemsToAdd{};
+                static std::unordered_set<Object::Id> itemsToRemove{};
 
-                ImGui::Text(metadata.name.c_str());
+                if (ImGui::BeginTable("##head_spacer", 2))
+                {
+                    ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthFixed);
+
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    auto& metadata{ object.getComponent<Components::Metadata>() };
+                    ImGui::Text(metadata.name.c_str());
+                    ImGui::TableNextColumn();
+
+                    if (ImGui::SmallButton(addNew ? "Done" : "Add Components"))
+                    {
+                        if (addNew)
+                        {
+                            for (const auto item : itemsToAdd)
+                            {
+                                object.raw().add(item);
+                            }
+
+                            for (const auto item : itemsToRemove)
+                            {
+                                if (object.raw().has(item))
+                                {
+                                    object.raw().remove(item);
+                                }
+                            }
+
+                            itemsToAdd.clear();
+                            itemsToRemove.clear();
+                        }
+
+                        addNew = !addNew;
+                    }
+
+                    ImGui::EndTable();
+                }
+
                 ImGui::Separator();
 
-                m_world->getObject(m_selectedObjectId).forEachComponent(
-                    [this, &object, &metadata](Object::Id id)
+                std::unordered_set<Object::Id> objectComponents{};
+                std::unordered_set<Object::Id> availableComponents{};
+
+                for (const auto& item : s_componentToWidget)
+                {
+                    if (object.raw().has(item.first) || itemsToAdd.contains(item.first))
                     {
-                        if (m_world->isComponentType<Components::Metadata>(id))
-                        {
-                            Metadata::render(metadata);
-                        }
-
-                        if (m_world->isComponentType<Components::Transform>(id))
-                        {
-                            auto transform{ object.getComponent<Components::Transform>() };
-
-                            Transform::render(transform);
-                        }
-
-                        if (m_world->isComponentType<Components::PointLight>(id))
-                        {
-                            auto& pointLight{ object.getComponent<Components::PointLight>() };
-
-                            PointLight::render(pointLight);
-                        }
-
-                        if (m_world->isComponentType<Components::Model>(id))
-                        {
-                            auto& model{ object.getComponent<Components::Model>() };
-
-                            Model::render(model);
-                        }
+                        objectComponents.insert(item.first);
                     }
-                );
+                }
+
+                for (const auto& item : s_componentToWidget)
+                {
+                    if (!objectComponents.contains(item.first) || itemsToRemove.contains(item.first))
+                    {
+                        availableComponents.insert(item.first);
+                    }
+                }
+
+                if (ImGui::BeginTable("##block_separation", addNew ? 3 : 1))
+                {
+                    if (addNew)
+                    {
+                        ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthStretch);
+                        ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthFixed);
+                        ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthStretch);
+                    }
+
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+
+                    static std::unordered_set<Object::Id> selectedToRemove{};
+
+                    if (ImGui::BeginTable("##current_components", 1, ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_BordersOuterV))
+                    {
+                        for (const auto& component : objectComponents)
+                        {
+                            ImGui::TableNextRow();
+                            ImGui::TableNextColumn();
+
+                            const std::string& componentName{ s_componentToWidget[component]->getName() };
+
+                            if (addNew)
+                            {
+                                int disabledFlag = s_disabledComponents.contains(component) ? ImGuiSelectableFlags_Disabled : ImGuiSelectableFlags_None;
+
+                                if (ImGui::Selectable(componentName.c_str(), selectedToRemove.contains(component), disabledFlag))
+                                {
+                                    if (selectedToRemove.contains(component))
+                                    {
+                                        selectedToRemove.erase(component);
+                                    }
+                                    else
+                                    {
+                                        selectedToRemove.insert(component);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                s_componentToWidget[component]->render(object.raw().get_mut(component));
+                            }
+                        }
+
+                        ImGui::EndTable();
+                    }
+
+                    if (addNew)
+                    {
+                        static std::unordered_set<Object::Id> selectedToAdd{};
+
+                        ImGui::TableNextColumn();
+
+                        ImGui::BeginGroup();
+                        {
+                            ImGui::BeginGroup();
+
+                            if (ImGui::Button("<"))
+                            {
+                                for (const auto& item : selectedToAdd)
+                                {
+                                    itemsToRemove.erase(item);
+                                }
+
+                                itemsToAdd.merge(selectedToAdd);
+                            }
+
+                            if (ImGui::Button(">"))
+                            {
+                                for (const auto& item : selectedToRemove)
+                                {
+                                    itemsToAdd.erase(item);
+                                }
+
+                                itemsToRemove.merge(selectedToRemove);
+                            }
+
+                            ImGui::EndGroup();
+                        }
+
+                        ImGui::TableNextColumn();
+
+                        if (ImGui::BeginTable("##new_components", 1, ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_BordersOuterV))
+                        {
+                            for (const auto& component : availableComponents)
+                            {
+                                ImGui::TableNextRow();
+                                ImGui::TableNextColumn();
+
+                                const std::string& componentName{ s_componentToWidget[component]->getName() };
+
+                                if (ImGui::Selectable(componentName.c_str(), selectedToAdd.contains(component)))
+                                {
+                                    if (selectedToAdd.contains(component))
+                                    {
+                                        selectedToAdd.erase(component);
+                                    }
+                                    else
+                                    {
+                                        selectedToAdd.insert(component);
+                                    }
+                                }
+                            }
+
+                            ImGui::EndTable();
+                        }
+
+                        ImGui::EndGroup();
+                    }
+
+                    ImGui::EndTable();
+                }
             }
         }
 

@@ -14,7 +14,7 @@ namespace DF
 
 namespace DF::UI::Debug
 {
-    class WorldOutliner : public IDebugWidget
+    class WorldOutliner : public IWidget
     {
 
     public:
@@ -27,6 +27,7 @@ namespace DF::UI::Debug
     private:
         std::string m_name{ "World Outliner" };
         World* m_world{};
-        Object::Id m_selectedObjectId{};
+
+        void renderComponentsList(int selectedIndex, std::vector<Object>& objects);
     };
 }

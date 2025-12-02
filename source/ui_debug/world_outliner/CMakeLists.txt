@@ -5,6 +5,7 @@ target_sources(${PROJECT_NAME}
         metadata.cpp
         point_light.cpp
         model.cpp
+        camera.cpp
 
     PRIVATE
         world_outliner.hpp
@@ -12,4 +13,5 @@ target_sources(${PROJECT_NAME}
         metadata.hpp
         point_light.hpp
         model.hpp
+        camera.hpp
 )

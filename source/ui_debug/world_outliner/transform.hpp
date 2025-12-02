@@ -1,13 +1,20 @@
 #pragma once
 
-#include <imgui.h>
+#include <string>
 
+#include "component_widget.hpp"
 #include "components/transform.hpp"
 
 namespace DF::UI::Debug
 {
-    struct Transform
+    class Transform : public IComponentWidget
     {
-        static void render(Components::TransformProxy& transform);
+    public:
+        const std::string& getName() const override;
+
+        void render(void* component) override;
+
+    private:
+        std::string m_name{ "Transform" };
     };
 }

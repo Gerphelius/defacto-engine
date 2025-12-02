@@ -9,11 +9,14 @@
 #include "world/world.hpp"
 #include "input/input.hpp"
 #include "math/math.hpp"
+#include "ui_debug/ui_manager.hpp"
 
 #include "components/transform.hpp"
 #include "components/model.hpp"
 #include "components/metadata.hpp"
 #include "components/point_light.hpp"
+
+#include "test_widget.hpp"
 
 
 /* TODO:
@@ -75,6 +78,10 @@ int main()
     obj2.addComponent(DF::Components::Metadata{ "Multimat model" });
 
     world->spawnObject(obj2);
+
+    //Examples::Basic::Table table{};
+
+    //DF::UI::Debug::UIManager::addWidget(table);
 
     ////////////////////////////////////////////////////////////
 

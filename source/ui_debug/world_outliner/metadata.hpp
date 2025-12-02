@@ -1,13 +1,17 @@
 #pragma once
 
-#include <imgui.h>
-
-#include "components/metadata.hpp"
+#include "component_widget.hpp"
 
 namespace DF::UI::Debug
 {
-    struct Metadata
+    struct Metadata : public IComponentWidget
     {
-        static void render(Components::Metadata& component);
+    public:
+        const std::string& getName() const override;
+
+        void render(void* component) override;
+
+    private:
+        std::string m_name{ "Metadata" };
     };
 }

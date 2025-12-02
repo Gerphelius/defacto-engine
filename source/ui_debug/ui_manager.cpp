@@ -10,8 +10,6 @@
 
 namespace DF::UI::Debug
 {
-    std::vector<std::unique_ptr<IDebugWidget>> UIManager::s_widgets{};
-
     void UIManager::init(const Render::Window* window)
     {
         // TODO: find a way to properly register widgets

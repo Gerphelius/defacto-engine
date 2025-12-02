@@ -18,15 +18,6 @@
 
 namespace DF
 {
-    bool Engine::s_initialized{};
-    bool Engine::s_running{};
-    float Engine::s_deltaTime{};
-
-    std::unique_ptr<Render::Window> Engine::s_window{};
-    std::unique_ptr<Input> Engine::s_inputSystem{};
-    std::unique_ptr<Render::Renderer> Engine::s_renderer{};
-    std::unique_ptr<World> Engine::s_world{};
-
     void Engine::init()
     {
         if (s_initialized) return;
