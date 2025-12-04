@@ -23,7 +23,13 @@ namespace DF
         auto defaultCamera{ createObject() };
 
         defaultCamera.addComponent<Components::Camera>(Components::Camera{ .active{ true } });
-        defaultCamera.addComponent<Components::Transform>(Components::Transform{});
+        defaultCamera.addComponent<Components::Transform>(
+            Components::Transform
+            {
+                .position{ 0.0f, 10.0f, 10.0f },
+                .rotation{ 0.0f, -45.0f, 0.0f },
+            }
+        );
 
         input->onKeyPress(
             Input::Key::W,

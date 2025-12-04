@@ -24,6 +24,10 @@ namespace DF
 
     protected:
         std::vector<Subscription<T>> m_subscriptions{};
+        /**
+        * TODO: This is currently unused, need to refactor, so index can represent last valid subscription.
+        *       If m_subscriptions contain dead subscriptions, they can be reused similar to pooling method.
+        */
         int m_lastValidIndex{ -1 };
     };
 }

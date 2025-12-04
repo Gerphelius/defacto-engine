@@ -28,9 +28,9 @@ namespace DF::Components
         Math::vec3 getForwardVector() const
         {
             Math::vec3 direction{};
-            direction.x = cos(Math::degToRad(m_transform.rotation.x)) * cos(Math::degToRad(m_transform.rotation.y));
+            direction.x = sin(Math::degToRad(m_transform.rotation.x)) * cos(Math::degToRad(m_transform.rotation.y));
             direction.y = sin(Math::degToRad(m_transform.rotation.y));
-            direction.z = sin(Math::degToRad(m_transform.rotation.x)) * cos(Math::degToRad(m_transform.rotation.y));
+            direction.z = -cos(Math::degToRad(m_transform.rotation.x)) * cos(Math::degToRad(m_transform.rotation.y));
 
             return Math::normalize(direction);
         }

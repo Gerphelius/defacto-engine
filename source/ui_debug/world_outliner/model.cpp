@@ -52,14 +52,6 @@ namespace DF::UI::Debug
             static Assets::MaterialOverrides matOverrides{};
             static Assets::Model* prevModel{ model };
 
-            // TODO: move it after apply button to reset overrides
-            if (prevModel != model)
-            {
-                prevModel = model;
-                newPath = path;
-                matOverrides.clear();
-            }
-
             for (int i{}; i < materials.size(); ++i)
             {
                 if (ImGui::TreeNode(fmt::format("{}: {}", i, *materials[i].name).c_str()))
@@ -163,6 +155,13 @@ namespace DF::UI::Debug
                     modelComp->materialOverrides[matOverride.first].specular = matOverride.second.specular;
                     modelComp->materialOverrides[matOverride.first].shader = matOverride.second.shader;
                 }
+            }
+
+            if (prevModel != model)
+            {
+                prevModel = model;
+                newPath = path;
+                matOverrides.clear();
             }
         }
     }

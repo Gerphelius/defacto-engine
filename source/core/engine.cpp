@@ -29,11 +29,9 @@ namespace DF
         Input* input{ Core::ServiceLocator::getService<Input>() };
 
         s_world = std::make_unique<World>();
-        s_renderer = std::make_unique<Render::Renderer>(s_world.get());
+        s_renderer = std::make_unique<Render::Renderer>(s_window.get(), s_world.get());
         UI::Debug::UIManager::init(s_window.get());
         Assets::AssetManager::init();
-
-        s_window->setResizeCallback([](float width, float height) { s_renderer->setWindowSize(width, height); });
 
         input->onKeyPress(
             Input::Key::ESC,

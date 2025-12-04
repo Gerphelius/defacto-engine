@@ -1,5 +1,8 @@
 #include <iostream>
 
+#include <GLFW/glfw3.h>
+#include <fmt/format.h>
+
 #include "window_glfw.hpp"
 
 namespace DF::Backend

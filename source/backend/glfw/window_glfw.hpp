@@ -1,7 +1,7 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-#include <fmt/format.h>
+#include <string>
+#include <memory>
 
 #include "render/window.hpp"
 #include "input_glfw.hpp"
@@ -26,6 +26,7 @@ namespace DF::Backend
 
         int m_width{ 800 };
         int m_height{ 600 };
+
         std::string m_title{ "Window" };
         std::unique_ptr<GLFWwindow, GLFWwindowDeleter> m_window{};
         InputGLFW* m_input{};
@@ -41,6 +42,8 @@ namespace DF::Backend
         void update(float deltaTime) override;
 
         bool closed() const override;
+
+        float getAspectRatio() const override { return static_cast<float>(m_width) / m_height; };
 
         void* getRawWindow() const override { return m_window.get(); }
 

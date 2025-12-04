@@ -13,6 +13,8 @@ namespace DF::Render
 
         virtual bool closed() const = 0;
 
+        virtual float getAspectRatio() const = 0;
+
         virtual void* getRawWindow() const = 0;
 
         virtual void setResizeCallback(ResizeCallback) = 0;

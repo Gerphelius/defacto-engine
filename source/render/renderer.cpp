@@ -37,8 +37,9 @@ namespace DF::Render
         float padding;
     };
 
-    Renderer::Renderer(World* world)
+    Renderer::Renderer(Window* window, World* world)
         : m_world{ world }
+        , m_window{ window }
     {
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
@@ -76,7 +77,7 @@ namespace DF::Render
                     unlit->use();
                     unlit->setUniform("uView", view);
 
-                    const auto projection{ Math::perspective(Math::degToRad(camera.fov), m_size.width / m_size.height, camera.near, camera.far) };
+                    const auto projection{ Math::perspective(Math::degToRad(camera.fov), m_window->getAspectRatio(), camera.near, camera.far)};
 
                     phong->use();
                     phong->setUniform("uProjection", projection);
@@ -184,10 +185,5 @@ namespace DF::Render
     {
         m_drawMode = mode;
         glPolygonMode(GL_FRONT_AND_BACK, mode == DrawMode::FILL ? GL_FILL : GL_LINE);
-    }
-
-    void Renderer::setWindowSize(float width, float height)
-    {
-        m_size = { width, height };
     }
 }
