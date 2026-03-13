@@ -1,0 +1,30 @@
+BasedOnStyle: Mozilla
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+
+BreakBeforeBraces: Allman
+
+AllowShortFunctionsOnASingleLine: None
+SortIncludes: false
+BreakAfterReturnType: Automatic
+
+# Expand nested braced lists onto multiple lines instead of collapsing them
+Cpp11BracedListStyle: false
+
+# Ensures space between cast and opening brace: (Type) { ... }
+SpaceBeforeCpp11BracedList: true
+
+# Align = signs in consecutive assignments/declarations
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignCompound: false
+  PadOperators: true
+
+# Don't bin-pack — forces one argument/initializer per line when they don't fit
+BinPackArguments: false
+BinPackParameters: false
