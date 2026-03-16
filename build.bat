@@ -12,8 +12,8 @@ set TRIPLET=x64-windows-static
 set INCLUDE_PATH="%VCPKG_INSTALLED%\installed\%TRIPLET%\include"
 set LIB_PATH="%VCPKG_INSTALLED%\installed\%TRIPLET%\lib"
 
-set ENGINE_INCLUDE_PATH="source\engine"
-set EXTERNAL_INCLUDE_PATH="source\external"
+set ENGINE_INCLUDE_PATH="%cd%\source\engine"
+set EXTERNAL_INCLUDE_PATH="%cd%\source\external"
 
 set EXTERNAL= shell32.lib user32.lib gdi32.lib opengl32.lib glfw3.lib glew32.lib
 

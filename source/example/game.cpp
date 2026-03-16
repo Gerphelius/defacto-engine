@@ -2,7 +2,7 @@
 
 //#include "game.hpp"
 
-//#include "defacto_api.hpp"
+#include "defacto_api.hpp"
 
 // DF_EXPORT ON_UPDATE(OnUpdate)
 // {

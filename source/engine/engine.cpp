@@ -5,7 +5,10 @@
 #include "defacto_api.hpp"
 #include "platform/platform.hpp"
 
-inline ON_UPDATE(OnUpdateStub) { return "Stub"; }
+inline ON_UPDATE(OnUpdateStub)
+{
+    return "Stub";
+}
 
 struct GameCode
 {
@@ -19,15 +22,18 @@ static GameCode LoadGameCode(const char* dllPath, const char* tempDllPath)
     // and be able to create a copy of it for hot-reload
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
-    GameCode gameCode{};
+    GameCode gameCode {};
 
-    if (!DF::PLATFORM::CopyFile(dllPath, tempDllPath, false)) return gameCode;
+    if (!DF::PLATFORM::CopyFile(dllPath, tempDllPath, false))
+        return gameCode;
 
     gameCode.library = DF::PLATFORM::LoadDynamicLibrary(tempDllPath);
 
-    if (!gameCode.library.handle) return gameCode;
+    if (!gameCode.library.handle)
+        return gameCode;
 
-    gameCode.OnUpdate = (DF::API::OnUpdateT*)DF::PLATFORM::GetProcAddress(&gameCode.library, "OnUpdate");
+    gameCode.OnUpdate =
+      (DF::API::OnUpdateT*)DF::PLATFORM::GetProcAddress(&gameCode.library, "OnUpdate");
 
     return gameCode;
 }
@@ -58,7 +64,7 @@ int main()
     std::filesystem::path exePath = DF::PLATFORM::GetModuleFilename();
     std::filesystem::path dllPath = exePath.parent_path();
 
-    std::string gameDllPath = (dllPath / "game.dll").string();
+    std::string gameDllPath     = (dllPath / "game.dll").string();
     std::string gameDllPathTemp = (dllPath / ("game_temp.dll")).string();
 
     GameCode gameCode = LoadGameCode(gameDllPath.c_str(), gameDllPathTemp.c_str());
@@ -67,7 +73,8 @@ int main()
 
     while (!DF::PLATFORM::WindowClosed(window))
     {
-        DF::PLATFORM::FileWriteTime lastGameDllWriteTime = DF::PLATFORM::GetFileWriteTime(gameDllPath.c_str());
+        DF::PLATFORM::FileWriteTime lastGameDllWriteTime =
+          DF::PLATFORM::GetFileWriteTime(gameDllPath.c_str());
 
         if (gameCode.library.lastWriteTime != lastGameDllWriteTime)
         {
