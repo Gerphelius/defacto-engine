@@ -1,6 +1,8 @@
 #include <gl/glew.h>
 #include <iostream>
 
+#include "platform/platform_window.hpp"
+
 namespace DF::RENDER
 {
 const char* vert = R"(
@@ -50,8 +52,16 @@ GLuint CompileShader(const char* source, GLenum type)
 
 GLuint shaderProgram;
 
-void Initialize()
+static PLATFORM::Window* g_window;
+
+void Initialize(PLATFORM::Window* window)
 {
+    // Disable depth testing for UI rendering so depth values do not affect
+    // draw order. UI elements are rendered strictly in the order of glDraw calls.
+    // glEnable(GL_DEPTH_TEST);
+
+    g_window = window;
+
     shaderProgram         = glCreateProgram();
     GLuint vertexShader   = CompileShader(vert, GL_VERTEX_SHADER);
     GLuint fragmentShader = CompileShader(frag, GL_FRAGMENT_SHADER);
@@ -78,6 +88,20 @@ void Initialize()
     glDeleteShader(vertexShader);
     glDetachShader(shaderProgram, fragmentShader);
     glDeleteShader(fragmentShader);
+}
+
+void BeginFrame()
+{
+    PLATFORM::Size fbSize = GetFramebufferSize(g_window);
+    glViewport(0, 0, fbSize.width, fbSize.height);
+
+    glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void EndFrame()
+{
+    PLATFORM::SwapBuffers(g_window);
 }
 
 float Map(float value, float low1, float high1, float low2, float high2)
@@ -162,4 +186,4 @@ void DrawQuad(Position pos, Size size, Color color)
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-}
+} // namespace DF::RENDER

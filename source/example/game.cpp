@@ -1,14 +1,14 @@
 #include <cassert>
 
-//#include "game.hpp"
+#include "game.hpp"
 
 #include "defacto_api.hpp"
 
-// DF_EXPORT ON_UPDATE(OnUpdate)
-// {
-//     // assert(sizeof(GameState) <= memory->permanentStorageSize);
+DF_EXPORT ON_UPDATE(OnUpdate)
+{
+    // assert(sizeof(GameState) <= memory->permanentStorageSize);
 
-//     // GameState* gameState = static_cast<GameState*>(memory->permanentStorage);
+    // GameState* gameState = static_cast<GameState*>(memory->permanentStorage);
 
-//     return "Hot Reload 11221";
-// }
+    return "Hot Reload 11221";
+}

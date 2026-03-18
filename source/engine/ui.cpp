@@ -51,11 +51,11 @@ void Initialize()
     // renderCommands = GetTestLayout();
 }
 
-void RenderUI(float width, float height)
+void Render(int width, int height)
 {
     renderCommands = ClayVideoDemo_CreateLayout(&demo_data);
 
-    Clay_SetLayoutDimensions(Clay_Dimensions { width, height });
+    Clay_SetLayoutDimensions(Clay_Dimensions { (float)width, (float)height });
 
     for (int j = 0; j < renderCommands.length; j++)
     {

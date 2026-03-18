@@ -28,3 +28,6 @@ AlignConsecutiveAssignments:
 # Don't bin-pack — forces one argument/initializer per line when they don't fit
 BinPackArguments: false
 BinPackParameters: false
+
+FixNamespaceComments: true
+ShortNamespaceLines: 0
