@@ -47,7 +47,7 @@ typedef struct
 
 Document documentsRaw[5];
 
-DocumentArray documents = { .length = 5, .documents = documentsRaw };
+DocumentArray documents = { 5, documentsRaw };
 
 typedef struct
 {
@@ -207,7 +207,7 @@ ClayVideoDemo_Data ClayVideoDemo_Initialize()
           "installation instructions.")
     };
     documents.documents[3] = { CLAY_STRING("Article 4"), CLAY_STRING("Article 4") };
-    documents.documents[4] = Document { CLAY_STRING("Article 5"), CLAY_STRING("Article 5") };
+    documents.documents[4] = { CLAY_STRING("Article 5"), CLAY_STRING("Article 5") };
 
     ClayVideoDemo_Data data = { .frameArena = { .memory = (intptr_t)malloc(1024) } };
     return data;
@@ -349,11 +349,11 @@ Clay_RenderCommandArray ClayVideoDemo_CreateLayout(ClayVideoDemo_Data* data)
                     }
                     else
                     {
-                        // SidebarClickData* clickData =
-                        //   (SidebarClickData*)(data->frameArena.memory + data->frameArena.offset);
-                        // *clickData = SidebarClickData { .requestedDocumentIndex = i,
-                        //                                 .selectedDocumentIndex =
-                        //                                   &data->selectedDocumentIndex };
+                        SidebarClickData* clickData =
+                          (SidebarClickData*)(data->frameArena.memory + data->frameArena.offset);
+                        *clickData = SidebarClickData { .requestedDocumentIndex = i,
+                                                        .selectedDocumentIndex =
+                                                          &data->selectedDocumentIndex };
                         data->frameArena.offset += sizeof(SidebarClickData);
                         CLAY_AUTO_ID(
                           { .layout = sidebarButtonLayout,
@@ -361,7 +361,7 @@ Clay_RenderCommandArray ClayVideoDemo_CreateLayout(ClayVideoDemo_Data* data)
                               Clay_Color { 120, 120, 120, (float)(Clay_Hovered() ? 120 : 0) },
                             .cornerRadius = CLAY_CORNER_RADIUS(8) })
                         {
-                            // Clay_OnHover(HandleSidebarInteraction, clickData);
+                            Clay_OnHover(HandleSidebarInteraction, clickData);
                             CLAY_TEXT(document.title,
                                       CLAY_TEXT_CONFIG({
                                         .textColor = { 255, 255, 255, 255 },
