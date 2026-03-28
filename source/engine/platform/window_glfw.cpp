@@ -6,7 +6,7 @@
 
 #include "platform_window.hpp"
 
-namespace DF::PLATFORM
+namespace DF::Platform
 {
 
 Window CreateWindow(int width, int height, const char* title)
@@ -66,4 +66,4 @@ Size GetFramebufferSize(Window* window)
     return Size(width, height);
 }
 
-}; // namespace DF::PLATFORM
+}; // namespace DF::Platform

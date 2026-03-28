@@ -15,7 +15,7 @@ using namespace DF;
 
 struct GameCode
 {
-    PLATFORM::DynamicLibrary library;
+    Platform::DynamicLibrary library;
     API::OnUpdateT* OnUpdate = OnUpdateStub;
 };
 
@@ -27,15 +27,15 @@ static GameCode LoadGameCode(const char* dllPath, const char* tempDllPath)
 
     GameCode gameCode {};
 
-    if (!PLATFORM::CopyFile(dllPath, tempDllPath, false))
+    if (!Platform::CopyFile(dllPath, tempDllPath, false))
         return gameCode;
 
-    gameCode.library = PLATFORM::LoadDynamicLibrary(tempDllPath);
+    gameCode.library = Platform::LoadDynamicLibrary(tempDllPath);
 
     if (!gameCode.library.handle)
         return gameCode;
 
-    gameCode.OnUpdate = (API::OnUpdateT*)PLATFORM::GetProcAddress(&gameCode.library, "OnUpdate");
+    gameCode.OnUpdate = (API::OnUpdateT*)Platform::GetProcAddress(&gameCode.library, "OnUpdate");
 
     return gameCode;
 }
@@ -44,7 +44,7 @@ static void UnloadGameCode(GameCode* code)
 {
     if (code->library.handle)
     {
-        PLATFORM::UnloadDynamicLibrary(&code->library);
+        Platform::UnloadDynamicLibrary(&code->library);
     }
 }
 
@@ -63,7 +63,7 @@ static void UnloadGameCode(GameCode* code)
 
 int main()
 {
-    std::filesystem::path exePath = PLATFORM::GetModuleFilename();
+    std::filesystem::path exePath = Platform::GetModuleFilename();
     std::filesystem::path dllPath = exePath.parent_path();
 
     std::string gameDllPath     = (dllPath / "game.dll").string();
@@ -71,15 +71,15 @@ int main()
 
     GameCode gameCode = LoadGameCode(gameDllPath.c_str(), gameDllPathTemp.c_str());
 
-    PLATFORM::Window window = PLATFORM::CreateWindow(800, 600, "Test");
+    Platform::Window window = Platform::CreateWindow(800, 600, "Test");
 
-    RENDER::Initialize(&window);
+    Render::Initialize(&window);
     UI::Initialize();
 
-    while (!PLATFORM::WindowClosed(&window))
+    while (!Platform::WindowClosed(&window))
     {
-        PLATFORM::FileWriteTime lastGameDllWriteTime =
-          PLATFORM::GetFileWriteTime(gameDllPath.c_str());
+        Platform::FileWriteTime lastGameDllWriteTime =
+          Platform::GetFileWriteTime(gameDllPath.c_str());
 
         if (gameCode.library.lastWriteTime != lastGameDllWriteTime)
         {
@@ -87,12 +87,14 @@ int main()
             gameCode = LoadGameCode(gameDllPath.c_str(), gameDllPathTemp.c_str());
         }
 
-        RENDER::BeginFrame();
+        std::cout << gameCode.OnUpdate() << '\n';
 
-        PLATFORM::Size fbSize = PLATFORM::GetFramebufferSize(&window);
+        Render::BeginFrame();
+
+        Platform::Size fbSize = Platform::GetFramebufferSize(&window);
         UI::Render(fbSize.width, fbSize.height);
 
-        RENDER::EndFrame();
+        Render::EndFrame();
     }
 
     UnloadGameCode(&gameCode);

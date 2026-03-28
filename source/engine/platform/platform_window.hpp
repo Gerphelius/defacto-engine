@@ -1,6 +1,6 @@
 #pragma once
 
-namespace DF::PLATFORM
+namespace DF::Platform
 {
 struct Window
 {
@@ -18,4 +18,4 @@ void SwapBuffers(Window* window);
 bool WindowClosed(Window* window);
 Size GetFramebufferSize(Window* window);
 
-} // namespace DF::PLATFORM
+} // namespace DF::Platform

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <filesystem>
 
-namespace DF::PLATFORM
+namespace DF::Platform
 {
 
 using FileWriteTime = uint64_t;
@@ -24,4 +24,4 @@ DynamicLibrary LoadDynamicLibrary(const char* path);
 bool UnloadDynamicLibrary(const DynamicLibrary* library);
 ProcAddress GetProcAddress(const DynamicLibrary* lib, const char* procName);
 
-} // namespace DF::PLATFORM
+} // namespace DF::Platform

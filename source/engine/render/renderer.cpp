@@ -1,49 +1,13 @@
 #include <cstdint>
 #include <gl/glew.h>
 #include <iostream>
+#include <fstream>
+#include <string>
 
 #include "platform/platform_window.hpp"
 
-namespace DF::RENDER
+namespace DF::Render
 {
-const char* vert = R"(
-    #version 330 core
-
-    layout(location = 0) in vec3 aPos;
-    layout(location = 1) in vec2 aTexCoord;
-
-    out vec2 TexCoord;
-
-    void main()
-    {
-        gl_Position = vec4(aPos, 1.0f);
-        TexCoord = aTexCoord;
-    }
-)";
-
-const char* frag = R"(
-    #version 330 core
-
-    in vec2 TexCoord;
-
-    out vec4 FragColor;
-
-    uniform vec4 uColor;
-    uniform sampler2D uTexture;
-
-    void main()
-    {
-        /// TODO: review smoothing calculation. Should be based on
-        /// atlas.distanceRange and relative font scale
-
-        float smoothing = 0.5;
-        float dist = texture2D(uTexture, TexCoord).r;
-        float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, dist);
-        FragColor = vec4(uColor.rgb, uColor.a * alpha);
-
-        // FragColor = vec4(uColor.r, uColor.g, uColor.b, texture(uTexture, TexCoord).r);
-    }
-)";
 
 GLuint CompileShader(const char* source, GLenum type)
 {
@@ -68,19 +32,45 @@ GLuint CompileShader(const char* source, GLenum type)
 
 GLuint shaderProgram;
 
-static PLATFORM::Window* g_window;
+static Platform::Window* g_window;
 
-void Initialize(PLATFORM::Window* window)
+std::string ReadShaderFile(const std::string& path)
+{
+    std::ifstream file { path };
+
+    if (!file)
+    {
+        std::cout << "Cannot read file: " << path << '\n';
+
+        return "";
+    }
+
+    std::string line {};
+    std::string content {};
+
+    while (!file.eof())
+    {
+        std::getline(file, line);
+        content += line + '\n';
+    }
+
+    return content;
+}
+
+void Initialize(Platform::Window* window)
 {
     // Disable depth testing for UI rendering so depth values do not affect
     // draw order. UI elements are rendered strictly in the order of glDraw calls.
     // glEnable(GL_DEPTH_TEST);
 
+    std::string fontShaderVert = ReadShaderFile("resources/shaders/font.vert.glsl");
+    std::string fontShaderFrag = ReadShaderFile("resources/shaders/font.frag.glsl");
+
     g_window = window;
 
     shaderProgram         = glCreateProgram();
-    GLuint vertexShader   = CompileShader(vert, GL_VERTEX_SHADER);
-    GLuint fragmentShader = CompileShader(frag, GL_FRAGMENT_SHADER);
+    GLuint vertexShader   = CompileShader(fontShaderVert.c_str(), GL_VERTEX_SHADER);
+    GLuint fragmentShader = CompileShader(fontShaderFrag.c_str(), GL_FRAGMENT_SHADER);
 
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
@@ -108,7 +98,7 @@ void Initialize(PLATFORM::Window* window)
 
 void BeginFrame()
 {
-    PLATFORM::Size fbSize = GetFramebufferSize(g_window);
+    Platform::Size fbSize = GetFramebufferSize(g_window);
     glViewport(0, 0, fbSize.width, fbSize.height);
 
     glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
@@ -117,24 +107,13 @@ void BeginFrame()
 
 void EndFrame()
 {
-    PLATFORM::SwapBuffers(g_window);
-}
-
-float Map(float value, float low1, float high1, float low2, float high2)
-{
-    return low2 + (value - low1) * (high2 - low2) / (high1 - low1);
+    Platform::SwapBuffers(g_window);
 }
 
 struct Size
 {
     float width;
     float height;
-};
-
-struct Vec2
-{
-    float x;
-    float y;
 };
 
 struct Color
@@ -147,10 +126,10 @@ struct Color
 
 struct UVMap
 {
-    Vec2 bottomLeft  = { 0.0f, 0.0f };
-    Vec2 topLeft     = { 0.0f, 1.0f };
-    Vec2 topRight    = { 1.0f, 1.0f };
-    Vec2 bottomRight = { 1.0f, 0.0f };
+    Math::Vec2 bottomLeft  = { 0.0f, 0.0f };
+    Math::Vec2 topLeft     = { 0.0f, 1.0f };
+    Math::Vec2 topRight    = { 1.0f, 1.0f };
+    Math::Vec2 bottomRight = { 1.0f, 0.0f };
 };
 
 typedef uint32_t Texture;
@@ -215,15 +194,17 @@ void BindTexture(Texture texture, int pos = 0)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void DrawQuad(Vec2 pos, Size size, Color color, UVMap uvMap = {})
+void DrawQuad(Math::Vec2 pos, Size size, Color color, UVMap uvMap = {})
 {
     int viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
 
-    float normX = Map(pos.x, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
-    float normY = Map(pos.y, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
-    float normW = Map(pos.x + size.width, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
-    float normH = Map(pos.y + size.height, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
+    float normX = Math::Map(pos.x, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
+    float normY = Math::Map(pos.y, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
+    float normW =
+      Math::Map(pos.x + size.width, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
+    float normH =
+      Math::Map(pos.y + size.height, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
 
     float vertices[] {
         normX, -normH, uvMap.bottomLeft.x,  uvMap.bottomLeft.y,  // bottom left
@@ -256,10 +237,10 @@ void DrawQuad(Vec2 pos, Size size, Color color, UVMap uvMap = {})
 
     glUseProgram(shaderProgram);
 
-    float r = Map(color.r, 0.0f, 255.0f, 0.0f, 1.0f);
-    float g = Map(color.g, 0.0f, 255.0f, 0.0f, 1.0f);
-    float b = Map(color.b, 0.0f, 255.0f, 0.0f, 1.0f);
-    float a = Map(color.a, 0.0f, 255.0f, 0.0f, 1.0f);
+    float r = Math::Map(color.r, 0.0f, 255.0f, 0.0f, 1.0f);
+    float g = Math::Map(color.g, 0.0f, 255.0f, 0.0f, 1.0f);
+    float b = Math::Map(color.b, 0.0f, 255.0f, 0.0f, 1.0f);
+    float a = Math::Map(color.a, 0.0f, 255.0f, 0.0f, 1.0f);
 
     glUniform4f(glGetUniformLocation(shaderProgram, "uColor"), r, g, b, a);
 
@@ -274,4 +255,4 @@ void DrawQuad(Vec2 pos, Size size, Color color, UVMap uvMap = {})
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-} // namespace DF::RENDER
+} // namespace DF::Render

@@ -7,7 +7,7 @@
 
 #include "platform_os.hpp"
 
-namespace DF::PLATFORM
+namespace DF::Platform
 {
 
 std::filesystem::path GetModuleFilename()
@@ -84,4 +84,4 @@ ProcAddress GetProcAddress(const DynamicLibrary* lib, const char* procName)
     return (ProcAddress)::GetProcAddress((HMODULE)lib->handle, procName);
 }
 
-} // namespace DF::PLATFORM
+} // namespace DF::Platform

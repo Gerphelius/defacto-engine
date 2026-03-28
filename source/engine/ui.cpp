@@ -81,8 +81,7 @@ FontData GetFontData()
 {
     FontData fontData {};
 
-    /// TODO: Handle this absolute path nonsense.
-    const char* font = "C:/dev/defacto_engine/source/engine/resources/bitcount_regular.json";
+    const char* font = "resources/fonts/bitcount_regular.json";
     std::ifstream file(font);
 
     if (!file.is_open())
@@ -139,7 +138,7 @@ void RenderText(const char* str, int fontSize, float x, float y, int strlen = -1
 {
     if (strlen <= -1)
     {
-        for (const char* ch = str; *ch; *++ch)
+        for (const char* ch = str; *ch; *ch++)
         {
             for (const auto& glyph : g_fontData.glyphs)
             {
@@ -149,26 +148,27 @@ void RenderText(const char* str, int fontSize, float x, float y, int strlen = -1
                     float height  = (glyph.planeBounds.top - glyph.planeBounds.bottom) * fontSize;
                     float offsetY = (y - height) - (glyph.planeBounds.bottom * fontSize);
 
-                    /// TODO: Move Map and Vec2 outside of RENDER
+                    if (width && height)
+                    {
+                        float topNorm =
+                          Math::Map(glyph.atlasBounds.top, 0, g_fontData.atlasHeight, 0.0f, 1.0f);
+                        float rightNorm =
+                          Math::Map(glyph.atlasBounds.right, 0, g_fontData.atlasWidth, 0.0f, 1.0f);
+                        float bottomNorm = Math::Map(
+                          glyph.atlasBounds.bottom, 0, g_fontData.atlasHeight, 0.0f, 1.0f);
+                        float leftNorm =
+                          Math::Map(glyph.atlasBounds.left, 0, g_fontData.atlasWidth, 0.0f, 1.0f);
 
-                    float topNorm =
-                      RENDER::Map(glyph.atlasBounds.top, 0, g_fontData.atlasHeight, 0.0f, 1.0f);
-                    float rightNorm =
-                      RENDER::Map(glyph.atlasBounds.right, 0, g_fontData.atlasWidth, 0.0f, 1.0f);
-                    float bottomNorm =
-                      RENDER::Map(glyph.atlasBounds.bottom, 0, g_fontData.atlasHeight, 0.0f, 1.0f);
-                    float leftNorm =
-                      RENDER::Map(glyph.atlasBounds.left, 0, g_fontData.atlasWidth, 0.0f, 1.0f);
+                        Math::Vec2 bottomL = { leftNorm, bottomNorm };
+                        Math::Vec2 topL    = { leftNorm, topNorm };
+                        Math::Vec2 topR    = { rightNorm, topNorm };
+                        Math::Vec2 bottomR = { rightNorm, bottomNorm };
 
-                    RENDER::Vec2 bottomL = { leftNorm, bottomNorm };
-                    RENDER::Vec2 topL    = { leftNorm, topNorm };
-                    RENDER::Vec2 topR    = { rightNorm, topNorm };
-                    RENDER::Vec2 bottomR = { rightNorm, bottomNorm };
-
-                    RENDER::DrawQuad({ x, offsetY },
-                                     { width, height },
-                                     { 255.0, 255.0, 255.0, 255.0 },
-                                     { bottomL, topL, topR, bottomR } );
+                        Render::DrawQuad({ x, offsetY },
+                                         { width, height },
+                                         { 255.0, 255.0, 255.0, 255.0 },
+                                         { bottomL, topL, topR, bottomR });
+                    }
 
                     x += (glyph.advance * fontSize);
 
@@ -209,11 +209,7 @@ void Initialize()
 
     int width, height, components;
     unsigned char* data =
-      stbi_load("C:/dev/defacto_engine/source/engine/resources/bitcount_regular.png",
-                &width,
-                &height,
-                &components,
-                0);
+      stbi_load("resources/fonts/bitcount_regular.png", &width, &height, &components, 0);
 
     if (!data)
     {
@@ -221,8 +217,8 @@ void Initialize()
     }
     else
     {
-        RENDER::Texture texture = RENDER::CreateTexture(width, height, components, data);
-        RENDER::BindTexture(texture);
+        Render::Texture texture = Render::CreateTexture(width, height, components, data);
+        Render::BindTexture(texture);
 
         stbi_image_free(data);
     }

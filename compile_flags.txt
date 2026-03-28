@@ -1,5 +1,0 @@
---target=x86_64-pc-windows-msvc
--std=c++20
--IC:/dev/vcpkg/installed/x64-windows-static/include
--IC:/dev/defacto_engine/source/engine
--IC:/dev/defacto_engine/source/external

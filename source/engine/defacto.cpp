@@ -1,3 +1,5 @@
+#include "math/math.cpp"
+
 #include "platform/os_windows.cpp"
 #include "platform/window_glfw.cpp"
 
