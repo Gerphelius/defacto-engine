@@ -87,8 +87,6 @@ int main()
             gameCode = LoadGameCode(gameDllPath.c_str(), gameDllPathTemp.c_str());
         }
 
-        std::cout << gameCode.OnUpdate() << '\n';
-
         Render::BeginFrame();
 
         Platform::Size fbSize = Platform::GetFramebufferSize(&window);

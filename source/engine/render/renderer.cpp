@@ -3,13 +3,14 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 #include "platform/platform_window.hpp"
 
 namespace DF::Render
 {
 
-GLuint CompileShader(const char* source, GLenum type)
+static GLuint CompileShader(const char* source, GLenum type)
 {
     GLuint shader = glCreateShader(type);
 
@@ -30,11 +31,7 @@ GLuint CompileShader(const char* source, GLenum type)
     return shader;
 }
 
-GLuint shaderProgram;
-
-static Platform::Window* g_window;
-
-std::string ReadShaderFile(const std::string& path)
+static std::string ReadShaderFile(const std::string& path)
 {
     std::ifstream file { path };
 
@@ -57,32 +54,25 @@ std::string ReadShaderFile(const std::string& path)
     return content;
 }
 
-void Initialize(Platform::Window* window)
+typedef uint32_t Shader;
+
+static Shader CreateShader(const char* vertSrc, const char* fragSrc)
 {
-    // Disable depth testing for UI rendering so depth values do not affect
-    // draw order. UI elements are rendered strictly in the order of glDraw calls.
-    // glEnable(GL_DEPTH_TEST);
+    Shader shader         = glCreateProgram();
+    GLuint vertexShader   = CompileShader(vertSrc, GL_VERTEX_SHADER);
+    GLuint fragmentShader = CompileShader(fragSrc, GL_FRAGMENT_SHADER);
 
-    std::string fontShaderVert = ReadShaderFile("resources/shaders/font.vert.glsl");
-    std::string fontShaderFrag = ReadShaderFile("resources/shaders/font.frag.glsl");
-
-    g_window = window;
-
-    shaderProgram         = glCreateProgram();
-    GLuint vertexShader   = CompileShader(fontShaderVert.c_str(), GL_VERTEX_SHADER);
-    GLuint fragmentShader = CompileShader(fontShaderFrag.c_str(), GL_FRAGMENT_SHADER);
-
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
+    glAttachShader(shader, vertexShader);
+    glAttachShader(shader, fragmentShader);
+    glLinkProgram(shader);
 
     int success;
     char infoLog[512];
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    glGetProgramiv(shader, GL_LINK_STATUS, &success);
 
     if (!success)
     {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        glGetProgramInfoLog(shader, 512, NULL, infoLog);
 
         std::cout << "Shader program error: " << infoLog << '\n';
     }
@@ -90,13 +80,42 @@ void Initialize(Platform::Window* window)
     // Need to detach shader before deletion because the driver
     // won't free GPU memory until the shader program is deleted
     // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDeleteShader.xhtml
-    glDetachShader(shaderProgram, vertexShader);
+    glDetachShader(shader, vertexShader);
     glDeleteShader(vertexShader);
-    glDetachShader(shaderProgram, fragmentShader);
+    glDetachShader(shader, fragmentShader);
     glDeleteShader(fragmentShader);
+
+    return shader;
 }
 
-void BeginFrame()
+static Shader g_shapeShader;
+static Shader g_fontShader;
+static Platform::Window* g_window;
+
+static void Initialize(Platform::Window* window)
+{
+    // Disable depth testing for UI rendering so depth values do not affect
+    // draw order. UI elements are rendered strictly in the order of glDraw calls.
+    // glEnable(GL_DEPTH_TEST);
+
+    std::string fontShaderVert = ReadShaderFile("resources/shaders/font.vert.glsl");
+    std::string fontShaderFrag = ReadShaderFile("resources/shaders/font.frag.glsl");
+    g_fontShader               = CreateShader(fontShaderVert.c_str(), fontShaderFrag.c_str());
+
+    std::string shapeShaderVert = ReadShaderFile("resources/shaders/shape.vert.glsl");
+    std::string shapeShaderFrag = ReadShaderFile("resources/shaders/shape.frag.glsl");
+    g_shapeShader               = CreateShader(shapeShaderVert.c_str(), shapeShaderFrag.c_str());
+
+    g_window = window;
+
+    /// TODO: this should be called once on renderer initialization probably.
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // CreateShader(const char* vertSrc, const char* fragSrc);
+}
+
+static void BeginFrame()
 {
     Platform::Size fbSize = GetFramebufferSize(g_window);
     glViewport(0, 0, fbSize.width, fbSize.height);
@@ -105,7 +124,7 @@ void BeginFrame()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void EndFrame()
+static void EndFrame()
 {
     Platform::SwapBuffers(g_window);
 }
@@ -132,69 +151,13 @@ struct UVMap
     Math::Vec2 bottomRight = { 1.0f, 0.0f };
 };
 
-typedef uint32_t Texture;
-
-Texture CreateTexture(int width, int height, int componenets, const void* data)
-{
-    Texture texture {};
-
-    GLenum internalFormat;
-    GLenum pixelFormat;
-
-    switch (componenets)
-    {
-        case 1:
-        {
-            internalFormat = GL_R8;
-            pixelFormat    = GL_RED;
-            break;
-        }
-        case 3:
-        {
-            internalFormat = GL_RGB8;
-            pixelFormat    = GL_RGB;
-            break;
-        }
-        case 4:
-        {
-            internalFormat = GL_RGBA8;
-            pixelFormat    = GL_RGBA;
-            break;
-        }
-        default:
-        {
-            std::cout << "Unsupported texture format.\n";
-
-            return texture;
-        }
-    }
-
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glTexImage2D(
-      GL_TEXTURE_2D, 0, internalFormat, width, height, 0, pixelFormat, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    return texture;
-}
-
-void BindTexture(Texture texture, int pos = 0)
+static void BindTexture(Assets::Texture texture, int pos = 0)
 {
     glActiveTexture(GL_TEXTURE0 + pos);
     glBindTexture(GL_TEXTURE_2D, texture);
-
-    /// TODO: this should be called once on renderer initialization probably.
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void DrawQuad(Math::Vec2 pos, Size size, Color color, UVMap uvMap = {})
+static void DrawQuad(Math::Vec2 pos, Size size, Color color, UVMap uvMap = {})
 {
     int viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
@@ -235,14 +198,15 @@ void DrawQuad(Math::Vec2 pos, Size size, Color color, UVMap uvMap = {})
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glUseProgram(shaderProgram);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glUseProgram(g_shapeShader);
 
     float r = Math::Map(color.r, 0.0f, 255.0f, 0.0f, 1.0f);
     float g = Math::Map(color.g, 0.0f, 255.0f, 0.0f, 1.0f);
     float b = Math::Map(color.b, 0.0f, 255.0f, 0.0f, 1.0f);
     float a = Math::Map(color.a, 0.0f, 255.0f, 0.0f, 1.0f);
 
-    glUniform4f(glGetUniformLocation(shaderProgram, "uColor"), r, g, b, a);
+    glUniform4f(glGetUniformLocation(g_shapeShader, "uColor"), r, g, b, a);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -253,6 +217,104 @@ void DrawQuad(Math::Vec2 pos, Size size, Color color, UVMap uvMap = {})
     // glBindBuffer(GL_ARRAY_BUFFER, 0);
     // glBindVertexArray(0);
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+static void DrawText(const Assets::Font& font,
+                     const char* str,
+                     int fontSize,
+                     Math::Vec2 pos,
+                     int strlen = 0)
+{
+    std::vector<float> vertices {};
+    std::vector<int> indices{};
+
+    int viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    int offset = 0;
+
+    for (int i = 0; strlen ? i < strlen : str[i]; ++i)
+    {
+        for (const auto& glyph : font.glyphs)
+        {
+            if (glyph.code == str[i])
+            {
+                float width   = (glyph.planeBounds.right - glyph.planeBounds.left) * fontSize;
+                float height  = (glyph.planeBounds.top - glyph.planeBounds.bottom) * fontSize;
+                float offsetY = (pos.y - height) - (glyph.planeBounds.bottom * fontSize) + fontSize;
+
+                if (width && height)
+                {
+                    Math::Vec2 bottomL = { glyph.atlasBounds.left, glyph.atlasBounds.bottom };
+                    Math::Vec2 topL    = { glyph.atlasBounds.left, glyph.atlasBounds.top };
+                    Math::Vec2 topR    = { glyph.atlasBounds.right, glyph.atlasBounds.top };
+                    Math::Vec2 bottomR = { glyph.atlasBounds.right, glyph.atlasBounds.bottom };
+
+                    float normX =
+                      Math::Map(pos.x, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
+                    float normY =
+                      Math::Map(offsetY, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
+                    float normW =
+                      Math::Map(pos.x + width, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
+                    float normH = Math::Map(
+                      offsetY + height, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
+
+                    vertices.insert(vertices.end(), {
+                        normX, -normH, bottomL.x, bottomL.y,  // bottom left
+                        normX, -normY, topL.x,    topL.y,     // top left
+                        normW, -normY, topR.x,    topR.y,     // top right
+                        normW, -normH, bottomR.x, bottomR.y,  // bottom right
+                    });
+                    indices.insert(indices.end(), {
+                        0 + 4 * offset,
+                        1 + 4 * offset,
+                        3 + 4 * offset,
+                        1 + 4 * offset,
+                        2 + 4 * offset,
+                        3 + 4 * offset,
+                    });
+                    ++offset;
+                }
+
+                pos.x += (glyph.advance * fontSize);
+
+                break;
+            }
+        }
+    }
+
+    unsigned int vbo;
+    glGenBuffers(1, &vbo);
+
+    unsigned int ebo;
+    glGenBuffers(1, &ebo);
+
+    unsigned int vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(
+      GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(0));
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindTexture(GL_TEXTURE_2D, font.bitmap);
+    glUseProgram(g_fontShader);
+
+    glUniform4f(glGetUniformLocation(g_fontShader, "uColor"), 1.0f, 1.0f, 1.0f, 1.0f);
+
+    glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
+
+    glDeleteBuffers(vbo, &vbo);
+    glDeleteBuffers(ebo, &ebo);
+    glDeleteVertexArrays(vao, &vao);
 }
 
 } // namespace DF::Render

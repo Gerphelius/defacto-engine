@@ -34,6 +34,8 @@ set(COMMON_LINK_OPTIONS
     /OPT:REF            # eliminates functions and data that are never referenced
 )
 
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/resources/" DESTINATION "${EXE_OUTPUT_DIR}/resources/")
+
 # ===================================================================================
 #                              ENGINE COMPILATION
 # ===================================================================================

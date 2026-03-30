@@ -4,6 +4,7 @@
 #undef CreateWindow
 #undef UpdateWindow
 #undef CopyFile
+#undef DrawText
 
 #include "platform_os.hpp"
 
