@@ -13,6 +13,46 @@ struct Size
     int height;
 };
 
+enum class Key
+{
+    UNDEFINED,
+    ESC,
+    SPACE,
+    ENTER,
+    SHIFT_L,
+    N,
+    W,
+    S,
+    A,
+    D,
+    Q,
+    E,
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+
+    MAX_KEYS,
+};
+
+enum class MouseKey
+{
+    UNDEFINED,
+    LEFT,
+    RIGHT,
+    MIDDLE,
+
+    MAX_KEYS,
+};
+
+enum class KeyState
+{
+    UNKNOWN,
+    PRESSED,
+    RELEASED,
+    HOLD,
+};
+
 Window CreateWindow(int width, int height, const char* title);
 void SwapBuffers(Window* window);
 bool WindowClosed(Window* window);

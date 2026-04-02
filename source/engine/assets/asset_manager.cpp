@@ -23,6 +23,7 @@ struct Font
     float atlasWidth;
     float atlasHeight;
     float lineHeight;
+    float distanceRange;
     bool valid;
 
     struct Glyph
@@ -118,10 +119,11 @@ static Font LoadFont(const char* pathJson, const char* pathBitmap)
 
     json data = json::parse(file);
 
-    font.size        = data["atlas"]["size"];
-    font.atlasWidth  = data["atlas"]["width"];
-    font.atlasHeight = data["atlas"]["height"];
-    font.lineHeight  = data["metrics"]["lineHeight"];
+    font.size          = data["atlas"]["size"];
+    font.atlasWidth    = data["atlas"]["width"];
+    font.atlasHeight   = data["atlas"]["height"];
+    font.distanceRange = data["atlas"]["distanceRange"];
+    font.lineHeight    = data["metrics"]["lineHeight"];
 
     for (const auto& glyph : data["glyphs"])
     {

@@ -226,7 +226,7 @@ static void DrawText(const Assets::Font& font,
                      int strlen = 0)
 {
     std::vector<float> vertices {};
-    std::vector<int> indices{};
+    std::vector<int> indices {};
 
     int viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
@@ -259,13 +259,15 @@ static void DrawText(const Assets::Font& font,
                     float normH = Math::Map(
                       offsetY + height, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
 
-                    vertices.insert(vertices.end(), {
-                        normX, -normH, bottomL.x, bottomL.y,  // bottom left
-                        normX, -normY, topL.x,    topL.y,     // top left
-                        normW, -normY, topR.x,    topR.y,     // top right
-                        normW, -normH, bottomR.x, bottomR.y,  // bottom right
+                    vertices.insert(vertices.end(),
+                    {
+                        normX, -normH, bottomL.x, bottomL.y, // bottom left
+                        normX, -normY, topL.x, topL.y,       // top left
+                        normW, -normY, topR.x, topR.y,       // top right
+                        normW, -normH, bottomR.x, bottomR.y, // bottom right
                     });
-                    indices.insert(indices.end(), {
+                    indices.insert(indices.end(),
+                    {
                         0 + 4 * offset,
                         1 + 4 * offset,
                         3 + 4 * offset,
@@ -308,7 +310,10 @@ static void DrawText(const Assets::Font& font,
     glBindTexture(GL_TEXTURE_2D, font.bitmap);
     glUseProgram(g_fontShader);
 
+    float smoothing = (1.0f / font.distanceRange) / (fontSize / font.size);
+
     glUniform4f(glGetUniformLocation(g_fontShader, "uColor"), 1.0f, 1.0f, 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(g_fontShader, "uSmoothing"), smoothing);
 
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
 

@@ -60,6 +60,13 @@ static void UnloadGameCode(GameCode* code)
     -- Game will not allocate memory directly, but can ask for more memory from engine,
     so hot-reload won't break game state.
 */
+static bool g_running;
+
+/*
+    Calculate dt from glfwGetTime()
+    Setup scroll event
+    Pass dt and scroll delta to clay
+*/
 
 int main()
 {
@@ -76,7 +83,9 @@ int main()
     Render::Initialize(&window);
     UI::Initialize();
 
-    while (!Platform::WindowClosed(&window))
+    g_running = true;
+
+    while (g_running && !Platform::WindowClosed(&window))
     {
         Platform::FileWriteTime lastGameDllWriteTime =
           Platform::GetFileWriteTime(gameDllPath.c_str());
@@ -90,9 +99,11 @@ int main()
         Render::BeginFrame();
 
         Platform::Size fbSize = Platform::GetFramebufferSize(&window);
-        UI::Render(fbSize.width, fbSize.height);
+        UI::Render(fbSize.width, fbSize.height, Platform::GetCursorPos(), Platform::MouseKeyPressed(Platform::MouseKey::LEFT));
 
         Render::EndFrame();
+
+        g_running = !Platform::KeyPressed(Platform::Key::ESC);
     }
 
     UnloadGameCode(&gameCode);

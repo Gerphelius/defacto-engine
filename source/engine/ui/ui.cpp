@@ -18,7 +18,7 @@ const Clay_Color COLOR_LIGHT  = Clay_Color { 224, 215, 210, 255 };
 const Clay_Color COLOR_RED    = Clay_Color { 168, 66, 28, 255 };
 const Clay_Color COLOR_ORANGE = Clay_Color { 225, 138, 50, 255 };
 
-void HandleClayErrors(Clay_ErrorData errorData)
+static void HandleClayErrors(Clay_ErrorData errorData)
 {
     // See the Clay_ErrorData struct for more information
     printf("%s", errorData.errorText.chars);
@@ -47,7 +47,7 @@ static inline Clay_Dimensions MeasureText(Clay_StringSlice text,
 {
     Assets::Font* font = (Assets::Font*)userData;
 
-    float width = 0;
+    float width  = 0;
     float height = font->lineHeight * config->fontSize;
 
     for (int pos = 0; pos < text.length; ++pos)
@@ -80,23 +80,31 @@ static void Initialize()
     demo_data = ClayVideoDemo_Initialize();
     // renderCommands = GetTestLayout();
 
-    g_baseFont = Assets::LoadFont("resources/fonts/roboto_regular.json",
-                                  "resources/fonts/roboto_regular.png");
+    g_baseFont =
+      Assets::LoadFont("resources/fonts/roboto_regular.json", "resources/fonts/roboto_regular.png");
     Clay_SetMeasureTextFunction(MeasureText, &g_baseFont);
 }
 
-static void Render(int width, int height)
+static void Render(int width, int height, Math::Vec2 mousePos, bool lmbPressed)
 {
-    // RenderText("This is some example text.", 64, 100, 100);
+    Clay_SetPointerState(Clay_Vector2 { mousePos.x, mousePos.y }, lmbPressed);
 
-    renderCommands = ClayVideoDemo_CreateLayout(&demo_data);
+    // Clay_UpdateScrollContainers needs to be called before Clay_BeginLayout for the position to
+    // avoid a 1 frame delay
+    //Clay_UpdateScrollContainers(
+    //  true,            // Enable drag scrolling
+    //  scrollDelta,     // Clay_Vector2 scrollwheel / trackpad scroll x and y delta this frame
+    //  float deltaTime, // Time since last frame in seconds as a float e.g. 8ms is 0.008f
+    //);
 
-    Clay_SetLayoutDimensions(Clay_Dimensions { (float)width, (float)height });
+     renderCommands = ClayVideoDemo_CreateLayout(&demo_data);
 
-    for (int j = 0; j < renderCommands.length; j++)
+     Clay_SetLayoutDimensions(Clay_Dimensions { (float)width, (float)height });
+
+     for (int j = 0; j < renderCommands.length; j++)
     {
-        Clay_RenderCommand* renderCommand = Clay_RenderCommandArray_Get(&renderCommands, j);
-        Clay_BoundingBox boundingBox      = renderCommand->boundingBox;
+         Clay_RenderCommand* renderCommand = Clay_RenderCommandArray_Get(&renderCommands, j);
+         Clay_BoundingBox boundingBox      = renderCommand->boundingBox;
 
         switch (renderCommand->commandType)
         {
