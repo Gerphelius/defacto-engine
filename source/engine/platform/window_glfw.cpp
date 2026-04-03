@@ -122,9 +122,12 @@ static void GLFWMouseKeyCallback(GLFWwindow* window, int key, int action, int mo
     }
 }
 
+Math::Vec2 g_scrollPos { 0.0f, 0.0f };
+
 static void GLFWScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
-
+    g_scrollPos.x += (float)xoffset;
+    g_scrollPos.y += (float)yoffset;
 }
 
 Window CreateWindow(int width, int height, const char* title)
@@ -151,7 +154,7 @@ Window CreateWindow(int width, int height, const char* title)
     }
 
     glfwMakeContextCurrent(glfwWindow);
-    glfwSwapInterval(0);
+    //glfwSwapInterval(1);
 
     if (glewInit() != GLEW_OK)
     {
@@ -197,6 +200,11 @@ Size GetFramebufferSize(Window* window)
     glfwGetFramebufferSize((GLFWwindow*)window->handle, &width, &height);
 
     return Size(width, height);
+}
+
+static double GetCurrentTime()
+{
+    return glfwGetTime();
 }
 
 }; // namespace DF::Platform

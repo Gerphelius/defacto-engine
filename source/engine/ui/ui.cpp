@@ -85,26 +85,36 @@ static void Initialize()
     Clay_SetMeasureTextFunction(MeasureText, &g_baseFont);
 }
 
-static void Render(int width, int height, Math::Vec2 mousePos, bool lmbPressed)
+static Math::Vec2 g_lastScroll = Platform::g_scrollPos;
+
+static void Render(int width, int height, Math::Vec2 mousePos, bool lmbPressed, float deltaTime)
 {
+    float scrollSpeed      = 4;
+    Math::Vec2 scroll      = Platform::g_scrollPos;
+    Math::Vec2 scrollDelta = Math::Vec2 { scroll.x - g_lastScroll.x, scroll.y - g_lastScroll.y };
+    g_lastScroll           = scroll;
+
     Clay_SetPointerState(Clay_Vector2 { mousePos.x, mousePos.y }, lmbPressed);
 
     // Clay_UpdateScrollContainers needs to be called before Clay_BeginLayout for the position to
     // avoid a 1 frame delay
-    //Clay_UpdateScrollContainers(
-    //  true,            // Enable drag scrolling
-    //  scrollDelta,     // Clay_Vector2 scrollwheel / trackpad scroll x and y delta this frame
-    //  float deltaTime, // Time since last frame in seconds as a float e.g. 8ms is 0.008f
-    //);
+    Clay_UpdateScrollContainers(
+      true, // Enable drag scrolling
+      Clay_Vector2 {
+        scrollDelta.x * scrollSpeed,
+        scrollDelta.y * scrollSpeed,
+      },        // Clay_Vector2 scrollwheel / trackpad scroll x and y delta this frame
+      deltaTime // Time since last frame in seconds as a float e.g. 8ms is 0.008f
+    );
 
-     renderCommands = ClayVideoDemo_CreateLayout(&demo_data);
+    renderCommands = ClayVideoDemo_CreateLayout(&demo_data);
 
-     Clay_SetLayoutDimensions(Clay_Dimensions { (float)width, (float)height });
+    Clay_SetLayoutDimensions(Clay_Dimensions { (float)width, (float)height });
 
-     for (int j = 0; j < renderCommands.length; j++)
+    for (int j = 0; j < renderCommands.length; j++)
     {
-         Clay_RenderCommand* renderCommand = Clay_RenderCommandArray_Get(&renderCommands, j);
-         Clay_BoundingBox boundingBox      = renderCommand->boundingBox;
+        Clay_RenderCommand* renderCommand = Clay_RenderCommandArray_Get(&renderCommands, j);
+        Clay_BoundingBox boundingBox      = renderCommand->boundingBox;
 
         switch (renderCommand->commandType)
         {
@@ -141,23 +151,35 @@ static void Render(int width, int height, Math::Vec2 mousePos, bool lmbPressed)
 
                 break;
             }
-
-            // The renderer should draw a colored border inset into the bounding box.
+            case CLAY_RENDER_COMMAND_TYPE_SCISSOR_START:
+            {
+                Render::BeginScissor((int)boundingBox.x,
+                                     (int)boundingBox.y,
+                                     (int)boundingBox.width,
+                                     (int)boundingBox.height);
+                break;
+            }
+            case CLAY_RENDER_COMMAND_TYPE_SCISSOR_END:
+            {
+                Render::EndScissor();
+                break;
+            }
             case CLAY_RENDER_COMMAND_TYPE_BORDER:
             {
+                // The renderer should draw a colored border inset into the bounding box.
                 Clay_BorderRenderData brd = renderCommand->renderData.border;
 
                 break;
             }
-
             case CLAY_RENDER_COMMAND_TYPE_IMAGE:
             {
                 break;
             }
-
             default:
+            {
                 // printf("Unhandled render command %d\r\n", renderCommand->commandType);
                 break;
+            }
         }
     }
 }

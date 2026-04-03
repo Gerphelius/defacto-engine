@@ -85,6 +85,8 @@ int main()
 
     g_running = true;
 
+    double lastTime = Platform::GetCurrentTime();
+
     while (g_running && !Platform::WindowClosed(&window))
     {
         Platform::FileWriteTime lastGameDllWriteTime =
@@ -96,10 +98,20 @@ int main()
             gameCode = LoadGameCode(gameDllPath.c_str(), gameDllPathTemp.c_str());
         }
 
+        double currentTime = Platform::GetCurrentTime();
+        float deltaTime    = (float)(currentTime - lastTime);
+        lastTime           = currentTime;
+
+        //std::cout << deltaTime << '\n';
+
         Render::BeginFrame();
 
         Platform::Size fbSize = Platform::GetFramebufferSize(&window);
-        UI::Render(fbSize.width, fbSize.height, Platform::GetCursorPos(), Platform::MouseKeyPressed(Platform::MouseKey::LEFT));
+        UI::Render(fbSize.width,
+                   fbSize.height,
+                   Platform::GetCursorPos(),
+                   Platform::MouseKeyPressed(Platform::MouseKey::LEFT),
+                   deltaTime);
 
         Render::EndFrame();
 

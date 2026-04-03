@@ -5,6 +5,7 @@
 #undef UpdateWindow
 #undef CopyFile
 #undef DrawText
+#undef GetCurrentTime
 
 #include "platform_os.hpp"
 

@@ -151,6 +151,20 @@ struct UVMap
     Math::Vec2 bottomRight = { 1.0f, 0.0f };
 };
 
+// Goes top to bottom, left to right.
+static void BeginScissor(int x, int y, int width, int height)
+{
+    Platform::Size fbSize = GetFramebufferSize(g_window);
+
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(x, fbSize.height - (y + height), width, height);
+}
+
+static void EndScissor()
+{
+    glDisable(GL_SCISSOR_TEST);
+}
+
 static void BindTexture(Assets::Texture texture, int pos = 0)
 {
     glActiveTexture(GL_TEXTURE0 + pos);
