@@ -37,22 +37,25 @@ set(COMMON_LINK_OPTIONS
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/resources/" DESTINATION "${EXE_OUTPUT_DIR}/resources/")
 
 # ===================================================================================
-#                              ENGINE COMPILATION
+#                              ENGINE DLL COMPILATION
 # ===================================================================================
 
+set(ENGINE_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/source/engine")
 set(EXTERNAL_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/source/external")
+set(ENGINE_SOURCE "${CMAKE_SOURCE_DIR}/source/engine/defacto.cpp")
 
-add_executable(defacto "source/engine/defacto.cpp")
+add_library(defacto SHARED ${ENGINE_SOURCE})
 
 target_include_directories(defacto PRIVATE
-    "${VCPKG_INCLUDE}"
-    "${CMAKE_SOURCE_DIR}/source/external"
+    ${VCPKG_INCLUDE}
+    ${EXTERNAL_INCLUDE_PATH}
+    ${ENGINE_INCLUDE_PATH}
 )
 
+target_compile_definitions(defacto PRIVATE ENGINE_EXPORTS)
 target_compile_options(defacto PRIVATE ${COMMON_COMPILE_OPTIONS})
 target_link_options(defacto PRIVATE ${COMMON_LINK_OPTIONS})
-target_link_directories(defacto PRIVATE ${VCPKG_LIB})
-
+target_link_directories(defacto PUBLIC ${VCPKG_LIB})
 target_link_libraries(defacto PRIVATE
     shell32.lib
     user32.lib
@@ -63,35 +66,41 @@ target_link_libraries(defacto PRIVATE
 )
 
 # ===================================================================================
-#                              GAME COMPILATION
+#                              GAME DLL COMPILATION
 # ===================================================================================
 
-set(ENGINE_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/source/engine")
 set(GAME_SOURCE "${CMAKE_SOURCE_DIR}/source/example/game.cpp")
 
-add_library(game OBJECT ${GAME_SOURCE})
-
-target_include_directories(game PRIVATE
-    "${VCPKG_INCLUDE}"
-    "${CMAKE_SOURCE_DIR}/source/engine"
-)
-
-target_compile_options(game PRIVATE ${COMMON_COMPILE_OPTIONS})
-
 configure_file(
-    "${CMAKE_SOURCE_DIR}/cmake/link_game.cmake"
-    "${CMAKE_BINARY_DIR}/link_game.cmake"
+    "${CMAKE_SOURCE_DIR}/cmake/compile_dll.cmake"
+    "${CMAKE_BINARY_DIR}/compile_dll.cmake"
     @ONLY
 )
 
 add_custom_target(game_dll ALL
     COMMAND ${CMAKE_COMMAND}
+        -DFILENAME=game
         -DSOURCE_FILE=${GAME_SOURCE}
         -DINCLUDE_ENGINE=${ENGINE_INCLUDE_PATH}
         -DOUT_DIR=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
         -DCOMPILER=${CMAKE_CXX_COMPILER}
         -DLINKER=${CMAKE_LINKER}
-        -P "${CMAKE_BINARY_DIR}/link_game.cmake"
+        -DLIBRARIES=defacto.lib # $<TARGET_FILE:defacto>
+        -P "${CMAKE_BINARY_DIR}/compile_dll.cmake"
     COMMENT "****** Building game.dll ******"
     VERBATIM
+)
+
+# ===================================================================================
+#                              MAIN COMPILATION
+# ===================================================================================
+
+add_executable(main "source/main.cpp")
+
+target_include_directories(main PRIVATE ${ENGINE_INCLUDE_PATH})
+target_compile_options(main PRIVATE ${COMMON_COMPILE_OPTIONS})
+target_link_options(main PRIVATE ${COMMON_LINK_OPTIONS})
+
+target_link_libraries(main PRIVATE
+    defacto
 )

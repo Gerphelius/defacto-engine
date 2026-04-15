@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <filesystem>
 
 namespace DF::Platform
 {
@@ -10,18 +9,26 @@ using FileWriteTime = uint64_t;
 using ProcAddress   = void*;
 using Handle        = void*;
 
+struct ModuleFilename
+{
+    const char* path;
+    const char* filename;
+};
+
 struct DynamicLibrary
 {
     Handle handle;
     FileWriteTime lastWriteTime;
 };
 
-std::filesystem::path GetModuleFilename();
-FileWriteTime GetFileWriteTime(const char* filename);
-bool CopyFile(const char* from, const char* to, bool failIfExists);
+DF_API void GetModuleFilename(char* buffer);
+DF_API FileWriteTime GetFileWriteTime(const char* filename);
+DF_API bool CopyFile(const char* from, const char* to, bool failIfExists);
 
-DynamicLibrary LoadDynamicLibrary(const char* path);
-bool UnloadDynamicLibrary(const DynamicLibrary* library);
-ProcAddress GetProcAddress(const DynamicLibrary* lib, const char* procName);
+DF_API DynamicLibrary LoadDynamicLibrary(const char* path);
+DF_API bool UnloadDynamicLibrary(const DynamicLibrary* library);
+DF_API ProcAddress GetFuncAddress(const DynamicLibrary* lib, const char* procName);
+
+DF_API void* AllocateMemory(size_t size);
 
 } // namespace DF::Platform

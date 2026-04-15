@@ -1,11 +1,12 @@
 #include <cstdint>
-#include <gl/glew.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 
-#include "platform/platform_window.hpp"
+#include <gl/glew.h>
+
+#include "defacto_api.hpp"
 
 namespace DF::Render
 {
@@ -90,9 +91,9 @@ static Shader CreateShader(const char* vertSrc, const char* fragSrc)
 
 static Shader g_shapeShader;
 static Shader g_fontShader;
-static Platform::Window* g_window;
+static Window* g_window;
 
-static void Initialize(Platform::Window* window)
+DF_API void Initialize(Window* window)
 {
     // Disable depth testing for UI rendering so depth values do not affect
     // draw order. UI elements are rendered strictly in the order of glDraw calls.
@@ -115,63 +116,43 @@ static void Initialize(Platform::Window* window)
     // CreateShader(const char* vertSrc, const char* fragSrc);
 }
 
-static void BeginFrame()
+DF_API void BeginFrame()
 {
-    Platform::Size fbSize = GetFramebufferSize(g_window);
+    Size fbSize = Platform::GetFramebufferSize();
     glViewport(0, 0, fbSize.width, fbSize.height);
 
     glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-static void EndFrame()
+DF_API void EndFrame()
 {
     Platform::SwapBuffers(g_window);
 }
 
-struct Size
-{
-    float width;
-    float height;
-};
-
-struct Color
-{
-    float r;
-    float g;
-    float b;
-    float a;
-};
-
-struct UVMap
-{
-    Math::Vec2 bottomLeft  = { 0.0f, 0.0f };
-    Math::Vec2 topLeft     = { 0.0f, 1.0f };
-    Math::Vec2 topRight    = { 1.0f, 1.0f };
-    Math::Vec2 bottomRight = { 1.0f, 0.0f };
-};
-
 // Goes top to bottom, left to right.
-static void BeginScissor(int x, int y, int width, int height)
+DF_API void BeginScissor(int x, int y, int width, int height)
 {
-    Platform::Size fbSize = GetFramebufferSize(g_window);
+    Size fbSize = Platform::GetFramebufferSize();
 
     glEnable(GL_SCISSOR_TEST);
     glScissor(x, fbSize.height - (y + height), width, height);
 }
 
-static void EndScissor()
+DF_API void EndScissor()
 {
     glDisable(GL_SCISSOR_TEST);
 }
 
-static void BindTexture(Assets::Texture texture, int pos = 0)
+void BindTexture(Assets::Texture texture, int pos = 0)
 {
     glActiveTexture(GL_TEXTURE0 + pos);
     glBindTexture(GL_TEXTURE_2D, texture);
 }
 
-static void DrawQuad(Math::Vec2 pos, Size size, Color color, UVMap uvMap = {})
+// TODO: Need to rework this to gather vertices in some buffer so it can be called outside
+// Begin/EndFrame boundaries
+DF_API void DrawQuad(Math::Vec2 pos, Size size, Color color, UVMap uvMap)
 {
     int viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
@@ -233,11 +214,13 @@ static void DrawQuad(Math::Vec2 pos, Size size, Color color, UVMap uvMap = {})
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-static void DrawText(const Assets::Font& font,
+// TODO: Need to rework this to gather vertices in some buffer so it can be called outside
+// Begin/EndFrame boundaries
+DF_API void DrawText(const Assets::Font* font,
                      const char* str,
                      int fontSize,
                      Math::Vec2 pos,
-                     int strlen = 0)
+                     int strlen)
 {
     std::vector<float> vertices {};
     std::vector<int> indices {};
@@ -249,8 +232,10 @@ static void DrawText(const Assets::Font& font,
 
     for (int i = 0; strlen ? i < strlen : str[i]; ++i)
     {
-        for (const auto& glyph : font.glyphs)
+        for (int glyphNum = 0; glyphNum < font->glyphCount; ++glyphNum)
         {
+            Assets::Font::Glyph glyph = font->glyphs[glyphNum];
+
             if (glyph.code == str[i])
             {
                 float width   = (glyph.planeBounds.right - glyph.planeBounds.left) * fontSize;
@@ -274,21 +259,33 @@ static void DrawText(const Assets::Font& font,
                       offsetY + height, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
 
                     vertices.insert(vertices.end(),
-                    {
-                        normX, -normH, bottomL.x, bottomL.y, // bottom left
-                        normX, -normY, topL.x, topL.y,       // top left
-                        normW, -normY, topR.x, topR.y,       // top right
-                        normW, -normH, bottomR.x, bottomR.y, // bottom right
-                    });
+                                    {
+                                      normX,
+                                      -normH,
+                                      bottomL.x,
+                                      bottomL.y, // bottom left
+                                      normX,
+                                      -normY,
+                                      topL.x,
+                                      topL.y, // top left
+                                      normW,
+                                      -normY,
+                                      topR.x,
+                                      topR.y, // top right
+                                      normW,
+                                      -normH,
+                                      bottomR.x,
+                                      bottomR.y, // bottom right
+                                    });
                     indices.insert(indices.end(),
-                    {
-                        0 + 4 * offset,
-                        1 + 4 * offset,
-                        3 + 4 * offset,
-                        1 + 4 * offset,
-                        2 + 4 * offset,
-                        3 + 4 * offset,
-                    });
+                                   {
+                                     0 + 4 * offset,
+                                     1 + 4 * offset,
+                                     3 + 4 * offset,
+                                     1 + 4 * offset,
+                                     2 + 4 * offset,
+                                     3 + 4 * offset,
+                                   });
                     ++offset;
                 }
 
@@ -321,10 +318,10 @@ static void DrawText(const Assets::Font& font,
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glBindTexture(GL_TEXTURE_2D, font.bitmap);
+    glBindTexture(GL_TEXTURE_2D, font->bitmap);
     glUseProgram(g_fontShader);
 
-    float smoothing = (1.0f / font.distanceRange) / (fontSize / font.size);
+    float smoothing = (1.0f / font->distanceRange) / (fontSize / font->size);
 
     glUniform4f(glGetUniformLocation(g_fontShader, "uColor"), 1.0f, 1.0f, 1.0f, 1.0f);
     glUniform1f(glGetUniformLocation(g_fontShader, "uSmoothing"), smoothing);

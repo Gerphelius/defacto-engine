@@ -9,6 +9,8 @@
 #include "template.cpp"
 #pragma warning(pop)
 
+#include "defacto_api.hpp"
+
 namespace DF::UI
 {
 ClayVideoDemo_Data demo_data;
@@ -68,7 +70,68 @@ static inline Clay_Dimensions MeasureText(Clay_StringSlice text,
 
 Assets::Font g_baseFont;
 
-static void Initialize()
+//
+//
+//#define MAX_NODES 256
+//
+//
+//
+//Node* g_root;
+//
+//
+//#define BLOCK(id) CreateElement(Node::Type::BLOCK, id);
+//
+//
+//#define END_BLOCK(id)
+//
+//
+//void Test()
+//{
+//    BLOCK("test")
+//
+//}
+//
+//int g_count = 0;
+//Node g_nodes[MAX_NODES] {};
+//
+//Node* CreateElement(Node::Type type, const char* id)
+//{
+//    if (g_count >= MAX_NODES)
+//        return nullptr;
+//
+//    g_nodes[g_count] = Node { type, id };
+//
+//    return &g_nodes[g_count++];
+//}
+//
+//void AppendChild(Node* parent, Node* child)
+//{
+//    if (!parent->first_child)
+//    {
+//        parent->first_child = child;
+//        child->parent       = parent;
+//
+//        return;
+//    }
+//
+//    Node* lastSibling = parent->first_child;
+//
+//    while (true)
+//    {
+//        if (!lastSibling->next_sibling)
+//            break;
+//
+//        lastSibling = lastSibling->next_sibling;
+//    }
+//
+//    lastSibling->next_sibling = child;
+//    child->parent             = parent;
+//}
+//
+//
+
+
+DF_API void Initialize()
 {
     uint64_t clayRequiredMemory = Clay_MinMemorySize();
     Clay_Arena clayMemory =
@@ -83,11 +146,32 @@ static void Initialize()
     g_baseFont =
       Assets::LoadFont("resources/fonts/roboto_regular.json", "resources/fonts/roboto_regular.png");
     Clay_SetMeasureTextFunction(MeasureText, &g_baseFont);
+
+    //Node* root  = CreateElement(Node::Type::BLOCK, "root");
+    //Node* cont  = CreateElement(Node::Type::BLOCK, "cont");
+    //Node* text  = CreateElement(Node::Type::TEXT, "text");
+    //Node* image = CreateElement(Node::Type::IMAGE, "image");
+    //Node* text2 = CreateElement(Node::Type::TEXT, "text2");
+
+    //AppendChild(root, cont);
+    //AppendChild(cont, text);
+    //AppendChild(cont, image);
+    //AppendChild(root, text2);
+
+    //Node* root = CreateElement(Node::Type::BLOCK, "root");
+
+    //// block("container", {})
+    //Node* node = CreateElement(Node::Type::BLOCK, "container");
+    //AppendChild(root, node);
+    //root = node;
+
+    //// endBlock("container")
+    //root = root->parent;
 }
 
 static Math::Vec2 g_lastScroll = Platform::g_scrollPos;
 
-static void Render(int width, int height, Math::Vec2 mousePos, bool lmbPressed, float deltaTime)
+DF_API void Render(int width, int height, Math::Vec2 mousePos, bool lmbPressed, float deltaTime)
 {
     float scrollSpeed      = 4;
     Math::Vec2 scroll      = Platform::g_scrollPos;
@@ -143,7 +227,7 @@ static void Render(int width, int height, Math::Vec2 mousePos, bool lmbPressed, 
                 Clay_RectangleRenderData rrd = renderCommand->renderData.rectangle;
 
                 Render::DrawQuad({ boundingBox.x, boundingBox.y },
-                                 { boundingBox.width, boundingBox.height },
+                                 { (int)boundingBox.width, (int)boundingBox.height },
                                  { rrd.backgroundColor.r,
                                    rrd.backgroundColor.g,
                                    rrd.backgroundColor.b,

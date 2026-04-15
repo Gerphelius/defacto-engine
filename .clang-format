@@ -31,3 +31,5 @@ BinPackParameters: false
 
 FixNamespaceComments: true
 ShortNamespaceLines: 0
+
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse

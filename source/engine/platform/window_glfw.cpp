@@ -4,8 +4,6 @@
 #include <GLFW/glfw3.h>
 #include <gl/glew.h>
 
-#include "platform_window.hpp"
-
 namespace DF::Platform
 {
 
@@ -17,7 +15,7 @@ int g_glfwKeys[(int)(Key::MAX_KEYS)] { GLFW_KEY_UNKNOWN, GLFW_KEY_ESCAPE,     GL
                                        GLFW_KEY_RIGHT };
 KeyState g_keyStates[(int)(Key::MAX_KEYS)] {};
 
-static bool KeyPressed(Key key)
+DF_API bool KeyPressed(Key key)
 {
     KeyState state = g_keyStates[(int)key];
 
@@ -65,14 +63,14 @@ static void GLFWCursorPosCallback(GLFWwindow* window, double x, double y)
     g_cursorPos = Math::Vec2 { (float)x, (float)y };
 }
 
-static Math::Vec2 GetCursorPos()
+DF_API Math::Vec2 GetCursorPos()
 {
     return g_cursorPos;
 }
 
 KeyState g_mouseKeyStates[(int)(MouseKey::MAX_KEYS)] {};
 
-static bool MouseKeyPressed(MouseKey key)
+DF_API bool MouseKeyPressed(MouseKey key)
 {
     KeyState state = g_mouseKeyStates[(int)key];
 
@@ -124,13 +122,20 @@ static void GLFWMouseKeyCallback(GLFWwindow* window, int key, int action, int mo
 
 Math::Vec2 g_scrollPos { 0.0f, 0.0f };
 
+DF_API Math::Vec2 GetScrollPos()
+{
+    return g_scrollPos;
+}
+
 static void GLFWScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
     g_scrollPos.x += (float)xoffset;
     g_scrollPos.y += (float)yoffset;
 }
 
-Window CreateWindow(int width, int height, const char* title)
+Window g_window;
+
+DF_API Window CreateWindow(int width, int height, const char* title)
 {
     GLFWwindow* glfwWindow {};
 
@@ -180,10 +185,12 @@ Window CreateWindow(int width, int height, const char* title)
 
     std::cout << "Window initialization complete.\n";
 
+    g_window = Window { glfwWindow };
+
     return Window { glfwWindow };
 }
 
-bool WindowClosed(Window* window)
+DF_API bool WindowClosed(Window* window)
 {
     return glfwWindowShouldClose((GLFWwindow*)window->handle);
 }
@@ -194,15 +201,15 @@ void SwapBuffers(Window* window)
     glfwPollEvents();
 }
 
-Size GetFramebufferSize(Window* window)
+DF_API Size GetFramebufferSize()
 {
     int width, height;
-    glfwGetFramebufferSize((GLFWwindow*)window->handle, &width, &height);
+    glfwGetFramebufferSize((GLFWwindow*)g_window.handle, &width, &height);
 
     return Size(width, height);
 }
 
-static double GetCurrentTime()
+DF_API double GetCurrentTime()
 {
     return glfwGetTime();
 }

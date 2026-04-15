@@ -57,5 +57,9 @@ Window CreateWindow(int width, int height, const char* title);
 void SwapBuffers(Window* window);
 bool WindowClosed(Window* window);
 Size GetFramebufferSize(Window* window);
+bool KeyPressed(Key key);
+double GetCurrentTime();
+Math::Vec2 GetCursorPos();
+bool MouseKeyPressed(MouseKey key);
 
 } // namespace DF::Platform

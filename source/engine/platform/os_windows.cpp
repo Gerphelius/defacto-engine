@@ -6,21 +6,27 @@
 #undef CopyFile
 #undef DrawText
 #undef GetCurrentTime
+#undef GetCursorPos
 
 #include "platform_os.hpp"
 
 namespace DF::Platform
 {
 
-std::filesystem::path GetModuleFilename()
+DF_API void GetModuleFilename(char* buffer)
 {
     char exePath[MAX_PATH] {};
     GetModuleFileNameA(nullptr, exePath, MAX_PATH);
 
-    return exePath;
+    for (char* path = exePath; *path; ++path)
+    {
+        *buffer++ = *path;
+    }
+
+    *buffer = '\0';
 }
 
-FileWriteTime GetFileWriteTime(const char* filename)
+DF_API FileWriteTime GetFileWriteTime(const char* filename)
 {
     FileWriteTime lastWriteTime {};
     WIN32_FIND_DATA findData {};
@@ -36,7 +42,7 @@ FileWriteTime GetFileWriteTime(const char* filename)
     return lastWriteTime;
 }
 
-bool CopyFile(const char* from, const char* to, bool failIfExists)
+DF_API bool CopyFile(const char* from, const char* to, bool failIfExists)
 {
     bool success = true;
 
@@ -52,7 +58,7 @@ bool CopyFile(const char* from, const char* to, bool failIfExists)
     return success;
 }
 
-DynamicLibrary LoadDynamicLibrary(const char* path)
+DF_API DynamicLibrary LoadDynamicLibrary(const char* path)
 {
     DynamicLibrary library {};
 
@@ -69,7 +75,7 @@ DynamicLibrary LoadDynamicLibrary(const char* path)
     return library;
 }
 
-bool UnloadDynamicLibrary(const DynamicLibrary* library)
+DF_API bool UnloadDynamicLibrary(const DynamicLibrary* library)
 {
     if (!library->handle)
     {
@@ -81,9 +87,14 @@ bool UnloadDynamicLibrary(const DynamicLibrary* library)
     return FreeLibrary((HMODULE)library->handle);
 }
 
-ProcAddress GetProcAddress(const DynamicLibrary* lib, const char* procName)
+DF_API ProcAddress GetFuncAddress(const DynamicLibrary* lib, const char* procName)
 {
     return (ProcAddress)::GetProcAddress((HMODULE)lib->handle, procName);
+}
+
+DF_API void* AllocateMemory(size_t size)
+{
+    return VirtualAlloc(0, (size_t)size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 }
 
 } // namespace DF::Platform

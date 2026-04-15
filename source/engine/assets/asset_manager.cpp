@@ -11,46 +11,10 @@
 #include <gl/glew.h>
 #pragma warning(pop)
 
+#include "defacto_api.hpp"
+
 namespace DF::Assets
 {
-
-typedef uint32_t Texture;
-
-struct Font
-{
-    Texture bitmap;
-    float size;
-    float atlasWidth;
-    float atlasHeight;
-    float lineHeight;
-    float distanceRange;
-    bool valid;
-
-    struct Glyph
-    {
-        int code;
-        float advance;
-
-        struct AtlasBounds
-        {
-            float top;
-            float right;
-            float bottom;
-            float left;
-        };
-        AtlasBounds atlasBounds;
-
-        struct PlaneBounds
-        {
-            float top;
-            float right;
-            float bottom;
-            float left;
-        };
-        PlaneBounds planeBounds;
-    };
-    std::vector<Glyph> glyphs;
-};
 
 static Texture CreateTexture(int width, int height, int componenets, const void* data)
 {
@@ -102,60 +66,15 @@ static Texture CreateTexture(int width, int height, int componenets, const void*
     return texture;
 }
 
-static Font LoadFont(const char* pathJson, const char* pathBitmap)
+DF_API bool LoadFont(const char* pathJson, const char* pathBitmap, Font* font)
 {
-    Font font {};
-
     std::ifstream file(pathJson);
 
     if (!file.is_open())
     {
         std::cout << "Failed to open font file: " << pathJson << '\n';
 
-        return font;
-    }
-
-    using json = nlohmann::json;
-
-    json data = json::parse(file);
-
-    font.size          = data["atlas"]["size"];
-    font.atlasWidth    = data["atlas"]["width"];
-    font.atlasHeight   = data["atlas"]["height"];
-    font.distanceRange = data["atlas"]["distanceRange"];
-    font.lineHeight    = data["metrics"]["lineHeight"];
-
-    for (const auto& glyph : data["glyphs"])
-    {
-        Font::Glyph::AtlasBounds atlasBounds {};
-        Font::Glyph::PlaneBounds planeBounds {};
-
-        if (glyph.contains("atlasBounds"))
-        {
-            atlasBounds.top =
-              Math::Map(glyph["atlasBounds"]["top"], 0, font.atlasHeight, 0.0f, 1.0f);
-            atlasBounds.bottom =
-              Math::Map(glyph["atlasBounds"]["bottom"], 0, font.atlasHeight, 0.0f, 1.0f);
-            atlasBounds.left =
-              Math::Map(glyph["atlasBounds"]["left"], 0, font.atlasWidth, 0.0f, 1.0f);
-            atlasBounds.right =
-              Math::Map(glyph["atlasBounds"]["right"], 0, font.atlasWidth, 0.0f, 1.0f);
-        }
-
-        if (glyph.contains("planeBounds"))
-        {
-            planeBounds.top    = glyph["planeBounds"]["top"];
-            planeBounds.bottom = glyph["planeBounds"]["bottom"];
-            planeBounds.left   = glyph["planeBounds"]["left"];
-            planeBounds.right  = glyph["planeBounds"]["right"];
-        }
-
-        font.glyphs.push_back({
-          glyph["unicode"],
-          glyph["advance"],
-          atlasBounds,
-          planeBounds,
-        });
+        return false;
     }
 
     stbi_set_flip_vertically_on_load(true);
@@ -167,13 +86,55 @@ static Font LoadFont(const char* pathJson, const char* pathBitmap)
     {
         std::cout << "Failed to load font bitmap: " << stbi_failure_reason() << '\n';
 
-        return font;
+        return false;
     }
 
-    font.bitmap = CreateTexture(width, height, components, bitmap);
+    font->bitmap = CreateTexture(width, height, components, bitmap);
     stbi_image_free(bitmap);
 
-    return font;
+    using json = nlohmann::json;
+
+    json data = json::parse(file);
+
+    font->size          = data["atlas"]["size"];
+    font->atlasWidth    = data["atlas"]["width"];
+    font->atlasHeight   = data["atlas"]["height"];
+    font->distanceRange = data["atlas"]["distanceRange"];
+    font->lineHeight    = data["metrics"]["lineHeight"];
+    font->glyphCount    = (int)data["glyphs"].size();
+    font->glyphs        = (Font::Glyph*)(font + 1);
+
+    json::array_t glyphs = data["glyphs"];
+
+    for (int i = 0; i < font->glyphCount; ++i)
+    {
+        Font::Glyph* glyph = font->glyphs + i;
+
+        glyph->code = glyphs[i]["unicode"];
+        glyph->advance = glyphs[i]["advance"];
+
+        if (glyphs[i].contains("atlasBounds"))
+        {
+            glyph->atlasBounds.top =
+              Math::Map(glyphs[i]["atlasBounds"]["top"], 0, font->atlasHeight, 0.0f, 1.0f);
+            glyph->atlasBounds.bottom =
+              Math::Map(glyphs[i]["atlasBounds"]["bottom"], 0, font->atlasHeight, 0.0f, 1.0f);
+            glyph->atlasBounds.left =
+              Math::Map(glyphs[i]["atlasBounds"]["left"], 0, font->atlasWidth, 0.0f, 1.0f);
+            glyph->atlasBounds.right =
+              Math::Map(glyphs[i]["atlasBounds"]["right"], 0, font->atlasWidth, 0.0f, 1.0f);
+        }
+
+        if (glyphs[i].contains("planeBounds"))
+        {
+            glyph->planeBounds.top    = glyphs[i]["planeBounds"]["top"];
+            glyph->planeBounds.bottom = glyphs[i]["planeBounds"]["bottom"];
+            glyph->planeBounds.left   = glyphs[i]["planeBounds"]["left"];
+            glyph->planeBounds.right  = glyphs[i]["planeBounds"]["right"];
+        }
+    }
+
+    return true;
 }
 
 } // namespace DF::Assets
