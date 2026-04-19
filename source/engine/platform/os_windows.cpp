@@ -92,9 +92,15 @@ DF_API ProcAddress GetFuncAddress(const DynamicLibrary* lib, const char* procNam
     return (ProcAddress)::GetProcAddress((HMODULE)lib->handle, procName);
 }
 
-DF_API void* AllocateMemory(size_t size)
+DF_API Arena AllocateMemory(size_t size)
 {
-    return VirtualAlloc(0, (size_t)size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    Arena arena {};
+
+    arena.base   = VirtualAlloc(0, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    arena.offset = 0;
+    arena.size   = (int)size;
+
+    return arena;
 }
 
 } // namespace DF::Platform

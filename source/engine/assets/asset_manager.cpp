@@ -66,7 +66,7 @@ static Texture CreateTexture(int width, int height, int componenets, const void*
     return texture;
 }
 
-DF_API bool LoadFont(const char* pathJson, const char* pathBitmap, Font* font)
+DF_API Font* LoadFont(const char* pathJson, const char* pathBitmap, Arena* arena)
 {
     std::ifstream file(pathJson);
 
@@ -74,7 +74,7 @@ DF_API bool LoadFont(const char* pathJson, const char* pathBitmap, Font* font)
     {
         std::cout << "Failed to open font file: " << pathJson << '\n';
 
-        return false;
+        return nullptr;
     }
 
     stbi_set_flip_vertically_on_load(true);
@@ -86,22 +86,25 @@ DF_API bool LoadFont(const char* pathJson, const char* pathBitmap, Font* font)
     {
         std::cout << "Failed to load font bitmap: " << stbi_failure_reason() << '\n';
 
-        return false;
+        return nullptr;
     }
+
+    using json = nlohmann::json;
+    json data  = json::parse(file);
+
+    int glyphsCount = (int)data["glyphs"].size();
+    int fontSize    = sizeof(Font) + sizeof(Font::Glyph) * glyphsCount;
+    Font* font      = (Font*)ArenaPush(arena, fontSize);
 
     font->bitmap = CreateTexture(width, height, components, bitmap);
     stbi_image_free(bitmap);
-
-    using json = nlohmann::json;
-
-    json data = json::parse(file);
 
     font->size          = data["atlas"]["size"];
     font->atlasWidth    = data["atlas"]["width"];
     font->atlasHeight   = data["atlas"]["height"];
     font->distanceRange = data["atlas"]["distanceRange"];
     font->lineHeight    = data["metrics"]["lineHeight"];
-    font->glyphCount    = (int)data["glyphs"].size();
+    font->glyphCount    = glyphsCount;
     font->glyphs        = (Font::Glyph*)(font + 1);
 
     json::array_t glyphs = data["glyphs"];
@@ -110,7 +113,7 @@ DF_API bool LoadFont(const char* pathJson, const char* pathBitmap, Font* font)
     {
         Font::Glyph* glyph = font->glyphs + i;
 
-        glyph->code = glyphs[i]["unicode"];
+        glyph->code    = glyphs[i]["unicode"];
         glyph->advance = glyphs[i]["advance"];
 
         if (glyphs[i].contains("atlasBounds"))
@@ -134,7 +137,7 @@ DF_API bool LoadFont(const char* pathJson, const char* pathBitmap, Font* font)
         }
     }
 
-    return true;
+    return font;
 }
 
 } // namespace DF::Assets

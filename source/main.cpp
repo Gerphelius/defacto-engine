@@ -16,8 +16,6 @@
 
 *  *******************************************************************************/
 
-// TODO: Remake OS GetModuleFilename to return string or struct instead
-
 #include <chrono>
 #include <thread>
 #include <filesystem>
@@ -106,22 +104,6 @@ int main()
         // TODO: Log error.
     }
 
-    // constexpr int gluphsCounnt = 95;
-    // constexpr int size =
-    //   sizeof(DF::Assets::Font) + sizeof(DF::Assets::Font::Glyph) * gluphsCounnt + 256;
-
-    // void* fontMemory             = DF::Platform::AllocateMemory(size);
-    // DF::Assets::Font* fontHeader = (DF::Assets::Font*)((char*)fontMemory + 256);
-    // fontHeader->glyphCount       = gluphsCounnt;
-    // fontHeader->glyphs           = (DF::Assets::Font::Glyph*)(fontHeader + 1);
-
-    // for (int i = 0; i < fontHeader->glyphCount; ++i)
-    //{
-    //     DF::Assets::Font::Glyph* glyph = fontHeader->glyphs + i;
-
-    //    glyph->code = 32 + i;
-    //}
-
     Window window = Platform::CreateWindow(800, 600, "DeFacto Engine");
     Render::Initialize(&window);
 
@@ -152,13 +134,6 @@ int main()
         // (later). Now it is here, because it calls DrawQuad which creates and bind vao after
         // glClear.
         gameCode.GameUpdate(gameMemory, deltaTime);
-
-        // Size fbSize = Platform::GetFramebufferSize(&window);
-        // UI::Render(fbSize.width,
-        //            fbSize.height,
-        //            Platform::GetCursorPos1(),
-        //            Platform::MouseKeyPressed(MouseKey::LEFT),
-        //            deltaTime);
 
         Render::EndFrame();
 

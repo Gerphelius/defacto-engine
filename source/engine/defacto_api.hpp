@@ -17,6 +17,11 @@
 
 #endif
 
+#define Kilobytes(value) ((value) * 1024LL)
+#define Megabytes(value) (Kilobytes(value) * 1024LL)
+#define Gigabytes(value) (Megabytes(value) * 1024LL)
+#define Terabytes(value) (Gigabytes(value) * 1024LL)
+
 #define GAME_INITIALIZE(name) DF::GameMemory name()
 #define GAME_RELOAD(name) void name(DF::GameMemory gameMemory)
 #define GAME_UPDATE(name) void name(DF::GameMemory gameMemory, float dt)
@@ -26,14 +31,20 @@
 namespace DF
 {
 
+struct Arena
+{
+    void* base;
+    int offset;
+    int size;
+};
+
 struct GameMemory
 {
-    uint64_t permanentStorageSize;
-    void* permanentStorage;
-
-    uint64_t transientStorageSize;
-    void* transientStorage;
+    Arena permanent;
+    Arena transient;
 };
+
+DF_API void* ArenaPush(Arena* arena, int size);
 
 struct Window
 {
@@ -116,6 +127,7 @@ DF_API bool KeyPressed(Key key);
 DF_API Math::Vec2 GetCursorPos();
 DF_API double GetCurrentTime();
 DF_API Math::Vec2 GetScrollPos();
+DF_API Arena AllocateMemory(size_t size);
 
 } // namespace Platform
 
@@ -160,7 +172,7 @@ struct Font
     Glyph* glyphs;
 };
 
-DF_API bool LoadFont(const char* pathJson, const char* pathBitmap, Font* memory);
+DF_API Font* LoadFont(const char* pathJson, const char* pathBitmap, Arena* arena);
 
 } // namespace Assets
 
@@ -188,53 +200,5 @@ DF_API void BeginScissor(int x, int y, int width, int height);
 DF_API void EndScissor();
 
 } // namespace Render
-
-namespace UI
-{
-
-// DF_API void Initialize();
-// DF_API void Render(int width, int height, Math::Vec2 mousePos, bool lmbPressed, float deltaTime);
-//
-// struct BlockConfig
-//{
-// };
-//
-// struct TextConfig
-//{
-// };
-//
-// struct ImageConfig
-//{
-// };
-//
-// struct Node
-//{
-//     enum class Type
-//     {
-//         BLOCK,
-//         TEXT,
-//         IMAGE,
-//     };
-//
-//     union Config
-//     {
-//         BlockConfig block;
-//         TextConfig text;
-//         ImageConfig image;
-//     };
-//
-//     Type type;
-//     const char* id;
-//     Config config;
-//     Node* first_child;
-//     Node* next_sibling;
-//     Node* parent;
-// };
-//
-// Node* CreateElement(Node::Type type, const char* id);
-// void AppendChild(Node* parent, Node* child);
-// void RenderUI(const Node* root);
-
-} // namespace UI
 
 } // namespace DF

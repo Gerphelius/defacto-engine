@@ -11,6 +11,54 @@
 
 #include "defacto_api.hpp"
 
+//namespace UI
+//{
+// 
+// DF_API void Initialize();
+// DF_API void Render(int width, int height, Math::Vec2 mousePos, bool lmbPressed, float deltaTime);
+//
+// struct BlockConfig
+//{
+// };
+//
+// struct TextConfig
+//{
+// };
+//
+// struct ImageConfig
+//{
+// };
+//
+// struct Node
+//{
+//     enum class Type
+//     {
+//         BLOCK,
+//         TEXT,
+//         IMAGE,
+//     };
+//
+//     union Config
+//     {
+//         BlockConfig block;
+//         TextConfig text;
+//         ImageConfig image;
+//     };
+//
+//     Type type;
+//     const char* id;
+//     Config config;
+//     Node* first_child;
+//     Node* next_sibling;
+//     Node* parent;
+// };
+//
+// Node* CreateElement(Node::Type type, const char* id);
+// void AppendChild(Node* parent, Node* child);
+// void RenderUI(const Node* root);
+//
+//} // namespace UI
+
 namespace DF::UI
 {
 ClayVideoDemo_Data demo_data;

@@ -1,7 +1,5 @@
 #include <cstdio>
 
-#include "game.hpp"
-
 #include "defacto_api.hpp"
 
 #pragma warning(push, 0)
@@ -57,9 +55,9 @@ static inline Clay_Dimensions MeasureText(Clay_StringSlice text,
     return Clay_Dimensions { width, height };
 }
 
-void RenderHeaderButton(Clay_String text)
+void Button(Clay_String text)
 {
-    CLAY_AUTO_ID({ .layout          = { .padding = { 16, 16, 8, 8 } },
+    CLAY_AUTO_ID({ .layout          = { .padding = { 60, 60, 8, 8 } },
                    .backgroundColor = { 140, 140, 140, 255 },
                    .cornerRadius    = CLAY_CORNER_RADIUS(5) })
     {
@@ -76,109 +74,106 @@ Clay_RenderCommandArray CreateUI()
 {
     Clay_BeginLayout();
 
-    Clay_Sizing layoutExpand = { .width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0) };
-
-    Clay_Color contentBackgroundColor = { 90, 90, 90, 255 };
-
-    //RenderHeaderButton(CLAY_STRING("Upload"));
-
-    CLAY(CLAY_ID("ScrollingContainer"),
-         {
-            .layout = {
-                .sizing = {
-                    .width = CLAY_SIZING_FIXED(0),
-                    .height = CLAY_SIZING_FIXED(0),
-                },
-                .padding = { 16, 16, 16, 16 },
-                .childGap = 16,
+    CLAY(CLAY_ID("OuterContainer"),
+        {
+            .layout          = {
+                .sizing          = { .width = CLAY_SIZING_FIXED(0), .height = CLAY_SIZING_GROW(0) },
+                .padding         = CLAY_PADDING_ALL(16),
+                .childGap        = 16,
                 .layoutDirection = CLAY_TOP_TO_BOTTOM,
             },
-           .backgroundColor = { 200, 200, 100, 255 },
-           .cornerRadius    = CLAY_CORNER_RADIUS(10),
-           .clip            = { .vertical = true, .childOffset = Clay_GetScrollOffset() },
-         })
+            .backgroundColor = { 43, 41, 51, 255 },
+            .clip            = { .vertical = true, .childOffset = Clay_GetScrollOffset() },
+        })
     {
         for (int i = 0; i < 100; ++i)
         {
-            CLAY_TEXT(CLAY_STRING("Test string"),
-                      CLAY_TEXT_CONFIG({
-                        .textColor = { 255, 255, 255, 255 },
-                        .fontId    = 0,
-                        .fontSize  = 16,
-                      }));
+            Button(CLAY_STRING("Test"));
         }
     }
 
     return Clay_EndLayout();
 }
 
+enum class Fonts
+{
+    ROBOTO,
+
+    TOTAL,
+};
+
+struct GameState
+{
+    DF::Arena fontsArena;
+    DF::Assets::Font* fonts[(int)Fonts::TOTAL];
+
+    DF::Arena clayArena;
+
+    // DF::Arena entities;
+    // ...
+};
+
 DF_EXPORT_C GAME_RELOAD(GameReload)
 {
-    uint64_t clayMemorySize = Clay_MinMemorySize();
-    uint64_t fontMemorySize = sizeof(DF::Assets::Font) + sizeof(DF::Assets::Font::Glyph) * 95;
-
-    Clay_Arena clayMemory = Clay_CreateArenaWithCapacityAndMemory(
-      clayMemorySize, (char*)gameMemory.permanentStorage + fontMemorySize);
+    GameState* gameState = (GameState*)gameMemory.permanent.base;
+    Clay_Arena clayMemory =
+      Clay_CreateArenaWithCapacityAndMemory(gameState->clayArena.size, gameState->clayArena.base);
     Clay_Initialize(
       clayMemory, Clay_Dimensions { 800, 600 }, Clay_ErrorHandler { HandleClayErrors });
-
-    Clay_SetMeasureTextFunction(MeasureText, gameMemory.permanentStorage);
+    Clay_SetMeasureTextFunction(MeasureText, gameState->fonts[(int)Fonts::ROBOTO]);
 }
 
 DF_EXPORT_C GAME_INITIALIZE(GameInitialize)
 {
-    uint64_t clayMemorySize = Clay_MinMemorySize();
-    uint64_t fontMemorySize = sizeof(DF::Assets::Font) + sizeof(DF::Assets::Font::Glyph) * 95;
     DF::GameMemory gameMemory {};
+    gameMemory.permanent = DF::Platform::AllocateMemory(Megabytes(64));
 
-    gameMemory.permanentStorageSize = clayMemorySize + fontMemorySize;
-    gameMemory.permanentStorage     = DF::Platform::AllocateMemory(gameMemory.permanentStorageSize);
+    GameState* gameState = (GameState*)DF::ArenaPush(&gameMemory.permanent, sizeof(GameState));
 
-    Clay_Arena clayMemory = Clay_CreateArenaWithCapacityAndMemory(
-      clayMemorySize, (char*)gameMemory.permanentStorage + fontMemorySize);
+    int totalFontSize = Kilobytes(256);
+
+    gameState->fontsArena.base = DF::ArenaPush(&gameMemory.permanent, totalFontSize);
+    gameState->fontsArena.size = totalFontSize;
+
+    DF::Assets::Font* roboto = DF::Assets::LoadFont("resources/fonts/roboto_regular.json",
+                                                    "resources/fonts/roboto_regular.png",
+                                                    &gameState->fontsArena);
+
+    if (roboto)
+    {
+        gameState->fonts[(int)Fonts::ROBOTO] = roboto;
+    }
+
+    int clayMemorySize        = Clay_MinMemorySize();
+    gameState->clayArena.base = DF::ArenaPush(&gameMemory.permanent, clayMemorySize);
+    gameState->clayArena.size = clayMemorySize;
+
+    Clay_Arena clayMemory =
+      Clay_CreateArenaWithCapacityAndMemory(clayMemorySize, gameState->clayArena.base);
     Clay_Initialize(
       clayMemory, Clay_Dimensions { 800, 600 }, Clay_ErrorHandler { HandleClayErrors });
 
-    bool roboto = DF::Assets::LoadFont("resources/fonts/roboto_regular.json",
-                                       "resources/fonts/roboto_regular.png",
-                                       (DF::Assets::Font*)gameMemory.permanentStorage);
-    if (roboto)
-    {
-        Clay_SetMeasureTextFunction(MeasureText, gameMemory.permanentStorage);
-    }
+    Clay_SetMeasureTextFunction(MeasureText, roboto);
 
     return gameMemory;
 }
 
-struct InputState
-{
-    DF::Math::Vec2 scrollPos;
-    DF::Math::Vec2 mousePos;
-};
-
 DF_EXPORT_C GAME_UPDATE(GameUpdate)
 {
-    float scrollSpeed = 4;
-    DF::Math::Vec2 scroll = { 0.0f, 0.0f };
-    // DF::Math::Vec2 scrollDelta =
-    //   DF::Math::Vec2 { scroll.x - g_lastScroll.x, scroll.y - g_lastScroll.y };
-    // g_lastScroll           = scroll;
+    GameState* gameState = (GameState*)gameMemory.permanent.base;
 
+    float scrollSpeed       = 4;
+    DF::Math::Vec2 scroll   = DF::Platform::GetScrollPos();
     DF::Math::Vec2 mousePos = DF::Platform::GetCursorPos();
     bool lmbPressed         = DF::Platform::MouseKeyPressed(DF::MouseKey::LEFT);
 
     Clay_SetPointerState(Clay_Vector2 { mousePos.x, mousePos.y }, lmbPressed);
-
-    // Clay_UpdateScrollContainers needs to be called before Clay_BeginLayout for the position
-    // to avoid a 1 frame delay
-    Clay_UpdateScrollContainers(
-      true, // Enable drag scrolling
-      Clay_Vector2 {
-        scroll.x * scrollSpeed,
-        scroll.y * scrollSpeed,
-      }, // Clay_Vector2 scrollwheel / trackpad scroll x and y delta this frame
-      dt // Time since last frame in seconds as a float e.g. 8ms is 0.008f
-    );
+    Clay_UpdateScrollContainers(true,
+                                Clay_Vector2 {
+                                  scroll.x * scrollSpeed,
+                                  scroll.y * scrollSpeed,
+                                },
+                                dt);
 
     Clay_RenderCommandArray renderCommands = CreateUI();
 
@@ -201,7 +196,7 @@ DF_EXPORT_C GAME_UPDATE(GameUpdate)
                 uint16_t font_id         = renderCommand->renderData.text.fontId;
                 Clay_TextRenderData text = rc->renderData.text;
 
-                DF::Render::DrawText((DF::Assets::Font*)gameMemory.permanentStorage,
+                DF::Render::DrawText(gameState->fonts[(int)Fonts::ROBOTO],
                                      text.stringContents.chars,
                                      text.fontSize,
                                      { boundingBox.x, boundingBox.y },
@@ -254,3 +249,104 @@ DF_EXPORT_C GAME_UPDATE(GameUpdate)
         }
     }
 }
+
+////**************************** ENGINE PART ****************************//
+//
+// struct Arena
+//{
+//    void* base;
+//    int offset;
+//    int sizeTotal;
+//    int sizeLeft;
+//};
+//
+// void* ArenaPush(Arena* arena, int size)
+//{
+//    if (size > arena->sizeLeft)
+//    {
+//        // Error
+//    }
+//
+//    void* res = (char*)arena->base + arena->offset;
+//
+//    arena->offset += size;
+//    arena->sizeLeft -= size;
+//
+//    return res;
+//}
+//
+// struct GameMemory
+//{
+//    Arena permanent;
+//    Arena transient;
+//};
+//
+// struct Font
+//{
+//    struct Glyph
+//    {
+//    };
+//    int glyphCount;
+//    Glyph* glyphs;
+//};
+//
+// Font* LoadFont(const char* bitmap, const char* data, Arena* arena)
+//{
+//    // Load bitmap
+//    // Load data
+//
+//    int fontSize = sizeof(Font) + sizeof(Glyph) * number_of_glyphs;
+//    Font* font   = ArenaPush(arena, fontSize);
+//
+//    // Returns valid Font pointer or nullptr if failed
+//    return font;
+//}
+//
+////**************************** GAME PART ****************************//
+//
+// enum class Fonts
+//{
+//    ROBOTO,
+//    SANS,
+//    BITCOUNT,
+//
+//    TOTAL,
+//};
+//
+// struct GameState
+//{
+//    Arena fontsArena;
+//    Font* fonts[(int)Fonts::TOTAL];
+//
+//    Arena entities;
+//    // ...
+//};
+//
+// GameMemory GameInit()
+//{
+//    GameMemory gameMemory {};
+//    gameMemory.permanent = AllocateMemory(size);
+//
+//    GameState* gameState = ArenaPush(&gameMemory.permanent, sizeof(GameState));
+//
+//    int totalFontSize = offset_from_base_to_place_first_font_data;
+//
+//    gameState->fontsArena.base      = ArenaPush(&gameMemory.permanent, totalFontSize);
+//    gameState->fontsArena.offset    = 0;
+//    gameState->fontsArena.sizeTotal = totalFontSize;
+//    gameState->fontsArena.sizeLeft  = totalFontSize;
+//
+//    Font* roboto = LoadFont("roboto_bitmap", "roboto_data", &gameState->fontsArena);
+//
+//    if (roboto)
+//    {
+//        gameState->fonts[(int)Fonts::ROBOTO] = roboto;
+//    }
+//
+//    // Usage example
+//    int count = gameState->fonts[(int)Fonts::ROBOTO]->glyphCount;
+//
+//    // This returns gameMemory struct, so it will be saved inside main.exe
+//    // and passed to the game on update.
+//    return gameMemory;
+//}

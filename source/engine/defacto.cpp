@@ -1,5 +1,7 @@
 #include "defacto_api.hpp"
 
+#include "memory/arena.cpp"
+
 #include "math/math.cpp"
 
 #include "assets/asset_manager.cpp"

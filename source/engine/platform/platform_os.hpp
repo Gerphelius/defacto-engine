@@ -29,6 +29,4 @@ DF_API DynamicLibrary LoadDynamicLibrary(const char* path);
 DF_API bool UnloadDynamicLibrary(const DynamicLibrary* library);
 DF_API ProcAddress GetFuncAddress(const DynamicLibrary* lib, const char* procName);
 
-DF_API void* AllocateMemory(size_t size);
-
 } // namespace DF::Platform

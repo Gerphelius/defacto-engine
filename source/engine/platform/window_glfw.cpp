@@ -129,8 +129,8 @@ DF_API Math::Vec2 GetScrollPos()
 
 static void GLFWScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    g_scrollPos.x += (float)xoffset;
-    g_scrollPos.y += (float)yoffset;
+    g_scrollPos.x = (float)xoffset;
+    g_scrollPos.y = (float)yoffset;
 }
 
 Window g_window;
@@ -159,7 +159,7 @@ DF_API Window CreateWindow(int width, int height, const char* title)
     }
 
     glfwMakeContextCurrent(glfwWindow);
-    //glfwSwapInterval(1);
+    // glfwSwapInterval(1);
 
     if (glewInit() != GLEW_OK)
     {
@@ -197,6 +197,7 @@ DF_API bool WindowClosed(Window* window)
 
 void SwapBuffers(Window* window)
 {
+    g_scrollPos = Math::Vec2 {};
     glfwSwapBuffers((GLFWwindow*)window->handle);
     glfwPollEvents();
 }
