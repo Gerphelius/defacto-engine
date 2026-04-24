@@ -15,7 +15,7 @@
 //{
 // 
 // DF_API void Initialize();
-// DF_API void Render(int width, int height, Math::Vec2 mousePos, bool lmbPressed, float deltaTime);
+// DF_API void Render(int width, int height, Vec2 mousePos, bool lmbPressed, float deltaTime);
 //
 // struct BlockConfig
 //{
@@ -217,13 +217,13 @@ DF_API void Initialize()
     //root = root->parent;
 }
 
-static Math::Vec2 g_lastScroll = Platform::g_scrollPos;
+static Vec2 g_lastScroll = Platform::g_scrollPos;
 
-DF_API void Render(int width, int height, Math::Vec2 mousePos, bool lmbPressed, float deltaTime)
+DF_API void Render(int width, int height, Vec2 mousePos, bool lmbPressed, float deltaTime)
 {
     float scrollSpeed      = 4;
-    Math::Vec2 scroll      = Platform::g_scrollPos;
-    Math::Vec2 scrollDelta = Math::Vec2 { scroll.x - g_lastScroll.x, scroll.y - g_lastScroll.y };
+    Vec2 scroll      = Platform::g_scrollPos;
+    Vec2 scrollDelta = Vec2 { scroll.x - g_lastScroll.x, scroll.y - g_lastScroll.y };
     g_lastScroll           = scroll;
 
     Clay_SetPointerState(Clay_Vector2 { mousePos.x, mousePos.y }, lmbPressed);

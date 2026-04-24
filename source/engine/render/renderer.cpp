@@ -6,8 +6,6 @@
 
 #include <gl/glew.h>
 
-#include "defacto_api.hpp"
-
 namespace DF::Render
 {
 
@@ -152,17 +150,17 @@ void BindTexture(Assets::Texture texture, int pos = 0)
 
 // TODO: Need to rework this to gather vertices in some buffer so it can be called outside
 // Begin/EndFrame boundaries
-DF_API void DrawQuad(Math::Vec2 pos, Size size, Color color, UVMap uvMap)
+DF_API void DrawQuad(Vec2 pos, Size size, Color color, UVMap uvMap)
 {
     int viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
 
-    float normX = Math::Map(pos.x, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
-    float normY = Math::Map(pos.y, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
+    float normX = Map(pos.x, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
+    float normY = Map(pos.y, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
     float normW =
-      Math::Map(pos.x + size.width, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
+      Map(pos.x + size.width, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
     float normH =
-      Math::Map(pos.y + size.height, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
+      Map(pos.y + size.height, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
 
     float vertices[] {
         normX, -normH, uvMap.bottomLeft.x,  uvMap.bottomLeft.y,  // bottom left
@@ -196,10 +194,10 @@ DF_API void DrawQuad(Math::Vec2 pos, Size size, Color color, UVMap uvMap)
     glBindTexture(GL_TEXTURE_2D, 0);
     glUseProgram(g_shapeShader);
 
-    float r = Math::Map(color.r, 0.0f, 255.0f, 0.0f, 1.0f);
-    float g = Math::Map(color.g, 0.0f, 255.0f, 0.0f, 1.0f);
-    float b = Math::Map(color.b, 0.0f, 255.0f, 0.0f, 1.0f);
-    float a = Math::Map(color.a, 0.0f, 255.0f, 0.0f, 1.0f);
+    float r = Map(color.r, 0.0f, 255.0f, 0.0f, 1.0f);
+    float g = Map(color.g, 0.0f, 255.0f, 0.0f, 1.0f);
+    float b = Map(color.b, 0.0f, 255.0f, 0.0f, 1.0f);
+    float a = Map(color.a, 0.0f, 255.0f, 0.0f, 1.0f);
 
     glUniform4f(glGetUniformLocation(g_shapeShader, "uColor"), r, g, b, a);
 
@@ -219,7 +217,7 @@ DF_API void DrawQuad(Math::Vec2 pos, Size size, Color color, UVMap uvMap)
 DF_API void DrawText(const Assets::Font* font,
                      const char* str,
                      int fontSize,
-                     Math::Vec2 pos,
+                     Vec2 pos,
                      int strlen)
 {
     std::vector<float> vertices {};
@@ -244,18 +242,18 @@ DF_API void DrawText(const Assets::Font* font,
 
                 if (width && height)
                 {
-                    Math::Vec2 bottomL = { glyph.atlasBounds.left, glyph.atlasBounds.bottom };
-                    Math::Vec2 topL    = { glyph.atlasBounds.left, glyph.atlasBounds.top };
-                    Math::Vec2 topR    = { glyph.atlasBounds.right, glyph.atlasBounds.top };
-                    Math::Vec2 bottomR = { glyph.atlasBounds.right, glyph.atlasBounds.bottom };
+                    Vec2 bottomL = { glyph.atlasBounds.left, glyph.atlasBounds.bottom };
+                    Vec2 topL    = { glyph.atlasBounds.left, glyph.atlasBounds.top };
+                    Vec2 topR    = { glyph.atlasBounds.right, glyph.atlasBounds.top };
+                    Vec2 bottomR = { glyph.atlasBounds.right, glyph.atlasBounds.bottom };
 
                     float normX =
-                      Math::Map(pos.x, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
+                      Map(pos.x, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
                     float normY =
-                      Math::Map(offsetY, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
+                      Map(offsetY, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
                     float normW =
-                      Math::Map(pos.x + width, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
-                    float normH = Math::Map(
+                      Map(pos.x + width, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
+                    float normH = Map(
                       offsetY + height, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
 
                     vertices.insert(vertices.end(),

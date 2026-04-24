@@ -19,11 +19,12 @@ set(VCPKG_INCLUDE "${VCPKG_INSTALLED_DIR}/include")
 set(VCPKG_LIB "${VCPKG_INSTALLED_DIR}/lib")
 
 set(COMMON_COMPILE_OPTIONS
-    /EHsc       # structured exception handling (note: -EHa- conflicts; pick one)
+    /EHsc       # structured exception handling
     /Od         # disable optimization
     /Oi         # enable intrinsics
     /WX         # warnings as errors
     /W4         # warning level 4
+    /Zc:nrvo-
 
     /wd4100     # unreferenced parameter
     /wd4189     # local variable is initialized but not referenced

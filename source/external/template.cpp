@@ -362,6 +362,7 @@ Clay_RenderCommandArray ClayVideoDemo_CreateLayout(ClayVideoDemo_Data* data)
                             .cornerRadius = CLAY_CORNER_RADIUS(8) })
                         {
                             Clay_OnHover(HandleSidebarInteraction, clickData);
+
                             CLAY_TEXT(document.title,
                                       CLAY_TEXT_CONFIG({
                                         .textColor = { 255, 255, 255, 255 },

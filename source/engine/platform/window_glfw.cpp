@@ -56,14 +56,14 @@ static void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int actio
     }
 }
 
-static Math::Vec2 g_cursorPos;
+static Vec2 g_cursorPos;
 
 static void GLFWCursorPosCallback(GLFWwindow* window, double x, double y)
 {
-    g_cursorPos = Math::Vec2 { (float)x, (float)y };
+    g_cursorPos = Vec2 { (float)x, (float)y };
 }
 
-DF_API Math::Vec2 GetCursorPos()
+DF_API Vec2 GetCursorPos()
 {
     return g_cursorPos;
 }
@@ -120,9 +120,9 @@ static void GLFWMouseKeyCallback(GLFWwindow* window, int key, int action, int mo
     }
 }
 
-Math::Vec2 g_scrollPos { 0.0f, 0.0f };
+Vec2 g_scrollPos { 0.0f, 0.0f };
 
-DF_API Math::Vec2 GetScrollPos()
+DF_API Vec2 GetScrollPos()
 {
     return g_scrollPos;
 }
@@ -197,7 +197,7 @@ DF_API bool WindowClosed(Window* window)
 
 void SwapBuffers(Window* window)
 {
-    g_scrollPos = Math::Vec2 {};
+    g_scrollPos = Vec2 {};
     glfwSwapBuffers((GLFWwindow*)window->handle);
     glfwPollEvents();
 }

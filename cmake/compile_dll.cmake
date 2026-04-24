@@ -38,6 +38,7 @@ execute_process(
         /wd4201 /wd4100 /wd4189 /wd4456 /wd4505
         /MTd
         /Zi
+        /Zc:nrvo-
         /FS
         /Fd${PDB_PATH}
         /std:c++20

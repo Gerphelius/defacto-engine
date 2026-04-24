@@ -13,7 +13,7 @@
 
 #else
 
-#define EXPORT __attribute__((visibility("default")))
+#define DF_API __attribute__((visibility("default")))
 
 #endif
 
@@ -105,16 +105,22 @@ enum class KeyState
     HOLD,
 };
 
-namespace Math
-{
 struct Vec2
 {
     float x;
     float y;
 };
 
-float Map(float value, float low1, float high1, float low2, float high2);
-} // namespace Math
+struct String
+{
+    char* data;
+    int length;
+};
+
+DF_API String StrFormat(Arena* buffer, const char* str, ...);
+
+DF_API float Map(float value, float low1, float high1, float low2, float high2);
+DF_API int RandomInt(int min, int max);
 
 namespace Platform
 {
@@ -124,9 +130,9 @@ DF_API bool WindowClosed(Window* window);
 DF_API Size GetFramebufferSize();
 DF_API bool MouseKeyPressed(MouseKey key);
 DF_API bool KeyPressed(Key key);
-DF_API Math::Vec2 GetCursorPos();
+DF_API Vec2 GetCursorPos();
 DF_API double GetCurrentTime();
-DF_API Math::Vec2 GetScrollPos();
+DF_API Vec2 GetScrollPos();
 DF_API Arena AllocateMemory(size_t size);
 
 } // namespace Platform
@@ -181,20 +187,20 @@ namespace Render
 
 struct UVMap
 {
-    Math::Vec2 bottomLeft  = { 0.0f, 0.0f };
-    Math::Vec2 topLeft     = { 0.0f, 1.0f };
-    Math::Vec2 topRight    = { 1.0f, 1.0f };
-    Math::Vec2 bottomRight = { 1.0f, 0.0f };
+    Vec2 bottomLeft  = { 0.0f, 0.0f };
+    Vec2 topLeft     = { 0.0f, 1.0f };
+    Vec2 topRight    = { 1.0f, 1.0f };
+    Vec2 bottomRight = { 1.0f, 0.0f };
 };
 
 DF_API void Initialize(Window* window);
 DF_API void BeginFrame();
 DF_API void EndFrame();
-DF_API void DrawQuad(Math::Vec2 pos, Size size, Color color, UVMap uvMap = {});
+DF_API void DrawQuad(Vec2 pos, Size size, Color color, UVMap uvMap = {});
 DF_API void DrawText(const Assets::Font* font,
                      const char* str,
                      int fontSize,
-                     Math::Vec2 pos,
+                     Vec2 pos,
                      int strlen = 0);
 DF_API void BeginScissor(int x, int y, int width, int height);
 DF_API void EndScissor();

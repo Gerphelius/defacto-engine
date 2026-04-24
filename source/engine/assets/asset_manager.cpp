@@ -11,8 +11,6 @@
 #include <gl/glew.h>
 #pragma warning(pop)
 
-#include "defacto_api.hpp"
-
 namespace DF::Assets
 {
 
@@ -119,13 +117,13 @@ DF_API Font* LoadFont(const char* pathJson, const char* pathBitmap, Arena* arena
         if (glyphs[i].contains("atlasBounds"))
         {
             glyph->atlasBounds.top =
-              Math::Map(glyphs[i]["atlasBounds"]["top"], 0, font->atlasHeight, 0.0f, 1.0f);
+              Map(glyphs[i]["atlasBounds"]["top"], 0, font->atlasHeight, 0.0f, 1.0f);
             glyph->atlasBounds.bottom =
-              Math::Map(glyphs[i]["atlasBounds"]["bottom"], 0, font->atlasHeight, 0.0f, 1.0f);
+              Map(glyphs[i]["atlasBounds"]["bottom"], 0, font->atlasHeight, 0.0f, 1.0f);
             glyph->atlasBounds.left =
-              Math::Map(glyphs[i]["atlasBounds"]["left"], 0, font->atlasWidth, 0.0f, 1.0f);
+              Map(glyphs[i]["atlasBounds"]["left"], 0, font->atlasWidth, 0.0f, 1.0f);
             glyph->atlasBounds.right =
-              Math::Map(glyphs[i]["atlasBounds"]["right"], 0, font->atlasWidth, 0.0f, 1.0f);
+              Map(glyphs[i]["atlasBounds"]["right"], 0, font->atlasWidth, 0.0f, 1.0f);
         }
 
         if (glyphs[i].contains("planeBounds"))
