@@ -86,10 +86,20 @@ add_custom_target(game_dll ALL
         -DOUT_DIR=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
         -DCOMPILER=${CMAKE_CXX_COMPILER}
         -DLINKER=${CMAKE_LINKER}
-        -DLIBRARIES=defacto.lib # $<TARGET_FILE:defacto>
+        -DLIBRARIES=defacto.lib
         -P "${CMAKE_BINARY_DIR}/compile_dll.cmake"
     COMMENT "****** Building game.dll ******"
     VERBATIM
+)
+
+## This block is used to add intellisence support for game.dll with unity build
+add_library(game_intellisense SHARED ${GAME_SOURCE})
+set_target_properties(game_intellisense PROPERTIES
+    EXCLUDE_FROM_ALL TRUE
+    EXCLUDE_FROM_DEFAULT_BUILD TRUE
+)
+target_include_directories(game_intellisense PRIVATE
+    ${ENGINE_INCLUDE_PATH}
 )
 
 # ===================================================================================

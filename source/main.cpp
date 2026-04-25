@@ -121,7 +121,7 @@ int main()
         {
             UnloadGameCode(&gameCode);
             gameCode = LoadGameCode(gameDllPath.c_str(), gameDllPathTemp.c_str());
-            gameCode.GameReload(gameMemory);
+            gameCode.GameReload(&gameMemory);
         }
 
         double currentTime = Platform::GetCurrentTime();
@@ -133,11 +133,13 @@ int main()
         // TODO: GameUpdate call should be moved above, before begin frame and physics update
         // (later). Now it is here, because it calls DrawQuad which creates and bind vao after
         // glClear.
-        gameCode.GameUpdate(gameMemory, deltaTime);
+        gameCode.GameUpdate(&gameMemory, deltaTime);
 
         Render::EndFrame();
 
         g_running = !Platform::KeyPressed(Key::ESC);
+
+        gameMemory.transient.offset = 0;
     }
 
     UnloadGameCode(&gameCode);

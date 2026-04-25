@@ -23,8 +23,8 @@
 #define Terabytes(value) (Gigabytes(value) * 1024LL)
 
 #define GAME_INITIALIZE(name) DF::GameMemory name()
-#define GAME_RELOAD(name) void name(DF::GameMemory gameMemory)
-#define GAME_UPDATE(name) void name(DF::GameMemory gameMemory, float dt)
+#define GAME_RELOAD(name) void name(DF::GameMemory* gameMemory)
+#define GAME_UPDATE(name) void name(DF::GameMemory* gameMemory, float dt)
 
 #include "platform/platform_os.hpp"
 

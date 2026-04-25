@@ -220,6 +220,8 @@ DF_API void DrawText(const Assets::Font* font,
                      Vec2 pos,
                      int strlen)
 {
+    // TODO: Accept DF::String and get rid of vectors
+
     std::vector<float> vertices {};
     std::vector<int> indices {};
 
