@@ -142,7 +142,7 @@ DF_API void EndScissor()
     glDisable(GL_SCISSOR_TEST);
 }
 
-void BindTexture(Assets::Texture texture, int pos = 0)
+void BindTexture(Texture texture, int pos = 0)
 {
     glActiveTexture(GL_TEXTURE0 + pos);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -157,10 +157,8 @@ DF_API void DrawQuad(Vec2 pos, Size size, Color color, UVMap uvMap)
 
     float normX = Map(pos.x, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
     float normY = Map(pos.y, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
-    float normW =
-      Map(pos.x + size.width, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
-    float normH =
-      Map(pos.y + size.height, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
+    float normW = Map(pos.x + size.width, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
+    float normH = Map(pos.y + size.height, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
 
     float vertices[] {
         normX, -normH, uvMap.bottomLeft.x,  uvMap.bottomLeft.y,  // bottom left
@@ -214,11 +212,7 @@ DF_API void DrawQuad(Vec2 pos, Size size, Color color, UVMap uvMap)
 
 // TODO: Need to rework this to gather vertices in some buffer so it can be called outside
 // Begin/EndFrame boundaries
-DF_API void DrawText(const Assets::Font* font,
-                     const char* str,
-                     int fontSize,
-                     Vec2 pos,
-                     int strlen)
+DF_API void DrawText(const Font* font, const char* str, int fontSize, Vec2 pos, int strlen)
 {
     // TODO: Accept DF::String and get rid of vectors
 
@@ -234,7 +228,7 @@ DF_API void DrawText(const Assets::Font* font,
     {
         for (int glyphNum = 0; glyphNum < font->glyphCount; ++glyphNum)
         {
-            Assets::Font::Glyph glyph = font->glyphs[glyphNum];
+            Font::Glyph glyph = font->glyphs[glyphNum];
 
             if (glyph.code == str[i])
             {
@@ -249,14 +243,12 @@ DF_API void DrawText(const Assets::Font* font,
                     Vec2 topR    = { glyph.atlasBounds.right, glyph.atlasBounds.top };
                     Vec2 bottomR = { glyph.atlasBounds.right, glyph.atlasBounds.bottom };
 
-                    float normX =
-                      Map(pos.x, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
-                    float normY =
-                      Map(offsetY, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
+                    float normX = Map(pos.x, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
+                    float normY = Map(offsetY, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
                     float normW =
                       Map(pos.x + width, (float)viewport[0], (float)viewport[2], -1.0f, 1.0f);
-                    float normH = Map(
-                      offsetY + height, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
+                    float normH =
+                      Map(offsetY + height, (float)viewport[1], (float)viewport[3], -1.0f, 1.0f);
 
                     vertices.insert(vertices.end(),
                                     {

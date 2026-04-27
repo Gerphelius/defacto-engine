@@ -3,9 +3,12 @@
 
 #include "defacto_api.hpp"
 #include "scp_api.hpp"
+#include "clay.h"
 
-#include "ui/clay.cpp"
 #include "ui/agents.cpp"
+#include "ui/squads.cpp"
+#include "ui/menu.cpp"
+#include "ui/clay.cpp"
 
 /*
     Entities:
@@ -46,9 +49,9 @@ DF_EXPORT_C GAME_INITIALIZE(GameInitialize)
     gameState->fontsArena.base = DF::ArenaPush(&gameMemory.permanent, totalFontSize);
     gameState->fontsArena.size = totalFontSize;
 
-    DF::Assets::Font* roboto = DF::Assets::LoadFont("resources/fonts/roboto_regular.json",
-                                                    "resources/fonts/roboto_regular.png",
-                                                    &gameState->fontsArena);
+    DF::Font* roboto = DF::LoadFont("resources/fonts/roboto_regular.json",
+                                    "resources/fonts/roboto_regular.png",
+                                    &gameState->fontsArena);
 
     if (roboto)
     {
@@ -67,6 +70,18 @@ DF_EXPORT_C GAME_INITIALIZE(GameInitialize)
     gameState->agentsHired.list     = (SCP::Agent*)DF::ArenaPush(
       &gameMemory.permanent, gameState->agentsHired.maxCount * sizeof(SCP::Agent));
 
+    /*
+       [ Squad[A,A,A,A...], Squad[A,A,A,A...], Squad[A,A,A,A...], Squad[A,A,A,A...] ]
+    
+    */
+
+    gameState->squads.maxCount          = 4;
+    gameState->squads.maxAgentsPerSquad = 8;
+    gameState->squads.list              = (SCP::Squad*)DF::ArenaPush(
+      &gameMemory.permanent,
+      gameState->squads.maxCount *
+        (sizeof(SCP::Squad) + sizeof(SCP::Agent) * gameState->squads.maxAgentsPerSquad));
+
     for (int i = 0; i < 10; ++i)
     {
         SCP::AddAgent(&gameState->agentsForHire, SCP::GenerateRandomAgent());
@@ -79,19 +94,17 @@ static float timePassed = 0.0f;
 
 DF_EXPORT_C GAME_UPDATE(GameUpdate)
 {
-    SCP::GameState* gameState = (SCP::GameState*)gameMemory->permanent.base;
+    // SCP::GameState* gameState = (SCP::GameState*)gameMemory->permanent.base;
 
-    //if (timePassed > 1.0f)
+    // if (timePassed > 1.0f)
     //{
-    //    SCP::AddAgent(&gameState->agentsForHire, SCP::GenerateRandomAgent());
-    //    timePassed = 0.0f;
-    //}
+    //     SCP::AddAgent(&gameState->agentsForHire, SCP::GenerateRandomAgent());
+    //     timePassed = 0.0f;
+    // }
 
-    //timePassed += dt;
+    // timePassed += dt;
 
-    SCP::RenderUI(SCP::CreateAgentsUI(gameState, &gameMemory->transient),
-                  gameState->fonts[(int)SCP::Fonts::ROBOTO],
-                  dt);
+    SCP::RenderUI(gameMemory, dt);
 }
 
 ////**************************** ENGINE PART ****************************//

@@ -137,9 +137,6 @@ DF_API Arena AllocateMemory(size_t size);
 
 } // namespace Platform
 
-namespace Assets
-{
-
 typedef uint32_t Texture;
 
 struct Font
@@ -180,8 +177,6 @@ struct Font
 
 DF_API Font* LoadFont(const char* pathJson, const char* pathBitmap, Arena* arena);
 
-} // namespace Assets
-
 namespace Render
 {
 
@@ -197,11 +192,7 @@ DF_API void Initialize(Window* window);
 DF_API void BeginFrame();
 DF_API void EndFrame();
 DF_API void DrawQuad(Vec2 pos, Size size, Color color, UVMap uvMap = {});
-DF_API void DrawText(const Assets::Font* font,
-                     const char* str,
-                     int fontSize,
-                     Vec2 pos,
-                     int strlen = 0);
+DF_API void DrawText(const Font* font, const char* str, int fontSize, Vec2 pos, int strlen = 0);
 DF_API void BeginScissor(int x, int y, int width, int height);
 DF_API void EndScissor();
 

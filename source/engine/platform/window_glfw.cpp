@@ -159,7 +159,7 @@ DF_API Window CreateWindow(int width, int height, const char* title)
     }
 
     glfwMakeContextCurrent(glfwWindow);
-    // glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     if (glewInit() != GLEW_OK)
     {

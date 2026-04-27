@@ -11,7 +11,7 @@
 #include <gl/glew.h>
 #pragma warning(pop)
 
-namespace DF::Assets
+namespace DF
 {
 
 static Texture CreateTexture(int width, int height, int componenets, const void* data)

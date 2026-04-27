@@ -81,9 +81,9 @@ static void FireAgent(Clay_ElementId elementId, Clay_PointerData pointerInfo, vo
     }
 }
 
-static Clay_RenderCommandArray CreateAgentsUI(GameState* gameState, DF::Arena* transient)
+static void CreateAgentsUI(DF::GameMemory* gameMemory)
 {
-    Clay_BeginLayout();
+    GameState* gameState = (GameState*)gameMemory->permanent.base;
 
     CLAY(CLAY_ID("OuterContainer"),
         {
@@ -108,6 +108,13 @@ static Clay_RenderCommandArray CreateAgentsUI(GameState* gameState, DF::Arena* t
                 .clip            = { .vertical = true, .childOffset = Clay_GetScrollOffset() },
             })
         {
+            CLAY_TEXT(CLAY_STRING("AVAILABLE AGENTS"),
+                      CLAY_TEXT_CONFIG({
+                        .textColor = { 255, 255, 255, 255 },
+                        .fontId    = 0,
+                        .fontSize  = 20,
+                      }));
+
             for (int i = 0; i < gameState->agentsForHire.count; ++i)
             {
                 CLAY_AUTO_ID(
@@ -126,8 +133,8 @@ static Clay_RenderCommandArray CreateAgentsUI(GameState* gameState, DF::Arena* t
                         .length = (int32_t)strlen(gameState->agentsForHire.list[i].name),
                         .chars  = gameState->agentsForHire.list[i].name,
                     };
-                    DF::String powerFmt =
-                      DF::StrFormat(transient, "%i", gameState->agentsForHire.list[i].power);
+                    DF::String powerFmt = DF::StrFormat(
+                      &gameMemory->transient, "%i", gameState->agentsForHire.list[i].power);
                     Clay_String power = {
                         .length = (int32_t)powerFmt.length,
                         .chars  = powerFmt.data,
@@ -158,7 +165,8 @@ static Clay_RenderCommandArray CreateAgentsUI(GameState* gameState, DF::Arena* t
                       .cornerRadius    = CLAY_CORNER_RADIUS(5),
                     })
                     {
-                        AgentData* data = (AgentData*)DF::ArenaPush(transient, sizeof(AgentData));
+                        AgentData* data =
+                          (AgentData*)DF::ArenaPush(&gameMemory->transient, sizeof(AgentData));
 
                         data->agentIndex = i;
                         data->gameState  = gameState;
@@ -188,6 +196,13 @@ static Clay_RenderCommandArray CreateAgentsUI(GameState* gameState, DF::Arena* t
                     .clip            = { .vertical = true, .childOffset = Clay_GetScrollOffset() },
                 })
         {
+            CLAY_TEXT(CLAY_STRING("HIRED AGENTS"),
+                      CLAY_TEXT_CONFIG({
+                        .textColor = { 255, 255, 255, 255 },
+                        .fontId    = 0,
+                        .fontSize  = 20,
+                      }));
+
             for (int i = 0; i < gameState->agentsHired.count; ++i)
             {
                 CLAY_AUTO_ID(
@@ -206,8 +221,8 @@ static Clay_RenderCommandArray CreateAgentsUI(GameState* gameState, DF::Arena* t
                         .length = (int32_t)strlen(gameState->agentsHired.list[i].name),
                         .chars  = gameState->agentsHired.list[i].name,
                     };
-                    DF::String powerFmt =
-                      DF::StrFormat(transient, "%i", gameState->agentsHired.list[i].power);
+                    DF::String powerFmt = DF::StrFormat(
+                      &gameMemory->transient, "%i", gameState->agentsHired.list[i].power);
                     Clay_String power = {
                         .length = (int32_t)powerFmt.length,
                         .chars  = powerFmt.data,
@@ -244,7 +259,8 @@ static Clay_RenderCommandArray CreateAgentsUI(GameState* gameState, DF::Arena* t
                       .cornerRadius    = CLAY_CORNER_RADIUS(5),
                     })
                     {
-                        AgentData* data = (AgentData*)DF::ArenaPush(transient, sizeof(AgentData));
+                        AgentData* data =
+                          (AgentData*)DF::ArenaPush(&gameMemory->transient, sizeof(AgentData));
 
                         data->agentIndex = i;
                         data->gameState  = gameState;
@@ -262,8 +278,6 @@ static Clay_RenderCommandArray CreateAgentsUI(GameState* gameState, DF::Arena* t
             }
         }
     }
-
-    return Clay_EndLayout();
 }
 
 } // namespace SCP

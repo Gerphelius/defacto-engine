@@ -32,7 +32,7 @@ static inline Clay_Dimensions MeasureText(Clay_StringSlice text,
                                           Clay_TextElementConfig* config,
                                           void* userData)
 {
-    DF::Assets::Font* font = (DF::Assets::Font*)userData;
+    DF::Font* font = (DF::Font*)userData;
 
     float width  = 0;
     float height = font->lineHeight * config->fontSize;
@@ -62,8 +62,12 @@ static void InitClay(GameState* gameState)
     Clay_SetMeasureTextFunction(MeasureText, gameState->fonts[(int)Fonts::ROBOTO]);
 }
 
-static void RenderUI(Clay_RenderCommandArray renderCommands, DF::Assets::Font* font, float dt)
+static void RenderUI(DF::GameMemory* gameMemory, float dt)
 {
+    GameState* gameState = (GameState*)gameMemory->permanent.base;
+    DF::Font* roboto     = gameState->fonts[(int)Fonts::ROBOTO];
+
+
     float scrollSpeed = 4;
     DF::Vec2 scroll   = DF::Platform::GetScrollPos();
     DF::Vec2 mousePos = DF::Platform::GetCursorPos();
@@ -81,6 +85,8 @@ static void RenderUI(Clay_RenderCommandArray renderCommands, DF::Assets::Font* f
 
     Clay_SetLayoutDimensions(Clay_Dimensions { (float)fbSize.width, (float)fbSize.height });
 
+    Clay_RenderCommandArray renderCommands = CreateMenu(gameMemory);
+
     for (int j = 0; j < renderCommands.length; j++)
     {
         Clay_RenderCommand* renderCommand = Clay_RenderCommandArray_Get(&renderCommands, j);
@@ -96,7 +102,7 @@ static void RenderUI(Clay_RenderCommandArray renderCommands, DF::Assets::Font* f
                 uint16_t font_id         = renderCommand->renderData.text.fontId;
                 Clay_TextRenderData text = rc->renderData.text;
 
-                DF::Render::DrawText(font,
+                DF::Render::DrawText(roboto,
                                      text.stringContents.chars,
                                      text.fontSize,
                                      { boundingBox.x, boundingBox.y },
