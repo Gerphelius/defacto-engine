@@ -1,4 +1,4 @@
-namespace SCP
+namespace SCPX
 {
 
 struct TabData
@@ -54,7 +54,7 @@ static Clay_RenderCommandArray CreateMenu(DF::GameMemory* gameMemory)
                 data->tab       = MenuTab::PERSONNEL;
                 Clay_OnHover(SelectTab, data);
 
-                CLAY_TEXT(CLAY_STRING("Personnel"),
+                CLAY_TEXT(CLAY_STRING("PERSONNEL"),
                           CLAY_TEXT_CONFIG({
                             .textColor = { 255, 255, 255, 255 },
                             .fontId    = 0,
@@ -74,7 +74,27 @@ static Clay_RenderCommandArray CreateMenu(DF::GameMemory* gameMemory)
                 data->tab       = MenuTab::SQUADS;
                 Clay_OnHover(SelectTab, data);
 
-                CLAY_TEXT(CLAY_STRING("Squads"),
+                CLAY_TEXT(CLAY_STRING("SQUADS"),
+                          CLAY_TEXT_CONFIG({
+                            .textColor = { 255, 255, 255, 255 },
+                            .fontId    = 0,
+                            .fontSize  = 16,
+                          }));
+            }
+
+            CLAY_AUTO_ID({
+              .layout          = { .padding = { 16, 16, 8, 8 } },
+              .backgroundColor = { 64.0f, (Clay_Hovered() ? 140.0f : 128.0f), 32.0f, 1.0f },
+              .cornerRadius    = CLAY_CORNER_RADIUS(5),
+            })
+            {
+                TabData* data = (TabData*)DF::ArenaPush(&gameMemory->transient, sizeof(TabData));
+
+                data->gameState = gameState;
+                data->tab       = MenuTab::MISSIONS;
+                Clay_OnHover(SelectTab, data);
+
+                CLAY_TEXT(CLAY_STRING("MISSIONS"),
                           CLAY_TEXT_CONFIG({
                             .textColor = { 255, 255, 255, 255 },
                             .fontId    = 0,
@@ -94,6 +114,12 @@ static Clay_RenderCommandArray CreateMenu(DF::GameMemory* gameMemory)
             case MenuTab::SQUADS:
             {
                 CreateSquadsUI(gameMemory);
+
+                break;
+            }
+            case MenuTab::MISSIONS:
+            {
+                CreateMissionsUI(gameMemory);
 
                 break;
             }

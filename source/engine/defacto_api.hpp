@@ -17,10 +17,10 @@
 
 #endif
 
-#define Kilobytes(value) ((value) * 1024LL)
-#define Megabytes(value) (Kilobytes(value) * 1024LL)
-#define Gigabytes(value) (Megabytes(value) * 1024LL)
-#define Terabytes(value) (Gigabytes(value) * 1024LL)
+#define KILOBYTES(value) ((value) * 1024LL)
+#define MEGABYTES(value) (KILOBYTES(value) * 1024LL)
+#define GIGABYTES(value) (MEGABYTES(value) * 1024LL)
+#define TERABYTES(value) (GIGABYTES(value) * 1024LL)
 
 #define GAME_INITIALIZE(name) DF::GameMemory name()
 #define GAME_RELOAD(name) void name(DF::GameMemory* gameMemory)
@@ -113,11 +113,13 @@ struct Vec2
 
 struct String
 {
-    char* data;
+    const char* data;
     int length;
 };
+#define String(str) String { (str), (int)strlen(str) }
 
 DF_API String StrFormat(Arena* buffer, const char* str, ...);
+DF_API void StrFormat(char* buffer, int size, const char* str, ...);
 
 DF_API float Map(float value, float low1, float high1, float low2, float high2);
 DF_API int RandomInt(int min, int max);

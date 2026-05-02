@@ -1,4 +1,4 @@
-namespace SCP
+namespace SCPX
 {
 
 static const char* names[]    = { "James",  "Oliver", "William", "Henry",   "Arthur",
@@ -6,6 +6,7 @@ static const char* names[]    = { "James",  "Oliver", "William", "Henry",   "Art
 static const char* surnames[] = { "Smith",  "Johnson", "Williams", "Brown",  "Jones",
                                   "Garcia", "Miller",  "Davis",    "Wilson", "Taylor" };
 
+// TODO: Move Agent processing from UI code
 static Agent GenerateRandomAgent()
 {
     Agent agent {};
@@ -29,7 +30,7 @@ static Agent GenerateRandomAgent()
 
     *agentName++ = '\0';
 
-    agent.power = DF::RandomInt(20, 50);
+    agent.power = (float)DF::RandomInt(20, 50);
 
     return agent;
 }
@@ -134,7 +135,7 @@ static void CreateAgentsUI(DF::GameMemory* gameMemory)
                         .chars  = gameState->agentsForHire.list[i].name,
                     };
                     DF::String powerFmt = DF::StrFormat(
-                      &gameMemory->transient, "%i", gameState->agentsForHire.list[i].power);
+                      &gameMemory->transient, "%.2f", gameState->agentsForHire.list[i].power);
                     Clay_String power = {
                         .length = (int32_t)powerFmt.length,
                         .chars  = powerFmt.data,
@@ -222,7 +223,7 @@ static void CreateAgentsUI(DF::GameMemory* gameMemory)
                         .chars  = gameState->agentsHired.list[i].name,
                     };
                     DF::String powerFmt = DF::StrFormat(
-                      &gameMemory->transient, "%i", gameState->agentsHired.list[i].power);
+                      &gameMemory->transient, "%.2f", gameState->agentsHired.list[i].power);
                     Clay_String power = {
                         .length = (int32_t)powerFmt.length,
                         .chars  = powerFmt.data,

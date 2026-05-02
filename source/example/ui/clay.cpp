@@ -3,7 +3,7 @@
 #include "clay.h"
 #pragma warning(pop)
 
-namespace SCP
+namespace SCPX
 {
 static void HandleClayErrors(Clay_ErrorData errorData)
 {

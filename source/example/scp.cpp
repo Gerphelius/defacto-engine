@@ -1,4 +1,4 @@
-namespace SCP
+namespace SCPX
 {
 
 }

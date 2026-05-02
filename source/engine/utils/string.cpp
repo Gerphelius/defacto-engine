@@ -15,7 +15,7 @@ DF_API String StrFormat(Arena* buffer, const char* str, ...)
     va_list args {};
     va_start(args, str);
     int capacity = buffer->size - buffer->offset;
-    int offset   = stbsp_vsnprintf(strFmt.data, capacity, str, args);
+    int offset   = stbsp_vsnprintf((char*)strFmt.data, capacity, str, args);
     va_end(args);
 
     if (offset >= capacity)
@@ -32,6 +32,14 @@ DF_API String StrFormat(Arena* buffer, const char* str, ...)
     }
 
     return strFmt;
+}
+
+DF_API void StrFormat(char* buffer, int size, const char* str, ...)
+{
+    va_list args {};
+    va_start(args, str);
+    int offset = stbsp_vsnprintf(buffer, size, str, args);
+    va_end(args);
 }
 
 } // namespace DF

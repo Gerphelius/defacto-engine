@@ -1,10 +1,11 @@
-namespace SCP
+namespace SCPX
 {
 
 static const char* squadNames[] { "ALPHA", "BRAVO",    "CHARLIE", "DELTA",   "ECHO",   "FOXTROT",
                                   "GOLF",  "HOTEL",    "INDIA",   "JULIETT", "KILO",   "LIMA",
                                   "MIKE",  "NOVEMBER", "OSCAR",   "PAPA",    "QUEBEC", "ROMEO" };
 
+// TODO: Move Squad processing code from UI
 static void CreateSquad(Clay_ElementId elementId, Clay_PointerData pointerInfo, void* data)
 {
     if (pointerInfo.state == CLAY_POINTER_DATA_PRESSED_THIS_FRAME)
@@ -60,6 +61,9 @@ static void AssignAgent(Clay_ElementId elementId, Clay_PointerData pointerInfo, 
     if (pointerInfo.state == CLAY_POINTER_DATA_PRESSED_THIS_FRAME)
     {
         AgentAssignData* agentData = (AgentAssignData*)data;
+
+        if (agentData->gameState->selectedSquadId == -1) return;
+
         Squad* squad = &agentData->gameState->squads.list[agentData->gameState->selectedSquadId];
         Agent* agent = &agentData->gameState->agentsHired.list[agentData->agentId];
 
@@ -167,7 +171,7 @@ static void CreateSquadsUI(DF::GameMemory* gameMemory)
                         .chars  = gameState->squads.list[i].name,
                     };
                     DF::String powerFmt =
-                      DF::StrFormat(&gameMemory->transient, "%i", gameState->squads.list[i].power);
+                      DF::StrFormat(&gameMemory->transient, "%.2f", gameState->squads.list[i].power);
                     Clay_String power = {
                         .length = (int32_t)powerFmt.length,
                         .chars  = powerFmt.data,
@@ -309,7 +313,7 @@ static void CreateSquadsUI(DF::GameMemory* gameMemory)
                             .chars  = squad->agents.list[i].name,
                         };
                         DF::String powerFmt =
-                          DF::StrFormat(&gameMemory->transient, "%i", squad->agents.list[i].power);
+                          DF::StrFormat(&gameMemory->transient, "%.2f", squad->agents.list[i].power);
                         Clay_String power = {
                             .length = (int32_t)powerFmt.length,
                             .chars  = powerFmt.data,
@@ -404,7 +408,7 @@ static void CreateSquadsUI(DF::GameMemory* gameMemory)
                         .chars  = gameState->agentsHired.list[i].name,
                     };
                     DF::String powerFmt = DF::StrFormat(
-                      &gameMemory->transient, "%i", gameState->agentsHired.list[i].power);
+                      &gameMemory->transient, "%.2f", gameState->agentsHired.list[i].power);
                     Clay_String power = {
                         .length = (int32_t)powerFmt.length,
                         .chars  = powerFmt.data,
