@@ -85,7 +85,7 @@ static void RenderUI(DF::GameMemory* gameMemory, float dt)
 
     Clay_SetLayoutDimensions(Clay_Dimensions { (float)fbSize.width, (float)fbSize.height });
 
-    Clay_RenderCommandArray renderCommands = CreateMenu(gameMemory);
+    Clay_RenderCommandArray renderCommands {}; // = CreateMenu(gameMemory);
 
     for (int j = 0; j < renderCommands.length; j++)
     {

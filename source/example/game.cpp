@@ -5,26 +5,26 @@
 #include "scp_api.hpp"
 #include "clay.h"
 
-#include "ui/agents.cpp"
-#include "ui/squads.cpp"
-#include "ui/missions.cpp"
-#include "ui/menu.cpp"
+// #include "ui/agents.cpp"
+// #include "ui/squads.cpp"
+// #include "ui/missions.cpp"
+// #include "ui/menu.cpp"
 #include "ui/clay.cpp"
 
 using namespace SCPX;
 
 static void CreateMission(GameState* gameState)
 {
-    SCP* scp         = &gameState->scps.list[gameState->missions.count];
-    Mission* mission = &gameState->missions.list[gameState->missions.count];
+    // SCP* scp         = &gameState->scps.list[gameState->missions.count];
+    // Mission* mission = &gameState->missions.list[gameState->missions.count];
 
-    mission->scpId = gameState->missions.count;
-    mission->id    = gameState->missions.count++;
-    mission->squadId = -1;
-    DF::StrFormat(mission->name, sizeof(mission->name), "M-%i", gameState->missions.count);
-    mission->difficultyFactor = 10.0f * scp->power * (float)scp->containment;
-    mission->stage.type       = Mission::Stage::INVESTIGATION;
-    mission->stage.progress   = 0.0f;
+    // mission->scpId = gameState->missions.count;
+    // mission->id    = gameState->missions.count++;
+    // mission->squadId = -1;
+    // DF::StrFormat(mission->name, sizeof(mission->name), "M-%i", gameState->missions.count);
+    // mission->difficultyFactor = 10.0f * scp->power * (float)scp->containment;
+    // mission->stage.type       = Mission::Stage::INVESTIGATION;
+    // mission->stage.progress   = 0.0f;
 }
 
 DF_EXPORT_C GAME_RELOAD(GameReload)
@@ -61,53 +61,52 @@ DF_EXPORT_C GAME_INITIALIZE(GameInitialize)
     gameState->clayArena.size = clayMemorySize;
     InitClay(gameState);
 
-    gameState->agentsForHire.maxCount = 10;
-    gameState->agentsForHire.list     = (Agent*)DF::ArenaPush(
-      &gameMemory.permanent, gameState->agentsForHire.maxCount * sizeof(Agent));
-    gameState->agentsHired.maxCount = 20;
-    gameState->agentsHired.list =
-      (Agent*)DF::ArenaPush(&gameMemory.permanent, gameState->agentsHired.maxCount * sizeof(Agent));
+    gameState->maxMembersPerSquad = 4;
+    gameState->squads.maxCount    = 4;
+    gameState->squads.data =
+      (Squad*)DF::ArenaPush(&gameMemory.permanent,
+                            gameState->squads.maxCount *
+                              (sizeof(Squad) + sizeof(Scientist) * gameState->maxMembersPerSquad));
 
-    gameState->squads.maxCount          = 4;
-    gameState->squads.maxAgentsPerSquad = 8;
-    gameState->squads.list              = (Squad*)DF::ArenaPush(
-      &gameMemory.permanent,
-      gameState->squads.maxCount *
-        (sizeof(Squad) + sizeof(Agent) * gameState->squads.maxAgentsPerSquad));
-    gameState->selectedSquadId   = -1;
-    gameState->selectedMissionId = -1;
+    // TODO:
+    // Create agents and squad
+    // Assign agents to squad
+    // Assign squad to the mission
+    // Create mission ui with updated scp data
+    // Player can start/stop mission state
 
-    gameState->missions.maxCount = 10;
-    gameState->missions.list     = (Mission*)DF::ArenaPush(
-      &gameMemory.permanent, gameState->missions.maxCount * sizeof(Mission));
+    gameState->scps.maxCount = 4;
+    gameState->scps.data     = (SCP*)DF::ArenaPush(
+      &gameMemory.permanent, gameState->scps.maxCount * (sizeof(SCP) * gameState->scps.maxCount));
 
-    SCP scps[] {
-        { "SCP-173", false, true, 100.0f, SCP::EUCLID },
-        { "SCP-096", false, true, 150.0f, SCP::EUCLID },
-        { "SCP-087", false, false, 20.0f, SCP::EUCLID },
-        { "SCP-106", false, true, 400.0f, SCP::KETER },
-        { "SCP-914", false, true, 0.0f, SCP::SAFE },
+    gameState->scps.data[0] = {
+        .name              = { "SCP-173", 10.0f },
+        .containmentClass  = { SCP::ContainmentClass::EUCLID, 30.0f },
+        .containmentMode   = { SCP::ContainmentMode::FACILITY, 30.0f },
+        .type              = { SCP::Type::HUMANOID, 10.0f },
+        .cognition         = { SCP::Cognition::HUMAN, 80.0f },
+        .movement          = { SCP::Movement::GROUND, 50.0f },
+        .mobility          = { SCP::Mobility::EXTREME, 10.0f },
+        .damageType        = { SCP::DamageType::PHYSICAL, 20.0f },
+        .damage            = { 100.0f, 20.0f },
+        .threat            = { 60.0f, 10.0f },
+        .squadCoordination = { 70.0f, 50.0f },
+        .squadSize         = { 3, 30.0f },
+        .evasion           = { 40.0f, 80.0f },
+        .behaviorState     = { SCP::Behavior::HOSTILE, 40.0f },
     };
 
-    gameState->scps.maxCount = ArrayCount(scps);
-    gameState->scps.list =
-      (SCP*)DF::ArenaPush(&gameMemory.permanent, gameState->scps.maxCount * sizeof(SCP));
+    gameState->missions.maxCount = 10;
+    gameState->missions.data     = (Mission*)DF::ArenaPush(
+      &gameMemory.permanent,
+      gameState->missions.maxCount * (sizeof(Mission) * gameState->missions.maxCount));
 
-    for (int i = 0; i < ArrayCount(scps); ++i)
-    {
-        gameState->scps.list[i] = scps[i];
-        ++gameState->scps.count;
-    }
-
-    for (int i = 0; i < 10; ++i)
-    {
-        AddAgent(&gameState->agentsForHire, GenerateRandomAgent());
-    }
-
-    for (int i = 0; i < gameState->scps.count; ++i)
-    {
-        CreateMission(gameState);
-    }
+    gameState->missions.data[0] = {
+        .name    = "M-001",
+        .squadId = -1,
+        .scpId   = 0,
+        .stage   = Mission::Stage::PENDING,
+    };
 
     return gameMemory;
 }
@@ -116,21 +115,21 @@ DF_EXPORT_C GAME_UPDATE(GameUpdate)
 {
     GameState* gameState = (GameState*)gameMemory->permanent.base;
 
-    for (int i = 0; i < gameState->missions.count; ++i)
-    {
-        Mission* mission = &gameState->missions.list[i];
+    // for (int i = 0; i < gameState->missions.count; ++i)
+    //{
+    //     Mission* mission = &gameState->missions.list[i];
 
-        if (mission->squadId < 0) continue;
+    //    if (mission->squadId < 0) continue;
 
-        Squad* missionSquad = &gameState->squads.list[mission->squadId];
+    //    Squad* missionSquad = &gameState->squads.list[mission->squadId];
 
-        if (missionSquad->power <= 0.0f) continue;
+    //    if (missionSquad->power <= 0.0f) continue;
 
-        if (mission->stage.progress < 100.0f)
-        {
-            mission->stage.progress += dt * 10;
-        }
-    }
+    //    if (mission->stage.progress < 100.0f)
+    //    {
+    //        mission->stage.progress += dt * 10;
+    //    }
+    //}
 
     RenderUI(gameMemory, dt);
 }

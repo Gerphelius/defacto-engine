@@ -5,90 +5,192 @@ namespace SCPX
 
 #define ArrayCount(array) (sizeof(array) / sizeof((array)[0]))
 
+template<typename T>
+struct List
+{
+    T* data;
+    int count;
+    int maxCount;
+};
+
 struct SCP
 {
-    enum Containment
+    enum class ContainmentClass
     {
         UNKNOWN,
         SAFE,
         EUCLID,
         KETER,
     };
+    enum class ContainmentMode
+    {
+        UNCONTAINABLE,
+        FACILITY,
+        IN_PLACE,
+    };
+    enum class Type
+    {
+        UNKNOWN,
+        HUMANOID,
+        MECHANICAL,
+        BIOLOGICAL,
+        CHEMICAL,
+        STRUCTURE,
+        ITEM,
+    };
+    enum class Cognition
+    {
+        UNKNOWN,
+        NONE,
+        ANIMALISTIC,
+        HUMAN,
+        STATEGIC,
+        SUPERHUMAN,
+    };
+    enum class Movement
+    {
+        UNKNOWN,
+        NONE,
+        GROUND,
+        WATER,
+        AIR,
+        TELEPORT,
+        TRANSDIMENSIONAL,
+        BODY,
+    };
+    enum class Mobility
+    {
+        UNKNOWN,
+        STATIC,
+        SLOW,
+        FAST,
+        EXTREME,
+        INSTANT,
+    };
+    enum class DamageType
+    {
+        UNKNOWN,
+        NONE,
+        PHYSICAL,
+        CHEMICAL,
+        BIOLOGICAL,
+        ELEMENTAL,
+        MENTAL,
+    };
+    enum class Behavior
+    {
+        UNKNOWN,
+        DORMANT,
+        STABLE,
+        AGITATED,
+        HOSTILE,
+        BREACH,
+    };
 
-    char name[32];
-    bool captured;
-    bool movable;
-    float power;
-    Containment containment;
+    template<typename T>
+    struct Property
+    {
+        T value;
+        float difficulty;
+        float progress;
+        bool revealed;
+    };
+
+    Property<char[32]> name;
+    Property<ContainmentClass> containmentClass;
+    Property<ContainmentMode> containmentMode;
+    Property<Type> type;
+    Property<Cognition> cognition;
+    Property<Movement> movement;
+    Property<Mobility> mobility;
+    Property<DamageType> damageType;
+    Property<float> damage;
+    Property<float> threat;
+    Property<float> squadCoordination;
+    Property<uint32_t> squadSize;
+    Property<float> evasion;
+    Property<Behavior> behaviorState;
 };
 
-struct SCPs
-{
-    SCP* list;
-    int count;
-    int maxCount;
-};
-
-struct Agent
+struct Assault
 {
     char name[32];
-    bool hired; // TODO: Probably don't need it, because of separate hired array
-    float power;
     int squadId = -1;
+    float suppression;
 };
 
-struct Agents
+struct Scientist
 {
-    Agent* list;
-    int count;
-    int maxCount;
+    char name[32];
+    int squadId = -1;
+    float mechanics;
+    float physics;
+    float biology;
+    float chemistry;
+    float electronics;
+};
+
+struct Recon
+{
+    char name[32];
+    int squadId = -1;
+    float detection;
+    float stealth;
+};
+
+struct Support
+{
+    char name[32];
+    int squadId = -1;
+    float medical;
+    float logistics;
+    float secrecy;
 };
 
 struct Squad
 {
-    int id;
     char name[32];
-    float power;
     int missionId;
-    Agents agents;
-};
 
-struct Squads
-{
-    Squad* list;
-    int count;
-    int maxCount;
-    int maxAgentsPerSquad;
+    List<Assault> assaults;
+    List<Scientist> scientists;
+    List<Recon> recons;
+    List<Support> supports;
+    uint32_t membersCurrent;
+    uint32_t membersMax;
+
+    float suppression;
+    float mechanics;
+    float physics;
+    float biology;
+    float chemistry;
+    float electronics;
+    float detection;
+    float stealth;
+    float medical;
+    float logistics;
+    float secrecy;
 };
 
 struct Mission
 {
-    int id;
     char name[32];
     int squadId;
     int scpId;
-    float difficultyFactor;
 
     struct Stage
     {
         enum Type
         {
-            INVESTIGATION,
-            SURVEILLANCE,
-            CONTAINMENT,
+            PENDING,
+            SURVEILANCE,
+            SECURING,
         };
 
         Type type;
         float progress;
     };
     Stage stage;
-};
-
-struct Missions
-{
-    Mission* list;
-    int count;
-    int maxCount;
 };
 
 enum class Fonts
@@ -109,14 +211,20 @@ struct GameState
 {
     // Assets
     DF::Arena fontsArena;
-    DF::Font* fonts[(int)Fonts::TOTAL];
+    DF::Font* fonts[(int)Fonts::TOTAL]; // TODO: Change to List
 
     // Entities
-    Agents agentsForHire;
-    Agents agentsHired;
-    Squads squads;
-    SCPs scps;
-    Missions missions;
+    List<Assault> assaults;
+    List<Scientist> scientists;
+    List<Recon> recons;
+    List<Support> supports;
+    List<SCP> scps;
+    List<Mission> missions;
+    List<Squad> squads;
+    uint32_t maxMembersPerSquad;
+
+    // Globals
+    float worldStabilty;
 
     // UI
     MenuTab menuTab;
