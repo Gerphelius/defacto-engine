@@ -13,6 +13,15 @@ struct List
     int maxCount;
 };
 
+template <typename T>
+inline void ListAdd(List<T>* list, T value)
+{
+    if (list->count < list->maxCount)
+    {
+        list->data[list->count++] = value;
+    }
+}
+
 struct SCP
 {
     enum class ContainmentClass
@@ -96,6 +105,7 @@ struct SCP
         bool revealed;
     };
 
+    int id = -1;
     Property<char[32]> name;
     Property<ContainmentClass> containmentClass;
     Property<ContainmentMode> containmentMode;
@@ -112,8 +122,17 @@ struct SCP
     Property<Behavior> behaviorState;
 };
 
+enum class EmployeeType
+{
+    ASSAULT,
+    SCIENTIST,
+    RECON,
+    SUPPORT,
+};
+
 struct Assault
 {
+    int id = -1;
     char name[32];
     int squadId = -1;
     float suppression;
@@ -121,6 +140,7 @@ struct Assault
 
 struct Scientist
 {
+    int id = -1;
     char name[32];
     int squadId = -1;
     float mechanics;
@@ -132,6 +152,7 @@ struct Scientist
 
 struct Recon
 {
+    int id = -1;
     char name[32];
     int squadId = -1;
     float detection;
@@ -140,6 +161,7 @@ struct Recon
 
 struct Support
 {
+    int id = -1;
     char name[32];
     int squadId = -1;
     float medical;
@@ -149,16 +171,20 @@ struct Support
 
 struct Squad
 {
+    int id = -1;
     char name[32];
     int missionId;
 
-    List<Assault> assaults;
-    List<Scientist> scientists;
-    List<Recon> recons;
-    List<Support> supports;
+    // TODO: Change back to actual structs instead of indices
+
+    List<int> assaultIds;
+    List<int> scientistIds;
+    List<int> reconIds;
+    List<int> supportIds;
     uint32_t membersCurrent;
     uint32_t membersMax;
 
+    float coordinaton;
     float suppression;
     float mechanics;
     float physics;
@@ -174,16 +200,17 @@ struct Squad
 
 struct Mission
 {
+    int id = -1;
     char name[32];
-    int squadId;
-    int scpId;
+    int squadId = -1;
+    int scpId = -1;
 
     struct Stage
     {
         enum Type
         {
             PENDING,
-            SURVEILANCE,
+            SURVEILLANCE,
             SECURING,
         };
 

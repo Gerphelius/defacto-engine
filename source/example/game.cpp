@@ -5,10 +5,11 @@
 #include "scp_api.hpp"
 #include "clay.h"
 
-// #include "ui/agents.cpp"
-// #include "ui/squads.cpp"
-// #include "ui/missions.cpp"
-// #include "ui/menu.cpp"
+#include "ui/shared.cpp"
+#include "ui/agents.cpp"
+#include "ui/squads.cpp"
+#include "ui/missions.cpp"
+#include "ui/menu.cpp"
 #include "ui/clay.cpp"
 
 using namespace SCPX;
@@ -61,12 +62,195 @@ DF_EXPORT_C GAME_INITIALIZE(GameInitialize)
     gameState->clayArena.size = clayMemorySize;
     InitClay(gameState);
 
+    /// *********************************** SQUADS *********************************** ///
+
+    int employeeTypesNum          = 4;
     gameState->maxMembersPerSquad = 4;
     gameState->squads.maxCount    = 4;
-    gameState->squads.data =
-      (Squad*)DF::ArenaPush(&gameMemory.permanent,
-                            gameState->squads.maxCount *
-                              (sizeof(Squad) + sizeof(Scientist) * gameState->maxMembersPerSquad));
+    gameState->squads.data        = (Squad*)DF::ArenaPush(
+      &gameMemory.permanent,
+      gameState->squads.maxCount *
+        (sizeof(Squad) + sizeof(int) * employeeTypesNum * gameState->maxMembersPerSquad));
+
+    /// *********************************** ASSAULTS *********************************** ///
+
+    gameState->assaults.maxCount = 10;
+    gameState->assaults.data     = (Assault*)DF::ArenaPush(
+      &gameMemory.permanent, sizeof(Assault) * gameState->assaults.maxCount);
+
+    for (int i = 0; i < gameState->assaults.maxCount; ++i)
+    {
+        static float suppression = 20.0f;
+
+        if (i >= 6)
+        {
+            suppression = 30.0f;
+        }
+        else if (i >= 3)
+        {
+            suppression = 40.0f;
+        }
+
+        gameState->assaults.data[i] = {
+            .id          = i,
+            .suppression = suppression,
+        };
+
+        DF::StrFormat(gameState->assaults.data[i].name,
+                      (int)sizeof(gameState->assaults.data[i]),
+                      "Assault 00%i",
+                      i);
+
+        ++gameState->assaults.count;
+    }
+
+    /// *********************************** SCIENTISTS *********************************** ///
+
+    gameState->scientists.maxCount = 10;
+    gameState->scientists.data     = (Scientist*)DF::ArenaPush(
+      &gameMemory.permanent, sizeof(Scientist) * gameState->scientists.maxCount);
+
+    for (int i = 0; i < gameState->scientists.maxCount; ++i)
+    {
+        static float scalar = 1.0f;
+
+        float mechanics   = 1.0f;
+        float electronics = 0.0f;
+        float biology     = 0.0f;
+        float chemistry   = 0.0f;
+        float physics     = 0.0f;
+        float value       = 20.0f;
+
+        if (i >= 8)
+        {
+            scalar      = 1.0f;
+            mechanics   = 0.0f;
+            electronics = 1.0f;
+        }
+        else if (i >= 6)
+        {
+            scalar      = 1.0f;
+            mechanics   = 0.0f;
+            electronics = 0.0f;
+            biology     = 1.0f;
+        }
+        else if (i >= 4)
+        {
+            scalar      = 1.0f;
+            mechanics   = 0.0f;
+            electronics = 0.0f;
+            biology     = 0.0f;
+            chemistry   = 1.0f;
+        }
+        else if (i >= 2)
+        {
+            scalar      = 1.0f;
+            mechanics   = 0.0f;
+            electronics = 0.0f;
+            biology     = 0.0f;
+            chemistry   = 0.0f;
+            physics     = 1.0f;
+        }
+
+        gameState->scientists.data[i] = {
+            .id          = i,
+            .mechanics   = mechanics * value * scalar,
+            .physics     = physics * value * scalar,
+            .biology     = biology * value * scalar,
+            .chemistry   = chemistry * value * scalar,
+            .electronics = electronics * value * scalar,
+        };
+
+        ++scalar;
+
+        DF::StrFormat(gameState->scientists.data[i].name,
+                      (int)sizeof(gameState->scientists.data[i]),
+                      "Scientist 00%i",
+                      i);
+
+        ++gameState->scientists.count;
+    }
+
+    /// *********************************** RECONS *********************************** ///
+
+    gameState->recons.maxCount = 10;
+    gameState->recons.data =
+      (Recon*)DF::ArenaPush(&gameMemory.permanent, sizeof(Recon) * gameState->recons.maxCount);
+
+    for (int i = 0; i < gameState->recons.maxCount; ++i)
+    {
+        static float scalar = 1.0f;
+
+        float detection = 1.0f;
+        float stealth   = 0.0f;
+        float value     = 20.0f;
+
+        if (i >= 5)
+        {
+            scalar    = 1.0f;
+            detection = 0.0f;
+            stealth   = 1.0f;
+        }
+
+        gameState->recons.data[i] = {
+            .id        = i,
+            .detection = detection * value * scalar,
+            .stealth   = stealth * value * scalar,
+        };
+
+        ++scalar;
+
+        DF::StrFormat(
+          gameState->recons.data[i].name, (int)sizeof(gameState->recons.data[i]), "Recon 00%i", i);
+
+        ++gameState->recons.count;
+    }
+
+    /// *********************************** SUPPORTS *********************************** ///
+
+    gameState->supports.maxCount = 10;
+    gameState->supports.data     = (Support*)DF::ArenaPush(
+      &gameMemory.permanent, sizeof(Support) * gameState->supports.maxCount);
+
+    for (int i = 0; i < gameState->supports.maxCount; ++i)
+    {
+        static float scalar = 1.0f;
+
+        float medical   = 1.0f;
+        float logistics = 0.0f;
+        float secrecy   = 0.0f;
+        float value     = 20.0f;
+
+        if (i >= 6)
+        {
+            scalar    = 1.0f;
+            medical   = 0.0f;
+            logistics = 1.0f;
+        }
+        else if (i >= 3)
+        {
+            scalar    = 1.0f;
+            medical   = 0.0f;
+            logistics = 0.0f;
+            secrecy   = 1.0f;
+        }
+
+        gameState->supports.data[i] = {
+            .id        = i,
+            .medical   = medical * value * scalar,
+            .logistics = logistics * value * scalar,
+            .secrecy   = secrecy * value * scalar,
+        };
+
+        ++scalar;
+
+        DF::StrFormat(gameState->supports.data[i].name,
+                      (int)sizeof(gameState->supports.data[i]),
+                      "Support 00%i",
+                      i);
+
+        ++gameState->supports.count;
+    }
 
     // TODO:
     // Create agents and squad
@@ -79,7 +263,7 @@ DF_EXPORT_C GAME_INITIALIZE(GameInitialize)
     gameState->scps.data     = (SCP*)DF::ArenaPush(
       &gameMemory.permanent, gameState->scps.maxCount * (sizeof(SCP) * gameState->scps.maxCount));
 
-    gameState->scps.data[0] = {
+    gameState->scps.data[gameState->scps.count++] = {
         .name              = { "SCP-173", 10.0f },
         .containmentClass  = { SCP::ContainmentClass::EUCLID, 30.0f },
         .containmentMode   = { SCP::ContainmentMode::FACILITY, 30.0f },

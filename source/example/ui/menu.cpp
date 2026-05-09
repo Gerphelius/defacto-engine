@@ -107,7 +107,7 @@ static Clay_RenderCommandArray CreateMenu(DF::GameMemory* gameMemory)
         {
             case MenuTab::PERSONNEL:
             {
-                CreateAgentsUI(gameMemory);
+                //CreateAgentsUI(gameMemory);
 
                 break;
             }
