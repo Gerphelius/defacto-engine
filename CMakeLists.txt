@@ -91,6 +91,7 @@ add_custom_target(game_dll ALL
     COMMENT "****** Building game.dll ******"
     VERBATIM
 )
+add_dependencies(game_dll defacto)
 
 ## This block is used to add intellisence support for game.dll with unity build
 add_library(game_intellisense SHARED ${GAME_SOURCE})
